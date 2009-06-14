@@ -61,6 +61,8 @@
 
 (global-set-key #\C-. 'editor::dabbrev-popup)
 
+(global-set-key '(#\C-x #\C-c) 'quit)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ruby ;;;;;;;;;;;;;;;;;;;;;;
 (load-library "ruby-mode")
 (push '("\\.rb$" . ruby-mode) *auto-mode-alist*)
