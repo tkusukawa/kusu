@@ -1,6 +1,6 @@
 
 = Redmine Plugin : WorkTime =
 
-= WinApp : GhostBoard =
+= !WinApp : GhostBoard =
 
-= WinApp : Sudoku =
+= !WinApp : [Sudoku] =
