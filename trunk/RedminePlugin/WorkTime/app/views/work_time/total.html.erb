@@ -76,7 +76,9 @@ tic_max = tickets.size;
 prjs.each do |po|
  dsp_prj = po.dsp_prj;
  dsp_pos = po.dsp_pos;
- next unless @r_prj_cost.key?(dsp_prj);
+ next unless @r_prj_cost.key?(dsp_prj); # 値の無いプロジェクトはパス
+ next unless @r_prj_cost[dsp_prj].key?(-1); # 値の無いプロジェクトはパス
+ next if @r_prj_cost[dsp_prj][-1] == 0; # 値の無いプロジェクトはスパ
  prj =Project.find(dsp_prj);
 %>
 <tr style="background:#000;color:#fff;">
@@ -103,8 +105,8 @@ end
 <%
 tickets.each do |tic|
   issue_id = tic.issue_id;
-  next if !(@r_issue_cost.key?(issue_id)); # 値の無いチケットはパス
-  next if !(@r_issue_cost[issue_id].key?(-1)); # 値の無いチケットはパス
+  next unless @r_issue_cost.key?(issue_id); # 値の無いチケットはパス
+  next unless @r_issue_cost[issue_id].key?(-1); # 値の無いチケットはパス
   next if @r_issue_cost[issue_id][-1] == 0; # 値の無いチケットはパス
 
   issue = Issue.find(issue_id);
@@ -159,7 +161,7 @@ prjs.each do |po|
  dsp_prj = po.dsp_prj;
  dsp_pos = po.dsp_pos;
  next unless @prj_cost.key?(dsp_prj);
- next unless @prj_cost[dsp_prj].size;
+ next unless @prj_cost[dsp_prj].key?(-1);
  prj =Project.find(dsp_prj);
 %>
 <tr style="background:#000;color:#fff;">
@@ -184,8 +186,8 @@ prjs.each do |po|
   end
 
   # 当該チケットに集計が無かったらスキップ
-  next if !(@issue_cost.key?(issue_id));
-  next if !((@issue_cost[issue_id]).key?(-1));
+  next unless @issue_cost.key?(issue_id);
+  next unless @issue_cost[issue_id].key?(-1);
 
   issue = Issue.find(issue_id);
   next if issue.project_id != dsp_prj;
