@@ -21,10 +21,10 @@ box_h = win_hs*3+win_h*@disp_count+win_hs*@disp_prj_issues.keys.size+20;
       </div>
       </div>
       <div align="right" style="position:absolute;top:1px;left:1px;width:<%=box_w-4%>px;height:<%=win_hs*2-2%>px;">
-        <%= link_to (">>", @link_params.merge(:day=>@next_month.day, :month=>@next_month.month, :year=>@next_month.year));%>
+        <%= link_to(">>", @link_params.merge(:day=>@next_month.day, :month=>@next_month.month, :year=>@next_month.year));%>
       </div>
       <div align="left" style="position:absolute;top:1px;left:1px;">
-        <%= link_to ("<<", @link_params.merge(:day=>@last_month.day, :month=>@last_month.month, :year=>@last_month.year));%>
+        <%= link_to("<<", @link_params.merge(:day=>@last_month.day, :month=>@last_month.month, :year=>@last_month.year));%>
       </div>
       </div>
 <%
