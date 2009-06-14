@@ -1,0 +1,3 @@
+#summary A plugin to view and update TimeEntry by each user.
+
+http://kusu.way-nifty.com/blog/redmine_work_time.html
