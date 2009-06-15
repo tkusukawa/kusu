@@ -1,0 +1,10 @@
+
+This is test page.
+
+1.
+hoge.jpg
+
+2.
+[http://www.nifty.com hoge.jpg]
+
+
