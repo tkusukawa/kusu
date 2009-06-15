@@ -521,8 +521,8 @@ printf("mv:prj%d, uid%d, dprj%d, dpos%d\n", mv.prj, mv.uid, mv.dsp_prj, mv.dsp_p
         if !(relay.key?(parent_iid)) then
           # まだ登録されていないチケットの場合、追加処理を行う
           relay[parent_iid] = 0;
-          @issue_cost[parent_id] = Hash.new;
-          @r_issue_cost[parent_id] = Hash.new;
+          @issue_cost[parent_iid] = Hash.new;
+          @r_issue_cost[parent_iid] = Hash.new;
           WtTicketRelay.create(:issue_id=>parent_iid, :position=>relay.size, :parent=>0);
         end
         
