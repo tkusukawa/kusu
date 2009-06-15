@@ -1,10 +1,13 @@
-
 This is test page.
 
 1.
 hoge.jpg
 
 2.
-[http://www.nifty.com hoge.jpg]
+[nifty http://www.nifty.com hoge.jpg]
 
+3.
+http://code.google.com/p/kusu/source/browse/wiki/hoge.jpg
 
+4.
+[hoge http://code.google.com/p/kusu/source/browse/wiki/hoge.jpg]
