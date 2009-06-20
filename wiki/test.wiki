@@ -11,3 +11,9 @@ http://kusu.way-nifty.com/photos/uncategorized/2009/02/08/win1_4.jpg
 
 4.
 [http://kusu.way-nifty.com/blog/redmine_work_time.html http://kusu.way-nifty.com/photos/uncategorized/2009/02/08/win1_4.jpg]
+
+5.
+http://kusu.googlecode.com/files/hoge.jpg
+
+6.
+[http://kusu.way-nifty.com/blog/redmine_work_time.html http://kusu.googlecode.com/files/hoge.jpg]
