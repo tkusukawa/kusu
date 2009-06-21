@@ -1,3 +1,46 @@
 #summary A plugin to view and update TimeEntry by each user.
 
+= Redmine pluginで工数管理：WorkTime =
+
+レッドマインで工数管理を行うためのプラグインを作りました。
+
+チケットの「時間を記録」と連動していて、ユーザ毎に工数管理（日毎入力、月間集計）を行うことができます。
+
+[http://kusu.googlecode.com/files/eachMember.jpg http://kusu.googlecode.com/files/eachMember_.jpg]
+
+[http://kusu.googlecode.com/files/allMember.jpg http://kusu.googlecode.com/files/allMember_.jpg]
+
+Redmine Plug-in、Ruby on Railsの習作です。
+（実は私の初めてのWEBアプリケーションになります（汗））
+
+いろいろ変なことをやらかしていると思います。
+気づいた点やアドバイスなどご連絡いただけると幸いです。
+
+== 使い方 ==
+
+Redmineをインストールして下さい。（参考： http://redmine.jp/tech_note/install/ ）
+
+Redmineが動作することを確認した後、$REDMINE/vendor/plugins/ にredmine_work_time-～.tar.gz を展開します。
+
+{{{
+    $ cd $REDMINE/vendor/plugins
+    $ tar xzvf redmine_work_time.tar.gz
+}}}
+Redmineのルートに戻ってDBの初期化を行います。
+{{{
+    $ cd $REDMINE
+    $ rake db:migrate_plugins RAILS_ENV=production
+}}}
+これでRedmineを起動すると各プロジェクトの「設定」タブ→「モジュール」にWorkTimeが出てきますので、チェックして有効化ください。
+
+「管理」「ロールと権限」で設定する権限についてもWorkTimeの設定をしてください。
+
+
+== ダウンロード ==
+
+  * [http://kusu.googlecode.com/files/redmine_work_time-0.0.39.tar.gz redmine_work_time-0.0.39.tar.gz] (2009-6-15 19:05:20)
+
+
+過去のバージョンは
 http://kusu.way-nifty.com/blog/redmine_work_time.html
+にあります。
