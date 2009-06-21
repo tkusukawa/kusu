@@ -38,6 +38,10 @@ Redmineのルートに戻ってDBの初期化を行います。
 
 == ダウンロード ==
 
+  * [http://kusu.googlecode.com/files/redmine_work_time-0.0.40.tar.gz redmine_work_time-0.0.40.tar.gz] (2009-6-21 21:55:25)
+  IEでJavaScriptがエラーになる不具合を修正
+
+
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.39.tar.gz redmine_work_time-0.0.39.tar.gz] (2009-6-15 19:05:20)
 
 
