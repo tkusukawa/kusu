@@ -43,9 +43,18 @@ redmine-0.8.～ なら大丈夫だと思います。
 
 == ダウンロード ==
 
+  * [http://kusu.googlecode.com/files/redmine_work_time-0.0.43.tar.gz redmine_work_time-0.0.43.tar.gz] (2009-6-27 23:13:33)
+  チケット付替設定を別画面にした際の不具合修正。
+  チケット付替え画面で付替え後のチケット月間集計を確認できるように修正。
+
+  * redmine_work_time-0.0.42.tar.gz (2009-6-27 15:44:31)
+  新しいプロジェクトの当日操作チケットが表示されない問題を修正
+
+  * redmine_work_time-0.0.41.tar.gz (2009-6-27 14:52:22)
+  月間集計の付け替え設定を個別の画面で表示するように変更
+
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.40.tar.gz redmine_work_time-0.0.40.tar.gz] (2009-6-21 21:55:25)
   IEでJavaScriptがエラーになる不具合を修正
-
 
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.39.tar.gz redmine_work_time-0.0.39.tar.gz] (2009-6-15 19:05:20)
 
