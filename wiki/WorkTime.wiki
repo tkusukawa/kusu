@@ -41,7 +41,7 @@ redmine-0.8.0と0.8.4で動作が確認できています。
 
 redmine-0.8.～ なら大丈夫だと思います。
 
-== リポジトリ ==
+== SVN Repository ==
 
 http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
