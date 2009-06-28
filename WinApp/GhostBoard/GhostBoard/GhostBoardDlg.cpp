@@ -328,9 +328,9 @@ void CGhostBoardDlg::OnDrawClipboard()
             const char* text = (char*)GlobalLock(data);
             if (text != NULL) {
                 CString str(text);
-                if(lastClip == str) {
+                //if(lastClip == str) { // 前回と同じ内容がコピーされたら表示を更新する
                     m_edit.SetWindowText(str);
-                }
+                //}
                 lastClip = str;
             }
             else {
