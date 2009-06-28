@@ -1,4 +1,4 @@
-#summary A plugin to view and update TimeEntry by each user.
+#summary A redmine plugin to view and update TimeEntry by each user.
 
 = Redmine pluginで工数管理：WorkTime =
 
