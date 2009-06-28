@@ -45,7 +45,7 @@ redmine-0.8.～ なら大丈夫だと思います。
 
 http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
-== ダウンロード ==
+== Download ==
 
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.43.tar.gz redmine_work_time-0.0.43.tar.gz] (2009-6-27 23:13:33)
   チケット付替設定を別画面にした際の不具合修正。

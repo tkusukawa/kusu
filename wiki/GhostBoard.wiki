@@ -1,0 +1,36 @@
+#summary A windows tool to view clipboard text on transparent window.
+
+= WinApp：GhostBoard =
+
+画面の最前面に半透明でクリップボードのテキストを表示するツールです。
+
+http://kusu.googlecode.com/files/ghostboardcap.jpg
+
+リポジトリでソースコードも公開していますので、何かの参考になると幸いです。
+また、改善点などご提案いただけると大変に助かります。
+
+== 使い方 ==
+
+できたEXEを実行してください。
+実行ディレクトリにウィンドウのサイズなどを記憶するためのファイルが作成されます。
+
+マウスカーソルを近づけると、さらに透明になります。
+マウス操作は下のウィンドウに透過されます。
+
+GhostBoard自体を操作した意場合はタスクバーからGhostBoardを選択するか、Ctrl+Altを押してください。
+ドラッグの開始位置によって移動、リサイズができます。
+クリップボードのテキストを編集することができます。
+
+== 動作環境 ==
+
+WindowsXPでの動作が確認できています。
+
+== SVN Repository ==
+
+http://kusu.googlecode.com/svn/trunk/WinApp/Sudoku/
+
+== Download ==
+
+  * [http://kusu.googlecode.com/files/ghostboard-1.0.0.3.zip ghostboard-1.0.0.3.zip]
+
+

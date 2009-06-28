@@ -19,7 +19,7 @@ WindowsXPでの動作を確認しています。
 
 http://kusu.googlecode.com/svn/trunk/WinApp/Sudoku/
 
-== ダウンロード ==
+== Download ==
 
   * [http://kusu.googlecode.com/files/sudoku-1.0.0.1.zip sudoku-1.0.0.1.zip]
 
