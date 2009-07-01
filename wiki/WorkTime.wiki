@@ -47,6 +47,9 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
+  * [http://kusu.googlecode.com/files/redmine_work_time-0.0.45.tar.gz redmine_work_time-0.0.45.tar.gz] (2009-07-01 23:51:19)
+  工数チケットの付替設定の追加／削除にて、ページを読み直すのではなく、テーブル内容をAjaxUpdateするように修正
+
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.44.tar.gz redmine_work_time-0.0.44.tar.gz] (2009-6-29 23:48:31)
   個人工数表示の月間集計に表示されないはずの、「その日のチケット操作」が表示されて高さの計算がずれる不具合を修正。  
 
