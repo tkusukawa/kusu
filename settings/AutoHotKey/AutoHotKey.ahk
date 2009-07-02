@@ -1,90 +1,8 @@
 ;#include disp_ime_status.ahk
 
-#IfWinActive xyzzy
-$^p::
-  send ^p
-return
-
-$^n::
-  send ^n
-return
-
-$^f::
-  send ^f
-return
-
-$^b::
-  send ^b
-return
-
-$^a::
-  send ^a
-return
-
-$^e::
-  send ^e
-return
-
-$^y::
-  send ^y
-return
-
-$^w::
-  send ^w
-return
-
-$^q::
-  send ^q
-return
-
-$^d::
-  send ^d
-return
-
-
-#IfWinActive ahk_class WindowsForms10.Window.8.app.0.1d2098a
-$^p::
-  send ^p
-return
-
-$^n::
-  send ^n
-return
-
-$^f::
-  send ^f
-return
-
-$^b::
-  send ^b
-return
-
-$^a::
-  send ^a
-return
-
-$^e::
-  send ^e
-return
-
-$^y::
-  send ^y
-return
-
-$^w::
-  send ^w
-return
-
-$^q::
-  send ^q
-return
-
-$^d::
-  send ^d
-return
-
 
 #IfWinActive ahk_class TSSHELLWND
+
 $^p::
   send ^p
 return
@@ -129,8 +47,96 @@ $^o::
   send ^o
 return
 
+#IfWinActive ahk_class WindowsForms10.Window.8.app.0.1d2098a
+
+$^p::
+  send ^p
+return
+
+$^n::
+  send ^n
+return
+
+$^f::
+  send ^f
+return
+
+$^b::
+  send ^b
+return
+
+$^a::
+  send ^a
+return
+
+$^e::
+  send ^e
+return
+
+$^y::
+  send ^y
+return
+
+$^w::
+  send ^w
+return
+
+$^q::
+  send ^q
+return
+
+$^d::
+  send ^d
+return
+
+$^o::
+  send ^o
+return
+
+#IfWinActive xyzzy
+
+$^p::
+  send ^p
+return
+
+$^n::
+  send ^n
+return
+
+$^f::
+  send ^f
+return
+
+$^b::
+  send ^b
+return
+
+$^a::
+  send ^a
+return
+
+$^e::
+  send ^e
+return
+
+$^y::
+  send ^y
+return
+
+$^w::
+  send ^w
+return
+
+$^d::
+  send ^d
+return
+
+$^q::
+  send ^q
+return
 
 #IfWinActive
+
 $^p::
   send {up}
 return
