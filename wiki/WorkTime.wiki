@@ -47,6 +47,17 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
+  * Ver0.0.48(Rev56) [http://kusu.googlecode.com/files/redmine_work_time-0.0.48.tar.gz redmine_work_time-0.0.48.tar.gz] (2009-07-26 12:26:28)
+
+  「Issue 6:チケット付替設定の月の変更手段」の対応<br>
+  チケット選択ポップアップにあるプロジェクトと選択プルダウンの文言修正<br>
+
+  * Ver0.0.47(Rev55)
+  「Issue 3:一度に複数のチケットを追加したい」への対応
+
+  * Ver0.0.46(Rev54)
+  日毎メモの編集状態時にも日付が表示されるように修正
+
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.45.tar.gz redmine_work_time-0.0.45.tar.gz] (2009-07-01 23:51:19)
   工数チケットの付替設定の追加／削除にて、ページを読み直すのではなく、テーブル内容をAjaxUpdateするように修正
 
