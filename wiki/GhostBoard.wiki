@@ -27,7 +27,7 @@ WindowsXPでの動作が確認できています。
 
 == SVN Repository ==
 
-http://kusu.googlecode.com/svn/trunk/WinApp/Sudoku/
+http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == Download ==
 
