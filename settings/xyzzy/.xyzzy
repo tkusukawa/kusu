@@ -196,3 +196,23 @@
 
 (load-library "php-mode")
 (pushnew '("\\.php$" . php-mode) *auto-mode-alist*)
+
+
+;;Grepをしたときに特定のディレクトは無視する設定 (2009-09-20)
+;; → http://se-suganuma.blogspot.com/2007/12/xyzzygrep.html
+(require "grepd")
+(defvar *ignore-scan-dirs* (list ".svn" )) ;;対象外にするフォルダ
+(defvar *org-scan-files-1* (function ed::scan-files-1)) ;; 元の関数
+(defun ed::scan-files-1
+  (sFile pattern buffer scanner)
+  (let 
+    (bSkip) 
+    (dolist 
+      (sDir *ignore-scan-dirs*) 
+      (setq sDir (append-trail-slash sDir)) 
+      (setq iPos (string-match sDir sFile)) 
+      (when iPos (setq bSkip t) (return))
+    ) 
+    (unless bSkip (funcall *org-scan-files-1* sFile pattern buffer scanner))
+  )
+)
