@@ -47,6 +47,21 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
+  * Ver0.0.52(Rev63) [http://kusu.googlecode.com/files/redmine_work_time-0.0.48.tar.gz redmine_work_time-0.0.52.tar.gz] Date: 18:05:49, 2009年9月13日
+  休日表示の機能追加(raku0893さんに送って頂いたコードをベースにしました)<br>
+  チケット選択を番号入力でも行えるように修正
+
+  * Ver0.0.51(Rev61) Date: 8:51:19, 2009年9月13日
+  「Issue 9: Developmentモードでエラー」の対応。
+  developmentモードでも動作するように修正(情報提供ありがとうございます＞raku0893様)
+
+  * Ver0.0.50(Rev60) Date: 14:38:37, 2009年8月9日
+  データ列出力用の画面を追加
+
+  * Ver0.0.49(Rev59) Date: 13:33:10, 2009年8月9日
+
+  チケット洗濯時にクローズ状態のチケットを最初表示しないように修正
+
   * Ver0.0.48(Rev56) [http://kusu.googlecode.com/files/redmine_work_time-0.0.48.tar.gz redmine_work_time-0.0.48.tar.gz] (2009-07-26 12:26:28)
 
   「Issue 6:チケット付替設定の月の変更手段」の対応<br>
