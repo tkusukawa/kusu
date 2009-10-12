@@ -5,7 +5,7 @@
 #include "myedit.h"
 
 #define		WM_TRYCLK		WM_APP + 3			//タスクトレイ化
-
+#define     HISTORY_NUM     100
 
 // CGhostBoardDlg ダイアログ
 class CGhostBoardDlg : public CDialog
@@ -77,4 +77,8 @@ public:
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMenuClose();
     afx_msg void OnMenuMinimize();
+
+    // 履歴
+    signed int m_historyPos, m_historyLookup;
+    CString m_historyArray[HISTORY_NUM];
 };
