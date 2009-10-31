@@ -9,22 +9,6 @@
 #define new DEBUG_NEW
 #endif
 
-#define DBG_BUF_SIZE 256
-
-void dbg(char *format, ...)
-{
-    va_list	argp;
-    char buf[DBG_BUF_SIZE];
-    wchar_t wbuf[DBG_BUF_SIZE*2];
-
-    va_start(argp, format);
-    vsprintf_s(buf, DBG_BUF_SIZE, format, argp);
-    va_end(argp);
-
-    MultiByteToWideChar(CP_ACP, 0, buf, DBG_BUF_SIZE, wbuf, sizeof(wbuf));
-    OutputDebugString(wbuf);
-}
-
 // CGhostBoardDlg ダイアログ
 
 
@@ -81,6 +65,9 @@ BOOL CGhostBoardDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 大きいアイコンの設定
 	SetIcon(m_hIcon, FALSE);		// 小さいアイコンの設定
 
+    //---- ウィンドウタイトル
+    SetWindowText(_T("GhostBoard"));
+
     //---- 履歴初期化
     m_historyPos = 0;
     m_historyLookup = 0;
@@ -103,8 +90,9 @@ BOOL CGhostBoardDlg::OnInitDialog()
     //---- 前状態の読み出し
     Load();
 
-    SetWindowText(_T("GhostBoard"));
-
+    //---- ホットキーの設定
+    ::RegisterHotKey(m_hWnd, scm_hotKeyUp,   scm_hotKeyUp  >>8, scm_hotKeyUp  &0xFF );
+    ::RegisterHotKey(m_hWnd, scm_hotKeyDown, scm_hotKeyDown>>8, scm_hotKeyDown&0xFF );
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -157,13 +145,13 @@ BOOL CGhostBoardDlg::PreTranslateMessage(MSG *pMsg)
             m_historyLookup --;
             if(m_historyLookup < 0) m_historyLookup += HISTORY_NUM;
             m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            dbg("PgUp:%d\n", m_historyLookup);
+            TRACE("PgUp:%d\n", m_historyLookup);
             return TRUE;
         case VK_NEXT:
             m_historyLookup ++;
             if(m_historyLookup >= HISTORY_NUM) m_historyLookup -= HISTORY_NUM;
             m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            dbg("PgDown:%d\n", m_historyLookup);
+            TRACE("PgDown:%d\n", m_historyLookup);
             return TRUE;
         default:
             break;
@@ -325,7 +313,7 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
     }
     else {
         if(m_activate) {
-            dbg("OnActivate\n");
+            TRACE("OnActivate\n");
             CString str;
             m_edit.GetWindowText(str);
             SetTextToClipboard(str);
@@ -341,7 +329,6 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 void CGhostBoardDlg::OnDrawClipboard()
 {
     CDialog::OnDrawClipboard();
-    static CString lastClip;
 
     for(int i = 0;; i++) {
         if(i >= 3) {
@@ -360,16 +347,15 @@ void CGhostBoardDlg::OnDrawClipboard()
             const char* text = (char*)GlobalLock(data);
             if (text != NULL) {
                 CString str(text);
-                if(lastClip != str) { // 前回と異なる場合のみ更新する
+                if(m_historyArray[m_historyLookup] != str) { // 現在参照中と異なる文字列の場合のみ更新する
                     m_edit.SetWindowText(str);
                     // ヒストリに記入
-                    m_historyArray[m_historyPos] = str;
                     m_historyPos ++;
                     if(m_historyPos >= HISTORY_NUM) m_historyPos -= HISTORY_NUM;
+                    m_historyArray[m_historyPos] = str;
                     m_historyLookup = m_historyPos;
-                    dbg("CatchCB:%d\n", m_historyLookup);
+                    TRACE("CatchCB:%d\n", m_historyLookup);
                 }
-                lastClip = str;
             }
             else {
                 //m_edit.SetWindowText(_T("text is NULL"));
@@ -404,7 +390,7 @@ void CGhostBoardDlg::OnChangeCbChain(HWND hWndRemove, HWND hWndAfter)
 
 bool CGhostBoardDlg::SetTextToClipboard(CString &strText)
 {
-    dbg("SetTextToClipboard\n");
+    TRACE("SetTextToClipboard\n");
     // 文字列が空の場合はコピーしない
     if( strText.IsEmpty() )
         return false;
@@ -510,4 +496,30 @@ void CGhostBoardDlg::OnMenuClose()
 void CGhostBoardDlg::OnMenuMinimize()
 {
     ShowWindow(SW_SHOWMINIMIZED);
+}
+
+LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+{
+	switch( message )
+	{
+	case WM_HOTKEY:	//ホットキーを押しました。
+		TRACE( "%d, %d, %d\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
+        if(wParam == scm_hotKeyUp) {
+            m_historyLookup --;
+            if(m_historyLookup < 0) m_historyLookup += HISTORY_NUM;
+            m_edit.SetWindowText(m_historyArray[m_historyLookup]);
+            SetTextToClipboard(m_historyArray[m_historyLookup]);
+            TRACE("HotKeyUp:%d\n", m_historyLookup);
+        }
+        if(wParam == scm_hotKeyDown) {
+            m_historyLookup ++;
+            if(m_historyLookup >= HISTORY_NUM) m_historyLookup -= HISTORY_NUM;
+            m_edit.SetWindowText(m_historyArray[m_historyLookup]);
+            SetTextToClipboard(m_historyArray[m_historyLookup]);
+            TRACE("HotKeyDown:%d\n", m_historyLookup);
+        }
+		return 1;
+	}	
+
+	return CDialog::WindowProc(message, wParam, lParam);
 }
