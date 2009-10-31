@@ -35,6 +35,10 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == Download ==
 
+  * [http://kusu.googlecode.com/files/ghostboard-1.0.0.5.zip ghostboard-1.0.0.5.zip]
+    2009/11/01 Rev.70 
+    履歴編集中のコピペのおかしな挙動を修正
+
   * [http://kusu.googlecode.com/files/ghostboard-1.0.0.4.zip ghostboard-1.0.0.4.zip]
     2009/10/31
     ホットキーで過去のコピーの履歴をクリップボードに呼び出せるように修正
