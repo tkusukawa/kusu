@@ -77,8 +77,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,3
- PRODUCTVERSION 1,0,0,3
+ FILEVERSION 1,0,0,4
+ PRODUCTVERSION 1,0,0,4
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -94,13 +94,13 @@ BEGIN
         BLOCK "041103a4"
         BEGIN
             VALUE "CompanyName", "Tomohisa Kusukawa"
-            VALUE "FileDescription", "画面の最前面に半透明でクリップボードのテキストを表示するツール"
-            VALUE "FileVersion", "1.0.0.2"
+            VALUE "FileDescription", "クリップボードのテキスト履歴を参照するツール (CTRL+ALT+UP, CTRL+ALT+DOWN)"
+            VALUE "FileVersion", "1.0.0.4"
             VALUE "InternalName", "GhostBoard.exe"
             VALUE "LegalCopyright", "(C) 2007-2009 Tomohisa Kusukawa.  All rights reserved."
             VALUE "OriginalFilename", "GhostBoard.exe"
             VALUE "ProductName", "GhostBoard"
-            VALUE "ProductVersion", "1.0.0.3"
+            VALUE "ProductVersion", "1.0.0.4"
         END
     END
     BLOCK "VarFileInfo"

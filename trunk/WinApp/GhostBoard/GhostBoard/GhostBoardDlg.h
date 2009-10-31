@@ -30,6 +30,7 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+    afx_msg LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 public:
     // コントロール
     CMyEdit m_edit; 
@@ -81,4 +82,8 @@ public:
     // 履歴
     signed int m_historyPos, m_historyLookup;
     CString m_historyArray[HISTORY_NUM];
+
+    // ホットキー
+    static const int scm_hotKeyUp  =((MOD_CONTROL | MOD_ALT)<<8) + VK_UP;   // 履歴前
+    static const int scm_hotKeyDown=((MOD_CONTROL | MOD_ALT)<<8) + VK_DOWN; // 履歴後
 };
