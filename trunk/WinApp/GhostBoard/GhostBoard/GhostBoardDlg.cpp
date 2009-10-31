@@ -272,6 +272,10 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         if(m_activeKey) {
             m_activeKey = false;
             SetViewState();
+            // アクティブキーが離されたタイミングでクリップボードにコピー
+            CString str;
+            m_edit.GetWindowText(str);
+            SetTextToClipboard(str);
         }
     }
 
@@ -348,26 +352,29 @@ void CGhostBoardDlg::OnDrawClipboard()
             if (text != NULL) {
                 CString str(text);
                 if(m_historyArray[m_historyLookup] != str) { // 現在参照中と異なる文字列の場合のみ更新する
-                    m_edit.SetWindowText(str);
                     // ヒストリに記入
                     m_historyPos ++;
                     if(m_historyPos >= HISTORY_NUM) m_historyPos -= HISTORY_NUM;
                     m_historyArray[m_historyPos] = str;
-                    m_historyLookup = m_historyPos;
-                    TRACE("CatchCB:%d\n", m_historyLookup);
+                    TRACE("save history:%d\n", m_historyPos);
+                    // ダイアログに表示
+                    if(!m_activate) {
+                        m_edit.SetWindowText(str);
+                        m_historyLookup = m_historyPos;
+                    }
                 }
             }
             else {
-                //m_edit.SetWindowText(_T("text is NULL"));
+                TRACE("TEXT is NULL");
             }
             GlobalUnlock(data);
         }
         else {
-            //m_edit.SetWindowText(_T("data is NULL"));
+            TRACE("CLIPBOARD is NULL");
         }
     }
     else {
-        //m_edit.SetWindowText(_T("Is Not TEXT"));
+        TRACE("CLIPBOARD is not TEXT");
     }
 
     CloseClipboard();
@@ -391,6 +398,7 @@ void CGhostBoardDlg::OnChangeCbChain(HWND hWndRemove, HWND hWndAfter)
 bool CGhostBoardDlg::SetTextToClipboard(CString &strText)
 {
     TRACE("SetTextToClipboard\n");
+
     // 文字列が空の場合はコピーしない
     if( strText.IsEmpty() )
         return false;
@@ -505,17 +513,27 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_HOTKEY:	//ホットキーを押しました。
 		TRACE( "%d, %d, %d\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
         if(wParam == scm_hotKeyUp) {
+            // 現在の編集テキストを履歴に格納
+            CString str;
+            m_edit.GetWindowText(str);
+            m_historyArray[m_historyLookup] = str;
+            // 履歴参照位置を更新
             m_historyLookup --;
             if(m_historyLookup < 0) m_historyLookup += HISTORY_NUM;
+            // 履歴の内容を編集テキストに表示
             m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            SetTextToClipboard(m_historyArray[m_historyLookup]);
             TRACE("HotKeyUp:%d\n", m_historyLookup);
         }
         if(wParam == scm_hotKeyDown) {
+            // 現在の編集テキストを履歴に格納
+            CString str;
+            m_edit.GetWindowText(str);
+            m_historyArray[m_historyLookup] = str;
+            // 履歴参照位置を更新
             m_historyLookup ++;
             if(m_historyLookup >= HISTORY_NUM) m_historyLookup -= HISTORY_NUM;
+            // 履歴の内容を編集テキストに表示
             m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            SetTextToClipboard(m_historyArray[m_historyLookup]);
             TRACE("HotKeyDown:%d\n", m_historyLookup);
         }
 		return 1;
