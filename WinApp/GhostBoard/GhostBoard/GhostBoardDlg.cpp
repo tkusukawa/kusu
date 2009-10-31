@@ -9,14 +9,20 @@
 #define new DEBUG_NEW
 #endif
 
-void dbg(LPCWSTR pszFormat, ...)
+#define DBG_BUF_SIZE 256
+
+void dbg(char *format, ...)
 {
     va_list	argp;
-    wchar_t pszBuf[ 256];
-    va_start(argp, pszFormat);
-    vswprintf(pszBuf, 256, pszFormat, argp);
+    char buf[DBG_BUF_SIZE];
+    wchar_t wbuf[DBG_BUF_SIZE*2];
+
+    va_start(argp, format);
+    vsprintf_s(buf, DBG_BUF_SIZE, format, argp);
     va_end(argp);
-    OutputDebugString( pszBuf);
+
+    MultiByteToWideChar(CP_ACP, 0, buf, DBG_BUF_SIZE, wbuf, sizeof(wbuf));
+    OutputDebugString(wbuf);
 }
 
 // CGhostBoardDlg ダイアログ
@@ -151,13 +157,13 @@ BOOL CGhostBoardDlg::PreTranslateMessage(MSG *pMsg)
             m_historyLookup --;
             if(m_historyLookup < 0) m_historyLookup += HISTORY_NUM;
             m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            dbg(_T("PgUp:%d\n"), m_historyLookup);
+            dbg("PgUp:%d\n", m_historyLookup);
             return TRUE;
         case VK_NEXT:
             m_historyLookup ++;
             if(m_historyLookup >= HISTORY_NUM) m_historyLookup -= HISTORY_NUM;
             m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            dbg(_T("PgDown:%d\n"), m_historyLookup);
+            dbg("PgDown:%d\n", m_historyLookup);
             return TRUE;
         default:
             break;
@@ -319,7 +325,7 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
     }
     else {
         if(m_activate) {
-            dbg(_T("OnActivate\n"));
+            dbg("OnActivate\n");
             CString str;
             m_edit.GetWindowText(str);
             SetTextToClipboard(str);
@@ -361,7 +367,7 @@ void CGhostBoardDlg::OnDrawClipboard()
                     m_historyPos ++;
                     if(m_historyPos >= HISTORY_NUM) m_historyPos -= HISTORY_NUM;
                     m_historyLookup = m_historyPos;
-                    dbg(_T("CatchCB:%d\n"), m_historyLookup);
+                    dbg("CatchCB:%d\n", m_historyLookup);
                 }
                 lastClip = str;
             }
@@ -398,7 +404,7 @@ void CGhostBoardDlg::OnChangeCbChain(HWND hWndRemove, HWND hWndAfter)
 
 bool CGhostBoardDlg::SetTextToClipboard(CString &strText)
 {
-    dbg(_T("SetTextToClipboard\n"));
+    dbg("SetTextToClipboard\n");
     // 文字列が空の場合はコピーしない
     if( strText.IsEmpty() )
         return false;
