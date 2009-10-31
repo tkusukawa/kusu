@@ -1,8 +1,12 @@
-#summary A windows tool to view clipboard text on transparent window.
+#summary A windows tool to refer history of clipboard text on transparent dialog.
 
 = !WinApp：!GhostBoard =
 
 画面の最前面に半透明でクリップボードのテキストを表示するツールです。
+
+過去にコピーされたテキストの履歴を保持し、
+ホットキーでクリップボードに再び呼び出すことができます。
+（Ctrl+Alt+Up, Ctrl+Alt+Down）
 
 http://kusu.googlecode.com/files/ghostboardcap.jpg
 
@@ -11,13 +15,13 @@ http://kusu.googlecode.com/files/ghostboardcap.jpg
 
 == 使い方 ==
 
-できたEXEを実行してください。
+解凍してできたEXEを実行してください。
 実行ディレクトリにウィンドウのサイズなどを記憶するためのファイルが作成されます。
 
 マウスカーソルを近づけると、さらに透明になります。
 マウス操作は下のウィンドウに透過されます。
 
-!GhostBoard自体を操作した意場合はタスクバーから!GhostBoardを選択するか、Ctrl+Altを押してください。
+!GhostBoard自体を操作したい場合はタスクバーから!GhostBoardを選択するか、Ctrl+Altを押してください。
 ドラッグの開始位置によって移動、リサイズができます。
 クリップボードのテキストを編集することができます。
 
@@ -30,5 +34,9 @@ WindowsXPでの動作が確認できています。
 http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == Download ==
+
+  * [http://kusu.googlecode.com/files/ghostboard-1.0.0.4.zip ghostboard-1.0.0.4.zip]
+    2009/10/31
+    ホットキーで過去のコピーの履歴をクリップボードに呼び出せるように修正
 
   * [http://kusu.googlecode.com/files/ghostboard-1.0.0.3.zip ghostboard-1.0.0.3.zip]
