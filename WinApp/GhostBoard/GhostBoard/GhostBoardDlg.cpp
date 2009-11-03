@@ -11,9 +11,6 @@
 
 // CGhostBoardDlg ダイアログ
 
-
-
-
 CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CGhostBoardDlg::IDD, pParent)
 {
@@ -48,7 +45,8 @@ BEGIN_MESSAGE_MAP(CGhostBoardDlg, CDialog)
     ON_WM_CHANGECBCHAIN()
     ON_WM_RBUTTONDOWN()
     ON_COMMAND(ID_MENU_CLOSE, &CGhostBoardDlg::OnMenuClose)
-    ON_COMMAND(ID_MENU_MINIMIZE, &CGhostBoardDlg::OnMenuMinimize)
+    ON_COMMAND(ID_MENU_HIDE, &CGhostBoardDlg::OnMenuHide)
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 
@@ -56,7 +54,7 @@ END_MESSAGE_MAP()
 
 BOOL CGhostBoardDlg::OnInitDialog()
 {
-//    ModifyStyleEx(WS_EX_APPWINDOW, WS_EX_TOOLWINDOW); // タスクバーに表示しない
+    ModifyStyleEx(WS_EX_APPWINDOW, WS_EX_TOOLWINDOW); // タスクバーに表示しない
 //    ModifyStyleEx(WS_EX_TOOLWINDOW, WS_EX_APPWINDOW); // タスクバーに表示する
 	CDialog::OnInitDialog();
 
@@ -69,11 +67,28 @@ BOOL CGhostBoardDlg::OnInitDialog()
     SetWindowText(_T("GhostBoard"));
 
     //---- 履歴初期化
-    m_historyPos = 0;
+    m_historyPos = -1;
     m_historyLookup = 0;
+    m_historyNum = 0;
 
     //---- 最小化ボタンの表示
-    ModifyStyle(0, WS_MINIMIZEBOX);
+    //ModifyStyle(0, WS_MINIMIZEBOX);
+    m_hide = false;
+
+    //---- タスクトレイ表示
+    m_icon.cbSize = sizeof(NOTIFYICONDATA);
+    m_icon.uID = 0;
+    m_icon.hWnd = m_hWnd;
+    m_icon.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+    m_icon.hIcon = AfxGetApp()->LoadIcon( IDR_MAINFRAME );
+    m_icon.uCallbackMessage = WM_TRYCLK;
+    lstrcpy( m_icon.szTip, _T("GhostBoard"));
+    // バルーン設定
+    m_icon.uTimeout = 10000;
+    m_icon.dwInfoFlags = NIIF_NONE|NIIF_NOSOUND;
+    lstrcpy(m_icon.szInfoTitle, _T(""));
+    lstrcpy(m_icon.szInfo, _T(""));
+    ::Shell_NotifyIcon( NIM_ADD, &m_icon );
 
     //---- クリップボードの監視
     m_nextClipboardViewerHandle = SetClipboardViewer();
@@ -95,6 +110,16 @@ BOOL CGhostBoardDlg::OnInitDialog()
     ::RegisterHotKey(m_hWnd, scm_hotKeyDown, scm_hotKeyDown>>8, scm_hotKeyDown&0xFF );
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
+}
+
+void CGhostBoardDlg::OnDestroy()
+{
+    CDialog::OnDestroy();
+
+    // TODO: ここにメッセージ ハンドラ コードを追加します。
+
+    //---- タスクトレイのアイコンを削除
+    ::Shell_NotifyIcon( NIM_DELETE, &m_icon );
 }
 
 // ダイアログに最小化ボタンを追加する場合、アイコンを描画するための
@@ -142,16 +167,10 @@ BOOL CGhostBoardDlg::PreTranslateMessage(MSG *pMsg)
         case VK_ESCAPE:
             return TRUE;
         case VK_PRIOR:
-            m_historyLookup --;
-            if(m_historyLookup < 0) m_historyLookup += HISTORY_NUM;
-            m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            TRACE("PgUp:%d\n", m_historyLookup);
+            HistoryBackward();
             return TRUE;
         case VK_NEXT:
-            m_historyLookup ++;
-            if(m_historyLookup >= HISTORY_NUM) m_historyLookup -= HISTORY_NUM;
-            m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            TRACE("PgDown:%d\n", m_historyLookup);
+            HistoryForward();
             return TRUE;
         default:
             break;
@@ -228,6 +247,12 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     WINDOWPLACEMENT windowPos;
     UINT dist, distX, distY;
 
+    // アクティブ状態の確認
+    if(::GetActiveWindow() == m_hWnd)
+        m_activate = true;
+    else
+        m_activate = false;
+
     // マウス位置の監視
     GetCursorPos(&mousePnt);
     GetWindowPlacement(&windowPos);
@@ -286,20 +311,41 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
 //************************************************** 透明化
 void CGhostBoardDlg::SetViewState()
 {
+    static bool s_active = false;
+
     if(m_activate || m_activeKey) {
-        ModifyStyleEx(WS_EX_TRANSPARENT, 0);
-        SetLayeredWindowAttributes(0, 255, LWA_ALPHA);
+        if(s_active == false) {
+            TRACE("SetViewState():active\n");
+            // アクティブになった時
+            s_active = true;
+            ModifyStyleEx(WS_EX_TRANSPARENT, 0); // 透過解除
+            SetLayeredWindowAttributes(0, 255, LWA_ALPHA); // 表示濃淡100％
+
+            //バルーン表示
+            DispInfo();
+        }
     }
     else {
-        BYTE alpha;
+        if(s_active == true) {
+            TRACE("SetViewState():alpha\n");
+            s_active = false;
+            // 非アクティブになった時
+            ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
 
+            //バルーン表示解除
+            m_icon.uFlags = NIF_INFO;
+            lstrcpy(m_icon.szInfoTitle, _T(""));
+            wsprintf(m_icon.szInfo, _T(""));
+            ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
+        }
+
+        BYTE alpha;
         if(m_mouseDistance > m_mouseDistanceFar) {
             alpha = 200;
         }
         else {
             alpha = 50 + 150*m_mouseDistance/m_mouseDistanceFar;
         }
-        ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT);
         SetLayeredWindowAttributes(0, alpha, LWA_ALPHA);
     }
 }
@@ -309,15 +355,14 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 {
     CDialog::OnActivate(nState, pWndOther, bMinimized);
 
-    if(nState) {
-        if(!m_activate) {
+    TRACE("OnActivate:%d\n", nState);
+    if(nState == WA_ACTIVE || nState == WA_CLICKACTIVE) {
+        TRACE("GetFocus\n");
             m_activate = true;
             SetViewState();
-        }
     }
     else {
-        if(m_activate) {
-            TRACE("OnActivate\n");
+        TRACE("LostFocus\n");
             CString str;
             m_edit.GetWindowText(str);
             SetTextToClipboard(str);
@@ -325,7 +370,6 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
             SetViewState();
 
             Save();
-        }
     }
 }
 
@@ -352,13 +396,18 @@ void CGhostBoardDlg::OnDrawClipboard()
             if (text != NULL) {
                 CString str(text);
                 if(m_historyArray[m_historyLookup] != str) { // 現在参照中と異なる文字列の場合のみ更新する
-                    // ヒストリに記入
                     m_historyPos ++;
-                    if(m_historyPos >= HISTORY_NUM) m_historyPos -= HISTORY_NUM;
+                    if(m_historyPos>=m_historyNum && m_historyNum < HISTORY_NUM)
+                        m_historyNum ++;
+                    if(m_historyPos >= m_historyNum) m_historyPos -= m_historyNum;
+
+                    // ヒストリに記入
                     m_historyArray[m_historyPos] = str;
+                    m_historyTime[m_historyPos] = CTime::GetCurrentTime();
                     TRACE("save history:%d\n", m_historyPos);
-                    // ダイアログに表示
-                    if(!m_activate) {
+
+                    // アクティブでないか、表示中のバッファが更新された場合は表示
+                    if(!m_activate || m_historyLookup == m_historyPos) {
                         m_edit.SetWindowText(str);
                         m_historyLookup = m_historyPos;
                     }
@@ -479,21 +528,9 @@ void CGhostBoardDlg::PopUpMenu()
     GetCursorPos(&pnt);
     static int tgl;
 
-    if(tgl == MF_CHECKED) {
-        tgl = MF_UNCHECKED;
-        ModifyStyleEx(WS_EX_APPWINDOW, WS_EX_TOOLWINDOW);
-//        ModifyStyleEx(WS_EX_TOOLWINDOW, 0, 1);
-    }
-    else {
-        tgl = MF_CHECKED;
-        ModifyStyleEx(WS_EX_TOOLWINDOW, WS_EX_APPWINDOW);
-//        ModifyStyleEx(0, WS_EX_TOOLWINDOW, 1);
-    }
-
-
     CMenu menu;
     menu.LoadMenu(IDR_MENU_RBUTTON); // IDR_MENU1はResourceViewで追加したメニュー
-    menu.CheckMenuItem(ID_MENU_TASKTRAY, tgl);
+    menu.CheckMenuItem(ID_MENU_HIDE, m_hide?MF_CHECKED:MF_UNCHECKED); // 非表示状態をチェックで表示
     menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pnt.x, pnt.y, this);
 }
 void CGhostBoardDlg::OnMenuClose()
@@ -501,9 +538,16 @@ void CGhostBoardDlg::OnMenuClose()
     PostMessage(WM_CLOSE, 0, 0);
 }
 
-void CGhostBoardDlg::OnMenuMinimize()
+void CGhostBoardDlg::OnMenuHide()
 {
-    ShowWindow(SW_SHOWMINIMIZED);
+    if(m_hide) {
+        ShowWindow(SW_SHOWNORMAL);
+        m_hide = false;
+    }
+    else {
+        ShowWindow(SW_HIDE);
+        m_hide = true;
+    }
 }
 
 LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
@@ -513,31 +557,70 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_HOTKEY:	//ホットキーを押しました。
 		TRACE( "%d, %d, %d\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
         if(wParam == scm_hotKeyUp) {
-            // 現在の編集テキストを履歴に格納
-            CString str;
-            m_edit.GetWindowText(str);
-            m_historyArray[m_historyLookup] = str;
-            // 履歴参照位置を更新
-            m_historyLookup --;
-            if(m_historyLookup < 0) m_historyLookup += HISTORY_NUM;
-            // 履歴の内容を編集テキストに表示
-            m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            TRACE("HotKeyUp:%d\n", m_historyLookup);
+            HistoryBackward();
         }
         if(wParam == scm_hotKeyDown) {
-            // 現在の編集テキストを履歴に格納
-            CString str;
-            m_edit.GetWindowText(str);
-            m_historyArray[m_historyLookup] = str;
-            // 履歴参照位置を更新
-            m_historyLookup ++;
-            if(m_historyLookup >= HISTORY_NUM) m_historyLookup -= HISTORY_NUM;
-            // 履歴の内容を編集テキストに表示
-            m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-            TRACE("HotKeyDown:%d\n", m_historyLookup);
+            HistoryForward();
         }
 		return 1;
+    
+    case WM_TRYCLK: //タスクトレイ
+        switch(lParam) {
+        case WM_LBUTTONDOWN:
+            TRACE("WM_LBUTTONDOWN\n");
+            SetForegroundWindow();
+            return 1;
+        case WM_RBUTTONDOWN:
+            TRACE("WM_RBUTTONDOWN\n");
+            SetForegroundWindow();
+            PopUpMenu();
+            return 1;
+        }
+        break;
 	}	
 
 	return CDialog::WindowProc(message, wParam, lParam);
+}
+
+void CGhostBoardDlg::HistoryBackward()
+{
+    // 現在の編集テキストを履歴に格納
+    CString str;
+    m_edit.GetWindowText(str);
+    m_historyArray[m_historyLookup] = str;
+    // 履歴参照位置を更新
+    m_historyLookup --;
+    if(m_historyLookup < 0) m_historyLookup += m_historyNum;
+    // 履歴の内容を編集テキストに表示
+    m_edit.SetWindowText(m_historyArray[m_historyLookup]);
+    
+    TRACE("HistoryBackward():%d\n", m_historyLookup);
+
+    DispInfo(); // バルーン表示
+}
+
+void CGhostBoardDlg::HistoryForward()
+{
+    // 現在の編集テキストを履歴に格納
+    CString str;
+    m_edit.GetWindowText(str);
+    m_historyArray[m_historyLookup] = str;
+    // 履歴参照位置を更新
+    m_historyLookup ++;
+    if(m_historyLookup >= m_historyNum) m_historyLookup -= m_historyNum;
+    // 履歴の内容を編集テキストに表示
+    m_edit.SetWindowText(m_historyArray[m_historyLookup]);
+    TRACE("HistoryForward():%d\n", m_historyLookup);
+    
+    DispInfo(); // バルーン表示
+}
+
+void CGhostBoardDlg::DispInfo()
+{
+    //バルーン表示
+    m_icon.uFlags = NIF_INFO;
+    int hisNum = m_historyLookup-m_historyPos;
+    if(hisNum>0) hisNum -= m_historyNum;
+    wsprintf(m_icon.szInfo, _T("his.%d\n[%s]"), hisNum, m_historyTime[m_historyLookup].Format("%H:%M:%S"));
+    ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
 }

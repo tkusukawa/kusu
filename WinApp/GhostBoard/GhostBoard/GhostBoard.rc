@@ -67,7 +67,7 @@ STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_TOPMOST
 FONT 9, "MS UI Gothic", 0, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_EDIT,2,2,319,202,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    EDITTEXT        IDC_EDIT,2,2,318,202,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
 END
 
 
@@ -77,8 +77,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,5
- PRODUCTVERSION 1,0,0,5
+ FILEVERSION 1,0,0,6
+ PRODUCTVERSION 1,0,0,6
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -95,12 +95,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Tomohisa Kusukawa"
             VALUE "FileDescription", "クリップボードのテキスト履歴を参照するツール (CTRL+ALT+UP, CTRL+ALT+DOWN)"
-            VALUE "FileVersion", "1.0.0.5"
+            VALUE "FileVersion", "1.0.0.6"
             VALUE "InternalName", "GhostBoard.exe"
             VALUE "LegalCopyright", "(C) 2007-2009 Tomohisa Kusukawa.  All rights reserved."
             VALUE "OriginalFilename", "GhostBoard.exe"
             VALUE "ProductName", "GhostBoard"
-            VALUE "ProductVersion", "1.0.0.5"
+            VALUE "ProductVersion", "1.0.0.6"
         END
     END
     BLOCK "VarFileInfo"
@@ -121,7 +121,7 @@ BEGIN
     IDD_GHOSTBOARD_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 2
-        RIGHTMARGIN, 321
+        RIGHTMARGIN, 320
         TOPMARGIN, 2
         BOTTOMMARGIN, 204
     END
@@ -148,7 +148,7 @@ BEGIN
     POPUP "menu"
     BEGIN
         MENUITEM "close",                       ID_MENU_CLOSE
-        MENUITEM "minimize",                    ID_MENU_MINIMIZE
+        MENUITEM "hide",                        ID_MENU_HIDE
     END
 END
 

@@ -7,9 +7,7 @@
 #define IDR_MENU_RBUTTON                132
 #define IDC_EDIT                        1000
 #define ID_MENU_CLOSE                   32771
-#define ID_MENU_TASKTRAY                32772
-#define ID_MENU_TASKBAR                 32773
-#define ID_MENU_MINIMIZE                32774
+#define ID_MENU_HIDE                    32774
 
 // Next default values for new objects
 // 
