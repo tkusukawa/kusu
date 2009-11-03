@@ -35,6 +35,12 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == Download ==
 
+  * [http://kusu.googlecode.com/files/GhostBoard-1.0.0.6.zip GhostBoard-1.0.0.6.zip]
+    2009/11/03 Rev.74<br>
+    タスクトレイに格納するように修正<br>
+    クリップボードの履歴の番号とコピーした時刻をバルーン表示するように修正<br>
+    使われていない履歴配列は表示しないように修正
+
   * [http://kusu.googlecode.com/files/GhostBoard-1.0.0.5.zip GhostBoard-1.0.0.5.zip]
     2009/11/01 Rev.70 
     履歴編集中のコピペのおかしな挙動を修正
