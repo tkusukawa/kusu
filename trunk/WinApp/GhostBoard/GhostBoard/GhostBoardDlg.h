@@ -27,6 +27,7 @@ protected:
 
 	// 生成された、メッセージ割り当て関数
 	virtual BOOL OnInitDialog();
+    afx_msg void OnDestroy();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
@@ -50,6 +51,8 @@ public:
     void SetViewState();
 
     // タスクトレイ化
+    NOTIFYICONDATA m_icon;
+    void DispInfo(); // バルーン表示
 
     // アクティブキー＆マウス位置の定期監視
     afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
@@ -73,15 +76,19 @@ public:
     bool Load();
 
     // ポップアップメニュー
+    bool m_hide; // 非表示状態
     void PopUpMenu();
 
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMenuClose();
-    afx_msg void OnMenuMinimize();
+    afx_msg void OnMenuHide();
 
     // 履歴
-    signed int m_historyPos, m_historyLookup;
+    signed int m_historyPos, m_historyLookup, m_historyNum;
     CString m_historyArray[HISTORY_NUM];
+    CTime m_historyTime[HISTORY_NUM];
+    void HistoryBackward();
+    void HistoryForward();
 
     // ホットキー
     static const int scm_hotKeyUp  =((MOD_CONTROL | MOD_ALT)<<8) + VK_UP;   // 履歴前
