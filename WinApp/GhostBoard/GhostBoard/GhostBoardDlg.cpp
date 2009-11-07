@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "GhostBoard.h"
 #include "GhostBoardDlg.h"
+#include "GHostBoardSettings.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -19,10 +20,18 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     // メンバ変数初期化
     m_leftDown = false;
     m_initialized = false;
-    m_activate = true;
+    m_activate = false;
     m_activeKey = false;
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
+    m_hide = false;
+    // デフォルトの透明度は200。マウス接近時の透明度は50。
+    m_alphaDefault = 200;
+    m_alphaMouse = 50;
+    // デフォルトのアクティブキーはCtrl+Alt
+    m_confCtrl = true;
+    m_confShift = false;
+    m_confAlt = true;
 }
 
 void CGhostBoardDlg::DoDataExchange(CDataExchange* pDX)
@@ -47,6 +56,7 @@ BEGIN_MESSAGE_MAP(CGhostBoardDlg, CDialog)
     ON_COMMAND(ID_MENU_CLOSE, &CGhostBoardDlg::OnMenuClose)
     ON_COMMAND(ID_MENU_HIDE, &CGhostBoardDlg::OnMenuHide)
     ON_WM_DESTROY()
+    ON_COMMAND(ID_MENU_SETTINGS, &CGhostBoardDlg::OnMenuSettings)
 END_MESSAGE_MAP()
 
 
@@ -106,8 +116,7 @@ BOOL CGhostBoardDlg::OnInitDialog()
     Load();
 
     //---- ホットキーの設定
-    ::RegisterHotKey(m_hWnd, scm_hotKeyUp,   scm_hotKeyUp  >>8, scm_hotKeyUp  &0xFF );
-    ::RegisterHotKey(m_hWnd, scm_hotKeyDown, scm_hotKeyDown>>8, scm_hotKeyDown&0xFF );
+    StartHotKey();
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -287,7 +296,9 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     }
 
     // アクティブキーの監視
-    if (::GetAsyncKeyState(VK_CONTROL) && ::GetAsyncKeyState(VK_MENU)) { // アクティブキーが押されているなら
+    if( (!m_confCtrl  || ::GetAsyncKeyState(VK_CONTROL)) &&
+        (!m_confShift || ::GetAsyncKeyState(VK_SHIFT)) &&
+        (!m_confAlt   || ::GetAsyncKeyState(VK_MENU)) ) { // アクティブキーが押されているなら
         if(!m_activeKey) {
             m_activeKey = true;
             SetViewState();
@@ -340,11 +351,17 @@ void CGhostBoardDlg::SetViewState()
         }
 
         BYTE alpha;
-        if(m_mouseDistance > m_mouseDistanceFar) {
-            alpha = 200;
+        if(m_hide) {
+            alpha = 0;
+        }
+        else if(m_mouseDistance > m_mouseDistanceFar) {
+            alpha = m_alphaDefault;
+        }
+        else if(m_alphaDefault > m_alphaMouse) {
+            alpha = m_alphaMouse + (m_alphaDefault-m_alphaMouse)*m_mouseDistance/m_mouseDistanceFar;
         }
         else {
-            alpha = 50 + 150*m_mouseDistance/m_mouseDistanceFar;
+            alpha = m_alphaMouse - (m_alphaMouse - m_alphaDefault)*m_mouseDistance/m_mouseDistanceFar;
         }
         SetLayeredWindowAttributes(0, alpha, LWA_ALPHA);
     }
@@ -414,16 +431,20 @@ void CGhostBoardDlg::OnDrawClipboard()
                 }
             }
             else {
-                TRACE("TEXT is NULL");
+                TRACE("TEXT is NULL\n");
             }
             GlobalUnlock(data);
         }
         else {
-            TRACE("CLIPBOARD is NULL");
+            TRACE("CLIPBOARD is NULL\n");
         }
     }
     else {
-        TRACE("CLIPBOARD is not TEXT");
+        TRACE("CLIPBOARD is not TEXT\n");
+        UINT format=0;
+        while(format=EnumClipboardFormats(format)) {
+            TRACE("format=%d\n", format);
+        }
     }
 
     CloseClipboard();
@@ -486,8 +507,11 @@ bool CGhostBoardDlg::Save()
         return false;
     }
  
-    fprintf(fp, "left:%d, top:%d, right:%d, bottom:%d", 
+    fprintf(fp, "left:%d, top:%d, right:%d, bottom:%d\n", 
          wPos.rcNormalPosition.left, wPos.rcNormalPosition.top, wPos.rcNormalPosition.right, wPos.rcNormalPosition.bottom);
+    fprintf(fp, "hide:%d\n", m_hide);
+    fprintf(fp, "alphaDefault:%d, alphaMouse:%d\n", m_alphaDefault, m_alphaMouse);
+    fprintf(fp, "ctrl:%d, shift:%d, alt:%d\n", m_confCtrl, m_confShift, m_confAlt);
  
     fclose(fp);
     return true;
@@ -505,11 +529,14 @@ bool CGhostBoardDlg::Load()
         return false;
     }
  
-    fscanf_s(fp, "left:%d, top:%d, right:%d, bottom:%d", 
+    fscanf_s(fp, "left:%d, top:%d, right:%d, bottom:%d\n", 
          &wPos.rcNormalPosition.left, &wPos.rcNormalPosition.top, &wPos.rcNormalPosition.right, &wPos.rcNormalPosition.bottom);
-
     SetWindowPlacement(&wPos);
- 
+
+    fscanf_s(fp, "hide:%d\n", &m_hide);
+    fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d\n", &m_alphaDefault, &m_alphaMouse); 
+    fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d\n", &m_confCtrl, &m_confShift, &m_confAlt);
+
     fclose(fp);
     return true;
 }
@@ -541,13 +568,47 @@ void CGhostBoardDlg::OnMenuClose()
 void CGhostBoardDlg::OnMenuHide()
 {
     if(m_hide) {
-        ShowWindow(SW_SHOWNORMAL);
+        //ShowWindow(SW_SHOWNORMAL);
         m_hide = false;
+        SetViewState();
+        Save();
     }
     else {
-        ShowWindow(SW_HIDE);
+        //ShowWindow(SW_HIDE);
         m_hide = true;
+        SetViewState();
+        Save();
     }
+}
+
+void CGhostBoardDlg::OnMenuSettings()
+{
+    CGhostBoardSettings dlg;
+    dlg.m_alphaDefault = m_alphaDefault;
+    dlg.m_alphaMouse = m_alphaMouse;
+    dlg.m_ctrl = m_confCtrl;
+    dlg.m_shift = m_confShift;
+    dlg.m_alt = m_confAlt;
+    INT_PTR nResponse = dlg.DoModal();
+	if (nResponse == IDOK)
+	{
+        TRACE("Setting OK\n");
+        // 透明度を設定
+        m_alphaDefault = dlg.m_alphaDefault;
+        m_alphaMouse = dlg.m_alphaMouse;
+        // ホットキーを再設定
+        StopHotKey();
+        m_confCtrl = dlg.m_ctrl;
+        m_confShift = dlg.m_shift;
+        m_confAlt = dlg.m_alt;
+        StartHotKey();
+ 
+        Save();
+	}
+	else if (nResponse == IDCANCEL)
+	{
+        TRACE("Setting Cancel\n");
+	}
 }
 
 LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
@@ -556,10 +617,10 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_HOTKEY:	//ホットキーを押しました。
 		TRACE( "%d, %d, %d\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
-        if(wParam == scm_hotKeyUp) {
+        if(wParam == m_hotKeyUp) {
             HistoryBackward();
         }
-        if(wParam == scm_hotKeyDown) {
+        if(wParam == m_hotKeyDown) {
             HistoryForward();
         }
 		return 1;
@@ -619,8 +680,32 @@ void CGhostBoardDlg::DispInfo()
 {
     //バルーン表示
     m_icon.uFlags = NIF_INFO;
-    int hisNum = m_historyLookup-m_historyPos;
-    if(hisNum>0) hisNum -= m_historyNum;
-    wsprintf(m_icon.szInfo, _T("his.%d\n[%s]"), hisNum, m_historyTime[m_historyLookup].Format("%H:%M:%S"));
+    int hisNum = m_historyPos - m_historyLookup;
+    if(hisNum<0) hisNum += m_historyNum;
+    wsprintf(m_icon.szInfo, _T("%d (%s)"), hisNum, m_historyTime[m_historyLookup].Format("%H:%M:%S"));
     ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
+}
+
+void CGhostBoardDlg::StartHotKey()
+{
+    int actKey = (m_confCtrl?MOD_CONTROL:0)
+               | (m_confShift?MOD_SHIFT:0)
+               | (m_confAlt?MOD_ALT:0);
+    m_hotKeyUp  =(actKey<<8) + VK_UP;   // 履歴前
+    m_hotKeyDown=(actKey<<8) + VK_DOWN; // 履歴後
+
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyUp,   m_hotKeyUp  >>8, m_hotKeyUp  &0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): history prior"));
+
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyDown, m_hotKeyDown>>8, m_hotKeyDown&0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): history next"));
+}
+
+void CGhostBoardDlg::StopHotKey()
+{
+    if(!::UnregisterHotKey(m_hWnd, m_hotKeyUp))
+        MessageBox(_T("FAIL: UnregisterHotKey(): history prior"));
+
+    if(!::UnregisterHotKey(m_hWnd, m_hotKeyDown))
+        MessageBox(_T("FAIL: UnregisterHotKey(): history next"));
 }
