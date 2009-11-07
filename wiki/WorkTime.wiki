@@ -47,7 +47,12 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
-  * Ver0.0.52(Rev63) [http://kusu.googlecode.com/files/redmine_work_time-0.0.48.tar.gz redmine_work_time-0.0.52.tar.gz] Date: 18:05:49, 2009年9月13日
+  * Ver0.0.53(Rev72) [http://kusu.googlecode.com/files/redmine_work_time-0.0.53.tar.gz redmine_work_time-0.0.53.tar.gz] Date: 21:31:39, 2009年11月1日
+  日毎工数入力のリストで既存のチケットを複製する機能を追加<br>
+  メモの日付表示に曜日の表示を追加<br>
+  チケット選択のポップアップダイアログで初期フォーカスが番号入力、且つEnterで適用されるように修正
+
+  * Ver0.0.52(Rev63) [http://kusu.googlecode.com/files/redmine_work_time-0.0.52.tar.gz redmine_work_time-0.0.52.tar.gz] Date: 18:05:49, 2009年9月13日
   休日表示の機能追加(raku0893さんに送って頂いたコードをベースにしました)<br>
   チケット選択を番号入力でも行えるように修正
 
