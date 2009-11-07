@@ -35,6 +35,10 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == Download ==
 
+  * [http://kusu.googlecode.com/files/GhostBoard-1.0.0.7.zip GhostBoard-1.0.0.7.zip]
+    2009/11/07 Rev.76<br>
+    透明度とアクティブキーを設定で変更できるように修正
+
   * [http://kusu.googlecode.com/files/GhostBoard-1.0.0.6.zip GhostBoard-1.0.0.6.zip]
     2009/11/03 Rev.74<br>
     タスクトレイに格納するように修正<br>
