@@ -48,6 +48,8 @@ public:
     WINDOWPLACEMENT m_leftDownWindowPos;
 
     // 透明化
+    int m_alphaDefault;
+    int m_alphaMouse;
     void SetViewState();
 
     // タスクトレイ化
@@ -60,6 +62,7 @@ public:
     bool m_activate;
     bool m_activeKey;
     UINT m_mouseDistance, m_mouseDistanceFar;
+    bool m_confCtrl, m_confShift, m_confAlt;
 
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnTimer(UINT_PTR nIDEvent);
@@ -82,6 +85,7 @@ public:
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMenuClose();
     afx_msg void OnMenuHide();
+    afx_msg void OnMenuSettings();
 
     // 履歴
     signed int m_historyPos, m_historyLookup, m_historyNum;
@@ -91,6 +95,8 @@ public:
     void HistoryForward();
 
     // ホットキー
-    static const int scm_hotKeyUp  =((MOD_CONTROL | MOD_ALT)<<8) + VK_UP;   // 履歴前
-    static const int scm_hotKeyDown=((MOD_CONTROL | MOD_ALT)<<8) + VK_DOWN; // 履歴後
+    int m_hotKeyUp;   // 履歴前
+    int m_hotKeyDown; // 履歴後
+    void StartHotKey();
+    void StopHotKey();
 };
