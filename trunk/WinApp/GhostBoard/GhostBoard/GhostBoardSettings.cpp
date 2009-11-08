@@ -28,6 +28,7 @@ void CGhostBoardSettings::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_CHECK_CTRL, m_checkCtrl);
     DDX_Control(pDX, IDC_CHECK_SHIFT, m_checkShift);
     DDX_Control(pDX, IDC_CHECK_ALT, m_checkAlt);
+    DDX_Control(pDX, IDC_CHECK_WIN, m_checkWin);
 }
 
 
@@ -36,6 +37,7 @@ BEGIN_MESSAGE_MAP(CGhostBoardSettings, CDialog)
     ON_BN_CLICKED(IDC_CHECK_CTRL, &CGhostBoardSettings::OnBnClickedCheckCtrl)
     ON_BN_CLICKED(IDC_CHECK_SHIFT, &CGhostBoardSettings::OnBnClickedCheckShift)
     ON_BN_CLICKED(IDC_CHECK_ALT, &CGhostBoardSettings::OnBnClickedCheckAlt)
+    ON_BN_CLICKED(IDC_CHECK_WIN, &CGhostBoardSettings::OnBnClickedCheckWin)
 END_MESSAGE_MAP()
 
 
@@ -55,6 +57,7 @@ BOOL CGhostBoardSettings::OnInitDialog()
     if(m_ctrl)  m_checkCtrl.SetCheck(BST_CHECKED);
     if(m_shift) m_checkShift.SetCheck(BST_CHECKED);
     if(m_alt)   m_checkAlt.SetCheck(BST_CHECKED);
+    if(m_win)   m_checkWin.SetCheck(BST_CHECKED);
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -62,22 +65,45 @@ BOOL CGhostBoardSettings::OnInitDialog()
 void CGhostBoardSettings::OnBnClickedCheckCtrl()
 {
     // 全てのチェックが外れたらどれかをチェックする
-    if((m_checkCtrl.GetCheck()|m_checkShift.GetCheck()|m_checkAlt.GetCheck())==false)
+    if((m_checkCtrl.GetCheck()|
+        m_checkShift.GetCheck()|
+        m_checkAlt.GetCheck()|
+        m_checkWin.GetCheck())==false) {
         m_checkShift.SetCheck(BST_CHECKED);
+    }
 }
 
 void CGhostBoardSettings::OnBnClickedCheckShift()
 {
     // 全てのチェックが外れたらどれかをチェックする
-    if((m_checkCtrl.GetCheck()|m_checkShift.GetCheck()|m_checkAlt.GetCheck())==false)
+    if((m_checkCtrl.GetCheck()|
+        m_checkShift.GetCheck()|
+        m_checkAlt.GetCheck()|
+        m_checkWin.GetCheck())==false) {
         m_checkAlt.SetCheck(BST_CHECKED);
+    }
 }
 
 void CGhostBoardSettings::OnBnClickedCheckAlt()
 {
     // 全てのチェックが外れたらどれかをチェックする
-    if((m_checkCtrl.GetCheck()|m_checkShift.GetCheck()|m_checkAlt.GetCheck())==false)
+    if((m_checkCtrl.GetCheck()|
+        m_checkShift.GetCheck()|
+        m_checkAlt.GetCheck()|
+        m_checkWin.GetCheck())==false) {
+        m_checkWin.SetCheck(BST_CHECKED);
+    }
+}
+
+void CGhostBoardSettings::OnBnClickedCheckWin()
+{
+    // 全てのチェックが外れたらどれかをチェックする
+    if((m_checkCtrl.GetCheck()|
+        m_checkShift.GetCheck()|
+        m_checkAlt.GetCheck()|
+        m_checkWin.GetCheck())==false) {
         m_checkCtrl.SetCheck(BST_CHECKED);
+    }
 }
 
 void CGhostBoardSettings::OnBnClickedOk()
@@ -88,6 +114,7 @@ void CGhostBoardSettings::OnBnClickedOk()
     m_ctrl = (m_checkCtrl.GetCheck() == BST_CHECKED);
     m_shift = (m_checkShift.GetCheck() == BST_CHECKED);
     m_alt = (m_checkAlt.GetCheck() == BST_CHECKED);
+    m_win = (m_checkWin.GetCheck() == BST_CHECKED);
 
     OnOK();
 }

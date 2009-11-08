@@ -23,6 +23,7 @@ public:
     bool m_ctrl;
     bool m_shift;
     bool m_alt;
+    bool m_win;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
@@ -35,7 +36,9 @@ public:
     CButton m_checkCtrl;
     CButton m_checkShift;
     CButton m_checkAlt;
+    CButton m_checkWin;
     afx_msg void OnBnClickedCheckCtrl();
     afx_msg void OnBnClickedCheckShift();
     afx_msg void OnBnClickedCheckAlt();
+    afx_msg void OnBnClickedCheckWin();
 };

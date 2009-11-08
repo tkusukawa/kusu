@@ -11,8 +11,8 @@
 #define IDC_SLIDER_ALPHA_MOUSE          1002
 #define IDC_CHECK_CTRL                  1003
 #define IDC_CHECK_SHIFT                 1004
-#define IDC_CHECK_CTRL3                 1005
 #define IDC_CHECK_ALT                   1005
+#define IDC_CHECK_WIN                   1006
 #define ID_MENU_CLOSE                   32771
 #define ID_MENU_HIDE                    32774
 #define ID_MENU_SETTINGS                32775
