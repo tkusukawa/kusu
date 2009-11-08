@@ -67,7 +67,7 @@ public:
     bool m_activate;
     bool m_activeKey;
     UINT m_mouseDistance, m_mouseDistanceFar;
-    bool m_confCtrl, m_confShift, m_confAlt;
+    bool m_confCtrl, m_confShift, m_confAlt, m_confWin;
 
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnTimer(UINT_PTR nIDEvent);

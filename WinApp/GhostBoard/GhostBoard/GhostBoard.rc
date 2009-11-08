@@ -83,8 +83,9 @@ BEGIN
     CONTROL         "",IDC_SLIDER_ALPHA_MOUSE,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,71,21,108,13
     LTEXT           "active key:",IDC_STATIC,7,35,59,10
     CONTROL         "ctrl",IDC_CHECK_CTRL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,55,36,27,10
-    CONTROL         "shift",IDC_CHECK_SHIFT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,90,36,27,10
-    CONTROL         "alt",IDC_CHECK_ALT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,127,36,27,10
+    CONTROL         "shift",IDC_CHECK_SHIFT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,87,36,27,10
+    CONTROL         "alt",IDC_CHECK_ALT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,119,36,27,10
+    CONTROL         "win",IDC_CHECK_WIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,36,27,10
 END
 
 
@@ -94,8 +95,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,8
- PRODUCTVERSION 1,0,0,8
+ FILEVERSION 1,0,0,9
+ PRODUCTVERSION 1,0,0,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -111,13 +112,13 @@ BEGIN
         BLOCK "041103a4"
         BEGIN
             VALUE "CompanyName", "Tomohisa Kusukawa"
-            VALUE "FileDescription", "クリップボードのテキスト履歴を参照するツール (CTRL+ALT+UP, CTRL+ALT+DOWN)"
-            VALUE "FileVersion", "1.0.0.8"
+            VALUE "FileDescription", "クリップボードのテキスト履歴を参照するツール"
+            VALUE "FileVersion", "1.0.0.9"
             VALUE "InternalName", "GhostBoard.exe"
             VALUE "LegalCopyright", "(C) 2007-2009 Tomohisa Kusukawa.  All rights reserved."
             VALUE "OriginalFilename", "GhostBoard.exe"
             VALUE "ProductName", "GhostBoard"
-            VALUE "ProductVersion", "1.0.0.8"
+            VALUE "ProductVersion", "1.0.0.9"
         END
     END
     BLOCK "VarFileInfo"

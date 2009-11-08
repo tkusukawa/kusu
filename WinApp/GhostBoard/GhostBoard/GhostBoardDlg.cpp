@@ -32,6 +32,7 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_confCtrl = true;
     m_confShift = false;
     m_confAlt = true;
+    m_confWin = false;
 }
 
 void CGhostBoardDlg::DoDataExchange(CDataExchange* pDX)
@@ -298,9 +299,11 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     }
 
     // アクティブキーの監視
-    if( (!m_confCtrl  || ::GetAsyncKeyState(VK_CONTROL)) &&
-        (!m_confShift || ::GetAsyncKeyState(VK_SHIFT)) &&
-        (!m_confAlt   || ::GetAsyncKeyState(VK_MENU)) ) { // アクティブキーが押されているなら
+    if( (!m_confCtrl  || ::GetAsyncKeyState(VK_CONTROL)) &
+        (!m_confShift || ::GetAsyncKeyState(VK_SHIFT)) &
+        (!m_confAlt   || ::GetAsyncKeyState(VK_MENU)) &
+        (!m_confWin   || ::GetAsyncKeyState(VK_LWIN) || ::GetAsyncKeyState(VK_RWIN))) {
+        // アクティブキーが押されているなら
         if(!m_activeKey) {
             m_activeKey = true;
             SetViewState();
@@ -525,7 +528,7 @@ bool CGhostBoardDlg::Save()
          wPos.rcNormalPosition.left, wPos.rcNormalPosition.top, wPos.rcNormalPosition.right, wPos.rcNormalPosition.bottom);
     fprintf(fp, "hide:%d\n", m_hide);
     fprintf(fp, "alphaDefault:%d, alphaMouse:%d\n", m_alphaDefault, m_alphaMouse);
-    fprintf(fp, "ctrl:%d, shift:%d, alt:%d\n", m_confCtrl, m_confShift, m_confAlt);
+    fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", m_confCtrl, m_confShift, m_confAlt, m_confWin);
  
     fclose(fp);
     return true;
@@ -549,7 +552,7 @@ bool CGhostBoardDlg::Load()
 
     fscanf_s(fp, "hide:%d\n", &m_hide);
     fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d\n", &m_alphaDefault, &m_alphaMouse); 
-    fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d\n", &m_confCtrl, &m_confShift, &m_confAlt);
+    fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
 
     fclose(fp);
     return true;
@@ -603,6 +606,7 @@ void CGhostBoardDlg::OnMenuSettings()
     dlg.m_ctrl = m_confCtrl;
     dlg.m_shift = m_confShift;
     dlg.m_alt = m_confAlt;
+    dlg.m_win = m_confWin;
     INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
@@ -615,6 +619,7 @@ void CGhostBoardDlg::OnMenuSettings()
         m_confCtrl = dlg.m_ctrl;
         m_confShift = dlg.m_shift;
         m_confAlt = dlg.m_alt;
+        m_confWin = dlg.m_win;
         StartHotKey();
  
         Save();
@@ -715,7 +720,8 @@ void CGhostBoardDlg::StartHotKey()
 {
     int actKey = (m_confCtrl?MOD_CONTROL:0)
                | (m_confShift?MOD_SHIFT:0)
-               | (m_confAlt?MOD_ALT:0);
+               | (m_confAlt?MOD_ALT:0)
+               | (m_confWin?MOD_WIN:0);
     m_hotKeyUp  =(actKey<<8) + VK_UP;   // 履歴前
     m_hotKeyDown=(actKey<<8) + VK_DOWN; // 履歴後
 
