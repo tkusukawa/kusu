@@ -77,9 +77,11 @@ BOOL CGhostBoardDlg::OnInitDialog()
     SetWindowText(_T("GhostBoard"));
 
     //---- 履歴初期化
-    m_historyPos = -1;
     m_historyLookup = 0;
-    m_historyNum = 0;
+    m_historyNum = 1;
+    m_historyPos = 0;
+    m_historyCount = 0;
+    m_historyTime[m_historyPos] = CTime::GetCurrentTime();
 
     //---- 最小化ボタンの表示
     //ModifyStyle(0, WS_MINIMIZEBOX);
@@ -107,7 +109,7 @@ BOOL CGhostBoardDlg::OnInitDialog()
     SetViewState();
 
     //---- アクティブキー＆マウス位置の定期監視タイマースタート
-    SetTimer(0, 100, NULL);
+    SetTimer(0, WATCH_INTERVAL, NULL);
 
     //---- 初期化完了フラグ
     m_initialized = true;
@@ -315,6 +317,17 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         }
     }
 
+    // バルーン表示タイムアウトの監視
+    if(m_balloonTime != 0) {
+        if(m_balloonTime <= WATCH_INTERVAL) {
+            m_balloonTime = 0;
+            EraseInfo();
+        }
+        else {
+            m_balloonTime -= WATCH_INTERVAL;
+        }
+    }
+
     CDialog::OnTimer(nIDEvent);
 }
 
@@ -333,7 +346,7 @@ void CGhostBoardDlg::SetViewState()
             SetLayeredWindowAttributes(0, 255, LWA_ALPHA); // 表示濃淡100％
 
             //バルーン表示
-            DispInfo();
+            DispInfo(BALLOON_ACTIVE);
         }
     }
     else {
@@ -344,10 +357,7 @@ void CGhostBoardDlg::SetViewState()
             ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
 
             //バルーン表示解除
-            m_icon.uFlags = NIF_INFO;
-            lstrcpy(m_icon.szInfoTitle, _T(""));
-            wsprintf(m_icon.szInfo, _T(""));
-            ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
+            EraseInfo();
         }
 
         BYTE alpha;
@@ -413,6 +423,7 @@ void CGhostBoardDlg::OnDrawClipboard()
             if (text != NULL) {
                 CString str(text);
                 if(m_historyArray[m_historyLookup] != str) { // 現在参照中と異なる文字列の場合のみ更新する
+                    m_historyCount ++;
                     m_historyPos ++;
                     if(m_historyPos>=m_historyNum && m_historyNum < HISTORY_NUM)
                         m_historyNum ++;
@@ -428,6 +439,9 @@ void CGhostBoardDlg::OnDrawClipboard()
                         m_edit.SetWindowText(str);
                         m_historyLookup = m_historyPos;
                     }
+
+                    // バルーンにコピー番号を表示
+                    DispInfo(BALLOON_COPY);
                 }
             }
             else {
@@ -657,7 +671,7 @@ void CGhostBoardDlg::HistoryBackward()
     
     TRACE("HistoryBackward():%d\n", m_historyLookup);
 
-    DispInfo(); // バルーン表示
+    DispInfo(BALLOON_ACTIVE); // バルーン表示
 }
 
 void CGhostBoardDlg::HistoryForward()
@@ -673,17 +687,28 @@ void CGhostBoardDlg::HistoryForward()
     m_edit.SetWindowText(m_historyArray[m_historyLookup]);
     TRACE("HistoryForward():%d\n", m_historyLookup);
     
-    DispInfo(); // バルーン表示
+    DispInfo(BALLOON_ACTIVE); // バルーン表示
 }
 
-void CGhostBoardDlg::DispInfo()
+void CGhostBoardDlg::DispInfo(UINT timeout_ms)
 {
     //バルーン表示
     m_icon.uFlags = NIF_INFO;
-    int hisNum = m_historyPos - m_historyLookup;
-    if(hisNum<0) hisNum += m_historyNum;
+    int hisNum = m_historyLookup - m_historyPos;
+    if(hisNum>0) hisNum -= m_historyNum;
+    hisNum += m_historyCount;
     wsprintf(m_icon.szInfo, _T("%d (%s)"), hisNum, m_historyTime[m_historyLookup].Format("%H:%M:%S"));
     ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
+    m_balloonTime = timeout_ms;
+}
+
+void CGhostBoardDlg::EraseInfo()
+{
+    m_icon.uFlags = NIF_INFO;
+    lstrcpy(m_icon.szInfoTitle, _T(""));
+    wsprintf(m_icon.szInfo, _T(""));
+    ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
+    m_balloonTime = 0;
 }
 
 void CGhostBoardDlg::StartHotKey()

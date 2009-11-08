@@ -6,6 +6,9 @@
 
 #define		WM_TRYCLK		WM_APP + 3			//タスクトレイ化
 #define     HISTORY_NUM     100
+#define     WATCH_INTERVAL  100
+#define     BALLOON_ACTIVE  10000
+#define     BALLOON_COPY    1500
 
 // CGhostBoardDlg ダイアログ
 class CGhostBoardDlg : public CDialog
@@ -54,7 +57,9 @@ public:
 
     // タスクトレイ化
     NOTIFYICONDATA m_icon;
-    void DispInfo(); // バルーン表示
+    void DispInfo(UINT timeout_ms); // バルーン表示
+    void EraseInfo(); // バルーン表示解除
+    UINT m_balloonTime;
 
     // アクティブキー＆マウス位置の定期監視
     afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
@@ -88,7 +93,7 @@ public:
     afx_msg void OnMenuSettings();
 
     // 履歴
-    signed int m_historyPos, m_historyLookup, m_historyNum;
+    signed int m_historyPos, m_historyLookup, m_historyNum, m_historyCount;
     CString m_historyArray[HISTORY_NUM];
     CTime m_historyTime[HISTORY_NUM];
     void HistoryBackward();
