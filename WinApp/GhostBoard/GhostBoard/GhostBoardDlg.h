@@ -5,10 +5,12 @@
 #include "myedit.h"
 
 #define		WM_TRYCLK		WM_APP + 3			//タスクトレイ化
+#define     TEMPLATE_NUM    4
 #define     HISTORY_NUM     100
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  10000
 #define     BALLOON_COPY    1500
+#define     SAVE_TEXT_SIZE  8192
 
 // CGhostBoardDlg ダイアログ
 class CGhostBoardDlg : public CDialog
@@ -35,6 +37,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
     afx_msg LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+    afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 public:
     // コントロール
     CMyEdit m_edit; 
@@ -92,16 +95,23 @@ public:
     afx_msg void OnMenuHide();
     afx_msg void OnMenuSettings();
 
-    // 履歴
-    signed int m_historyPos, m_historyLookup, m_historyNum, m_historyCount;
-    CString m_historyArray[HISTORY_NUM];
+    // 履歴・テンプレート
+    static COLORREF sm_color[TEMPLATE_NUM];
+    CBrush m_brush[TEMPLATE_NUM];
+    int     m_template, m_historyPos, m_historyNum, m_historyCount;
+    int     m_lookupPos[TEMPLATE_NUM];
+    CString m_textArray[TEMPLATE_NUM][HISTORY_NUM];
     CTime m_historyTime[HISTORY_NUM];
     void HistoryBackward();
     void HistoryForward();
+    void TemplateBackward();
+    void TemplateForward();
 
     // ホットキー
     int m_hotKeyUp;   // 履歴前
     int m_hotKeyDown; // 履歴後
+    int m_hotKeyLeft;   // テンプレート前
+    int m_hotKeyRight;  // テンプレート後
     void StartHotKey();
     void StopHotKey();
 };

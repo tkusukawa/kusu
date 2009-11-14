@@ -10,6 +10,13 @@
 #define new DEBUG_NEW
 #endif
 
+COLORREF CGhostBoardDlg::sm_color[TEMPLATE_NUM] = {
+        RGB(255,255,255),
+        RGB(255,150,150),
+        RGB(150,255,150),
+        RGB(150,150,255)
+};
+
 // CGhostBoardDlg ダイアログ
 
 CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
@@ -33,6 +40,9 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_confShift = false;
     m_confAlt = true;
     m_confWin = false;
+    // テンプレート
+    for(int i=0; i<TEMPLATE_NUM;i++)
+        m_brush[i].CreateSolidBrush(sm_color[i]);
 }
 
 void CGhostBoardDlg::DoDataExchange(CDataExchange* pDX)
@@ -58,6 +68,7 @@ BEGIN_MESSAGE_MAP(CGhostBoardDlg, CDialog)
     ON_COMMAND(ID_MENU_HIDE, &CGhostBoardDlg::OnMenuHide)
     ON_WM_DESTROY()
     ON_COMMAND(ID_MENU_SETTINGS, &CGhostBoardDlg::OnMenuSettings)
+    ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 
@@ -67,7 +78,7 @@ BOOL CGhostBoardDlg::OnInitDialog()
 {
     ModifyStyleEx(WS_EX_APPWINDOW, WS_EX_TOOLWINDOW); // タスクバーに表示しない
 //    ModifyStyleEx(WS_EX_TOOLWINDOW, WS_EX_APPWINDOW); // タスクバーに表示する
-	CDialog::OnInitDialog();
+	BOOL ret = CDialog::OnInitDialog();
 
 	// このダイアログのアイコンを設定します。アプリケーションのメイン ウィンドウがダイアログでない場合、
 	//  Framework は、この設定を自動的に行います。
@@ -77,8 +88,11 @@ BOOL CGhostBoardDlg::OnInitDialog()
     //---- ウィンドウタイトル
     SetWindowText(_T("GhostBoard"));
 
-    //---- 履歴初期化
-    m_historyLookup = 0;
+    //---- テンプレート・履歴初期化
+    m_template = 0;
+    for(int i=0; i < TEMPLATE_NUM; i++) {
+        m_lookupPos[i] = 0;
+    }
     m_historyNum = 1;
     m_historyPos = 0;
     m_historyCount = 0;
@@ -121,7 +135,7 @@ BOOL CGhostBoardDlg::OnInitDialog()
     //---- ホットキーの設定
     StartHotKey();
 
-	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
+	return ret;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
 
 void CGhostBoardDlg::OnDestroy()
@@ -129,6 +143,12 @@ void CGhostBoardDlg::OnDestroy()
     CDialog::OnDestroy();
 
     // TODO: ここにメッセージ ハンドラ コードを追加します。
+    // 現在の編集テキストを履歴に格納
+    CString str;
+    m_edit.GetWindowText(str);
+    m_textArray[m_template][m_lookupPos[m_template]] = str;
+
+    Save();
 
     //---- タスクトレイのアイコンを削除
     ::Shell_NotifyIcon( NIM_DELETE, &m_icon );
@@ -259,8 +279,8 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     WINDOWPLACEMENT windowPos;
     UINT dist, distX, distY;
 
-    // アクティブ状態の確認
-    if(::GetActiveWindow() == m_hWnd)
+    // フォーカス状態の確認
+    if(::GetFocus() == m_edit.m_hWnd)
         m_activate = true;
     else
         m_activate = false;
@@ -313,10 +333,12 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         if(m_activeKey) {
             m_activeKey = false;
             SetViewState();
-            // アクティブキーが離されたタイミングでクリップボードにコピー
-            CString str;
-            m_edit.GetWindowText(str);
-            SetTextToClipboard(str);
+            if(!m_activate) { // 編集状態でなければ
+                // アクティブキーが離されたタイミングでクリップボードにコピー
+                CString str;
+                m_edit.GetWindowText(str);
+                SetTextToClipboard(str);
+            }
         }
     }
 
@@ -339,6 +361,7 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
 void CGhostBoardDlg::SetViewState()
 {
     static bool s_active = false;
+    static int s_template = 0;
 
     if(m_activate || m_activeKey) {
         if(s_active == false) {
@@ -377,6 +400,11 @@ void CGhostBoardDlg::SetViewState()
             alpha = m_alphaMouse - (m_alphaMouse - m_alphaDefault)*m_mouseDistance/m_mouseDistanceFar;
         }
         SetLayeredWindowAttributes(0, alpha, LWA_ALPHA);
+    }
+
+    if(s_template != m_template) {
+        s_template = m_template;
+        InvalidateRect(NULL,TRUE);    //画面全体を再描画
     }
 }
 
@@ -425,7 +453,8 @@ void CGhostBoardDlg::OnDrawClipboard()
             const char* text = (char*)GlobalLock(data);
             if (text != NULL) {
                 CString str(text);
-                if(m_historyArray[m_historyLookup] != str) { // 現在参照中と異なる文字列の場合のみ更新する
+                if(m_textArray[m_template][m_lookupPos[m_template]] != str) {
+                    // 現在参照中と異なる文字列の場合のみ更新する
                     m_historyCount ++;
                     m_historyPos ++;
                     if(m_historyPos>=m_historyNum && m_historyNum < HISTORY_NUM)
@@ -433,14 +462,16 @@ void CGhostBoardDlg::OnDrawClipboard()
                     if(m_historyPos >= m_historyNum) m_historyPos -= m_historyNum;
 
                     // ヒストリに記入
-                    m_historyArray[m_historyPos] = str;
+                    m_textArray[0][m_historyPos] = str;
                     m_historyTime[m_historyPos] = CTime::GetCurrentTime();
                     TRACE("save history:%d\n", m_historyPos);
 
                     // アクティブでないか、表示中のバッファが更新された場合は表示
-                    if(!m_activate || m_historyLookup == m_historyPos) {
+                    if(!m_activate || (m_template == 0 && m_lookupPos[0] == m_historyPos)) {
                         m_edit.SetWindowText(str);
-                        m_historyLookup = m_historyPos;
+                        m_template = 0;
+                        m_lookupPos[0] = m_historyPos;
+                        SetViewState();
                     }
 
                     // バルーンにコピー番号を表示
@@ -515,6 +546,7 @@ bool CGhostBoardDlg::Save()
 {
     FILE *fp;
     errno_t err;
+    char buf[SAVE_TEXT_SIZE];
 
     WINDOWPLACEMENT wPos;
     GetWindowPlacement(&wPos);
@@ -529,6 +561,21 @@ bool CGhostBoardDlg::Save()
     fprintf(fp, "hide:%d\n", m_hide);
     fprintf(fp, "alphaDefault:%d, alphaMouse:%d\n", m_alphaDefault, m_alphaMouse);
     fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", m_confCtrl, m_confShift, m_confAlt, m_confWin);
+
+    for(int j=1; j<TEMPLATE_NUM; j++) {
+        for(int i=0; i<HISTORY_NUM; i++) {
+            CString str = m_textArray[j][i];
+            if(str != "") {
+                str.Replace(_T("\\"), _T("\\\\"));
+                str.Replace(_T("\n"), _T("\\n"));
+                str.Replace(_T("\r"), _T("\\r"));
+                fprintf(fp, "%d:%d:", j, i);
+                WideCharToMultiByte(CP_ACP,0,str,-1,buf,SAVE_TEXT_SIZE,NULL,NULL);//コード変換
+                fputs(buf, fp);
+                fprintf(fp, "\n");
+            }
+        }
+    }
  
     fclose(fp);
     return true;
@@ -538,6 +585,7 @@ bool CGhostBoardDlg::Load()
 { 
     FILE *fp;
     errno_t err;
+    int ret;
 
     WINDOWPLACEMENT wPos;
     GetWindowPlacement(&wPos);
@@ -553,6 +601,21 @@ bool CGhostBoardDlg::Load()
     fscanf_s(fp, "hide:%d\n", &m_hide);
     fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d\n", &m_alphaDefault, &m_alphaMouse); 
     fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
+
+    do{
+        int tmp, idx;
+        char buf[SAVE_TEXT_SIZE];
+        ret = fscanf_s(fp, "%d:%d:", &tmp, &idx);
+        if(ret > 0) {
+            fgets(buf, SAVE_TEXT_SIZE, fp);
+            m_textArray[tmp][idx] = buf;
+            m_textArray[tmp][idx].Replace(_T("\r"), _T("")); // 改行文字を削除
+            m_textArray[tmp][idx].Replace(_T("\n"), _T("")); // 改行文字を削除
+            m_textArray[tmp][idx].Replace(_T("\\r"), _T("\r")); //エスケープした文字を復元
+            m_textArray[tmp][idx].Replace(_T("\\n"), _T("\n")); //エスケープした文字を復元
+            m_textArray[tmp][idx].Replace(_T("\\\\"), _T("\\")); //エスケープした文字を復元
+        }
+    }while(ret > 0);
 
     fclose(fp);
     return true;
@@ -639,8 +702,14 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         if(wParam == m_hotKeyUp) {
             HistoryBackward();
         }
-        if(wParam == m_hotKeyDown) {
+        else if(wParam == m_hotKeyDown) {
             HistoryForward();
+        }
+        else if(wParam == m_hotKeyLeft) {
+            TemplateBackward();
+        }
+        else if(wParam == m_hotKeyRight) {
+            TemplateForward();
         }
 		return 1;
     
@@ -662,19 +731,35 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	return CDialog::WindowProc(message, wParam, lParam);
 }
 
+HBRUSH CGhostBoardDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+    HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+
+    if(nCtlColor == CTLCOLOR_DLG) {
+        TRACE("OnCtlColor() t=%d\n", m_template);
+        pDC->SetBkMode(OPAQUE); 
+        pDC->SetBkColor(sm_color[m_template]);
+        return m_brush[m_template];
+    }
+
+    // TODO:  既定値を使用したくない場合は別のブラシを返します。
+    return hbr;
+}
+
 void CGhostBoardDlg::HistoryBackward()
 {
     // 現在の編集テキストを履歴に格納
     CString str;
     m_edit.GetWindowText(str);
-    m_historyArray[m_historyLookup] = str;
+    m_textArray[m_template][m_lookupPos[m_template]] = str;
     // 履歴参照位置を更新
-    m_historyLookup --;
-    if(m_historyLookup < 0) m_historyLookup += m_historyNum;
+    m_lookupPos[m_template] --;
+    if(m_lookupPos[m_template] < 0)
+        m_lookupPos[m_template]+=m_template?HISTORY_NUM:m_historyNum;
     // 履歴の内容を編集テキストに表示
-    m_edit.SetWindowText(m_historyArray[m_historyLookup]);
+    m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
     
-    TRACE("HistoryBackward():%d\n", m_historyLookup);
+    TRACE("HistoryBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
 
     DispInfo(BALLOON_ACTIVE); // バルーン表示
 }
@@ -684,25 +769,73 @@ void CGhostBoardDlg::HistoryForward()
     // 現在の編集テキストを履歴に格納
     CString str;
     m_edit.GetWindowText(str);
-    m_historyArray[m_historyLookup] = str;
+    m_textArray[m_template][m_lookupPos[m_template]] = str;
     // 履歴参照位置を更新
-    m_historyLookup ++;
-    if(m_historyLookup >= m_historyNum) m_historyLookup -= m_historyNum;
+    m_lookupPos[m_template] ++;
+    if(m_template) {
+        if(m_lookupPos[m_template] >= HISTORY_NUM)
+            m_lookupPos[m_template] -= HISTORY_NUM;
+    }
+    else {
+        if(m_lookupPos[m_template] >= m_historyNum)
+            m_lookupPos[m_template] -= m_historyNum;
+    }
     // 履歴の内容を編集テキストに表示
-    m_edit.SetWindowText(m_historyArray[m_historyLookup]);
-    TRACE("HistoryForward():%d\n", m_historyLookup);
+    m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    TRACE("HistoryForward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_ACTIVE); // バルーン表示
+}
+
+void CGhostBoardDlg::TemplateBackward()
+{
+    // 現在の編集テキストを履歴に格納
+    CString str;
+    m_edit.GetWindowText(str);
+    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    // 参照テンプレートを更新
+    m_template --;
+    if(m_template < 0) m_template += TEMPLATE_NUM;
+    // 履歴の内容を編集テキストに表示
+    m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
+    
+    DispInfo(BALLOON_ACTIVE); // バルーン表示
+    SetViewState();
+}
+
+void CGhostBoardDlg::TemplateForward()
+{
+    // 現在の編集テキストを履歴に格納
+    CString str;
+    m_edit.GetWindowText(str);
+    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    // 参照テンプレートを更新
+    m_template ++;
+    if(m_template >= TEMPLATE_NUM) m_template -= TEMPLATE_NUM;
+    // 履歴の内容を編集テキストに表示
+    m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
+    
+    DispInfo(BALLOON_ACTIVE); // バルーン表示
+    SetViewState();
 }
 
 void CGhostBoardDlg::DispInfo(UINT timeout_ms)
 {
     //バルーン表示
     m_icon.uFlags = NIF_INFO;
-    int hisNum = m_historyLookup - m_historyPos;
-    if(hisNum>0) hisNum -= m_historyNum;
-    hisNum += m_historyCount;
-    wsprintf(m_icon.szInfo, _T("%d (%s)"), hisNum, m_historyTime[m_historyLookup].Format("%H:%M:%S"));
+    if(m_template) {
+        // テンプレート表示
+        wsprintf(m_icon.szInfo, _T("%c:%d"), " RGB"[m_template], m_lookupPos[m_template]);
+    }
+    else {
+        // クリップボード履歴
+        int hisNum = m_lookupPos[0] - m_historyPos;
+        if(hisNum>0) hisNum -= m_historyNum;
+        hisNum += m_historyCount;
+        wsprintf(m_icon.szInfo, _T("%d (%s)"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M:%S"));
+    }
     ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
     m_balloonTime = timeout_ms;
 }
@@ -724,12 +857,20 @@ void CGhostBoardDlg::StartHotKey()
                | (m_confWin?MOD_WIN:0);
     m_hotKeyUp  =(actKey<<8) + VK_UP;   // 履歴前
     m_hotKeyDown=(actKey<<8) + VK_DOWN; // 履歴後
+    m_hotKeyLeft =(actKey<<8) + VK_LEFT;   // テンプレート逆
+    m_hotKeyRight=(actKey<<8) + VK_RIGHT;  // テンプレート順
 
     if(!::RegisterHotKey(m_hWnd, m_hotKeyUp,   m_hotKeyUp  >>8, m_hotKeyUp  &0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): history prior"));
 
     if(!::RegisterHotKey(m_hWnd, m_hotKeyDown, m_hotKeyDown>>8, m_hotKeyDown&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): history next"));
+
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyLeft, m_hotKeyLeft>>8, m_hotKeyLeft&0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): template prior"));
+
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyRight, m_hotKeyRight>>8, m_hotKeyRight&0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): template next"));
 }
 
 void CGhostBoardDlg::StopHotKey()
@@ -739,4 +880,10 @@ void CGhostBoardDlg::StopHotKey()
 
     if(!::UnregisterHotKey(m_hWnd, m_hotKeyDown))
         MessageBox(_T("FAIL: UnregisterHotKey(): history next"));
+
+    if(!::UnregisterHotKey(m_hWnd, m_hotKeyLeft))
+        MessageBox(_T("FAIL: UnregisterHotKey(): template prior"));
+
+    if(!::UnregisterHotKey(m_hWnd, m_hotKeyRight))
+        MessageBox(_T("FAIL: UnregisterHotKey(): template next"));
 }
