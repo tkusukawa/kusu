@@ -112,6 +112,7 @@ public:
     int m_hotKeyDown; // 履歴後
     int m_hotKeyLeft;   // テンプレート前
     int m_hotKeyRight;  // テンプレート後
+    int m_hotKeyEnter;  // フォーカス設定
     void StartHotKey();
     void StopHotKey();
 };
