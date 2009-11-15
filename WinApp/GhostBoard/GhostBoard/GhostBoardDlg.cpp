@@ -279,11 +279,13 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     WINDOWPLACEMENT windowPos;
     UINT dist, distX, distY;
 
-    // フォーカス状態の確認
-    if(::GetFocus() == m_edit.m_hWnd)
-        m_activate = true;
-    else
-        m_activate = false;
+    // フォーカス状態の確認（ごくまれにフォーカス消失の通知が受けられないので）
+    if(m_activate == true && 
+        (GetActiveWindow() != this || 
+        GetForegroundWindow() != this ||
+        GetFocus() != &m_edit)) {
+            m_activate = false;
+    }
 
     // マウス位置の監視
     GetCursorPos(&mousePnt);
@@ -403,8 +405,9 @@ void CGhostBoardDlg::SetViewState()
     }
 
     if(s_template != m_template) {
+        // テンプレートグループが変わったときは再描画
         s_template = m_template;
-        InvalidateRect(NULL,TRUE);    //画面全体を再描画
+        InvalidateRect(NULL,TRUE);
     }
 }
 
@@ -416,18 +419,18 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
     TRACE("OnActivate:%d\n", nState);
     if(nState == WA_ACTIVE || nState == WA_CLICKACTIVE) {
         TRACE("GetFocus\n");
-            m_activate = true;
-            SetViewState();
+        m_activate = true;
+        SetViewState();
     }
     else {
         TRACE("LostFocus\n");
-            CString str;
-            m_edit.GetWindowText(str);
-            SetTextToClipboard(str);
-            m_activate = false;
-            SetViewState();
+        CString str;
+        m_edit.GetWindowText(str);
+        SetTextToClipboard(str);
+        m_activate = false;
+        SetViewState();
 
-            Save();
+        Save();
     }
 }
 
@@ -711,6 +714,11 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         else if(wParam == m_hotKeyRight) {
             TemplateForward();
         }
+        else if(wParam == m_hotKeyEnter) {
+            m_edit.SetFocus();
+            SetForegroundWindow();
+            //SetActiveWindow();
+        }
 		return 1;
     
     case WM_TRYCLK: //タスクトレイ
@@ -859,6 +867,7 @@ void CGhostBoardDlg::StartHotKey()
     m_hotKeyDown=(actKey<<8) + VK_DOWN; // 履歴後
     m_hotKeyLeft =(actKey<<8) + VK_LEFT;   // テンプレート逆
     m_hotKeyRight=(actKey<<8) + VK_RIGHT;  // テンプレート順
+    m_hotKeyEnter=(actKey<<8) + VK_RETURN; // フォーカス
 
     if(!::RegisterHotKey(m_hWnd, m_hotKeyUp,   m_hotKeyUp  >>8, m_hotKeyUp  &0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): history prior"));
@@ -871,6 +880,9 @@ void CGhostBoardDlg::StartHotKey()
 
     if(!::RegisterHotKey(m_hWnd, m_hotKeyRight, m_hotKeyRight>>8, m_hotKeyRight&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template next"));
+
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyEnter, m_hotKeyEnter>>8, m_hotKeyEnter&0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): focus"));
 }
 
 void CGhostBoardDlg::StopHotKey()
@@ -886,4 +898,7 @@ void CGhostBoardDlg::StopHotKey()
 
     if(!::UnregisterHotKey(m_hWnd, m_hotKeyRight))
         MessageBox(_T("FAIL: UnregisterHotKey(): template next"));
+
+    if(!::UnregisterHotKey(m_hWnd, m_hotKeyEnter))
+        MessageBox(_T("FAIL: UnregisterHotKey(): focus"));
 }
