@@ -52,6 +52,7 @@ public:
     bool            m_leftDown;
     POINT           m_leftDownCursorPos;
     WINDOWPLACEMENT m_leftDownWindowPos;
+    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
     // 透明化
     int m_alphaDefault;
@@ -64,15 +65,18 @@ public:
     void EraseInfo(); // バルーン表示解除
     UINT m_balloonTime;
 
-    // アクティブキー＆マウス位置の定期監視
-    afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
-    bool m_initialized;
+    // フォーカス監視
     bool m_activate;
+    afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
+    void getFocus();
+    void lostFocus();
+
+    // アクティブキー＆マウス位置の定期監視
+    bool m_initialized;
     bool m_activeKey;
     UINT m_mouseDistance, m_mouseDistanceFar;
     bool m_confCtrl, m_confShift, m_confAlt, m_confWin;
 
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg void OnTimer(UINT_PTR nIDEvent);
 
     // クリップボードの監視と書き込み
@@ -106,6 +110,7 @@ public:
     void HistoryForward();
     void TemplateBackward();
     void TemplateForward();
+    void rememberTemplate();
 
     // ホットキー
     int m_hotKeyUp;   // 履歴前
