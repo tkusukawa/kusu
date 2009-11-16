@@ -142,11 +142,8 @@ void CGhostBoardDlg::OnDestroy()
 {
     CDialog::OnDestroy();
 
-    // TODO: ここにメッセージ ハンドラ コードを追加します。
     // 現在の編集テキストを履歴に格納
-    CString str;
-    m_edit.GetWindowText(str);
-    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    rememberTemplate();
 
     Save();
 
@@ -284,7 +281,7 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         (GetActiveWindow() != this || 
         GetForegroundWindow() != this ||
         GetFocus() != &m_edit)) {
-            m_activate = false;
+            lostFocus();
     }
 
     // マウス位置の監視
@@ -418,20 +415,31 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
     TRACE("OnActivate:%d\n", nState);
     if(nState == WA_ACTIVE || nState == WA_CLICKACTIVE) {
-        TRACE("GetFocus\n");
-        m_activate = true;
-        SetViewState();
+        getFocus();
     }
     else {
-        TRACE("LostFocus\n");
-        CString str;
-        m_edit.GetWindowText(str);
-        SetTextToClipboard(str);
-        m_activate = false;
-        SetViewState();
-
-        Save();
+        lostFocus();
     }
+}
+
+void CGhostBoardDlg::getFocus()
+{
+    TRACE("GetFocus\n");
+    m_activate = true;
+    SetViewState();
+}
+
+void CGhostBoardDlg::lostFocus()
+{
+    TRACE("LostFocus\n");
+    rememberTemplate();
+
+    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+
+    m_activate = false;
+    SetViewState();
+
+    Save();
 }
 
 //*************************************************** クリップボードの監視と書き込み
@@ -756,10 +764,7 @@ HBRUSH CGhostBoardDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CGhostBoardDlg::HistoryBackward()
 {
-    // 現在の編集テキストを履歴に格納
-    CString str;
-    m_edit.GetWindowText(str);
-    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    rememberTemplate();
     // 履歴参照位置を更新
     m_lookupPos[m_template] --;
     if(m_lookupPos[m_template] < 0)
@@ -774,10 +779,7 @@ void CGhostBoardDlg::HistoryBackward()
 
 void CGhostBoardDlg::HistoryForward()
 {
-    // 現在の編集テキストを履歴に格納
-    CString str;
-    m_edit.GetWindowText(str);
-    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    rememberTemplate();
     // 履歴参照位置を更新
     m_lookupPos[m_template] ++;
     if(m_template) {
@@ -797,10 +799,7 @@ void CGhostBoardDlg::HistoryForward()
 
 void CGhostBoardDlg::TemplateBackward()
 {
-    // 現在の編集テキストを履歴に格納
-    CString str;
-    m_edit.GetWindowText(str);
-    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    rememberTemplate();
     // 参照テンプレートを更新
     m_template --;
     if(m_template < 0) m_template += TEMPLATE_NUM;
@@ -814,10 +813,7 @@ void CGhostBoardDlg::TemplateBackward()
 
 void CGhostBoardDlg::TemplateForward()
 {
-    // 現在の編集テキストを履歴に格納
-    CString str;
-    m_edit.GetWindowText(str);
-    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    rememberTemplate();
     // 参照テンプレートを更新
     m_template ++;
     if(m_template >= TEMPLATE_NUM) m_template -= TEMPLATE_NUM;
@@ -827,6 +823,14 @@ void CGhostBoardDlg::TemplateForward()
     
     DispInfo(BALLOON_ACTIVE); // バルーン表示
     SetViewState();
+}
+
+void CGhostBoardDlg::rememberTemplate()
+{
+    // 現在の編集テキストを履歴orテンプレートに格納
+    CString str;
+    m_edit.GetWindowText(str);
+    m_textArray[m_template][m_lookupPos[m_template]] = str;
 }
 
 void CGhostBoardDlg::DispInfo(UINT timeout_ms)
