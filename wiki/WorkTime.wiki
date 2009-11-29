@@ -47,6 +47,11 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
+  * Ver0.0.54(Rev90) [http://kusu.googlecode.com/files/redmine_work_time-0.0.54.tar.gz redmine_work_time-0.0.54.tar.gz] Date: 11:02:19, 2009年11月29日
+  「Issue 12: Redmine 0.8.7 でチケットを追加できない」への対応<br>
+  ↑haru.ii.a9i1e様：詳細なご報告ありがとうございました。<br>
+  ↑Ajax.Updateのmethodをgetにすることで解決いたしました。
+
   * Ver0.0.53(Rev72) [http://kusu.googlecode.com/files/redmine_work_time-0.0.53.tar.gz redmine_work_time-0.0.53.tar.gz] Date: 21:31:39, 2009年11月1日
   日毎工数入力のリストで既存のチケットを複製する機能を追加<br>
   メモの日付表示に曜日の表示を追加<br>
