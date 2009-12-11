@@ -30,7 +30,14 @@
 	(yank-to-clipboard)
 )
 
-(require "isearch")
+;;
+;; インクリメンタルサーチの強化
+;;
+(require "igsearch") ; ni-autoloadしている人は不要
+(setf *igsearch-init-state* :migemo) ; 最初はmigemo
+(setf *igsearch-escape-sequence* t)  ; エスケープシーケンスを理解する
+(setf *igsearch-grep* nil)           ; 候補列挙はいらない
+;(require "isearch")
 (global-set-key #\F5 'goto-line)
 (global-set-key #\F6 'grep-dialog)
 (global-set-key #\M-% 'replace-dialog)
@@ -55,7 +62,7 @@
 (global-set-key #\C-s 'save-buffer)
 
 (setf (svref *kbd-translate-table* (char-code #\C-i)) #\C-F13)
-(global-set-key #\C-F13 'isearch-forward)
+(global-set-key #\C-F13 'igsearch-forward)
 (define-key *isearch-map* #\C-F13 'isearch-repeat-forward)
 ;(define-key *isearch-map* #\C-f 'isearch-repeat-forward)
 
@@ -216,3 +223,11 @@
     (unless bSkip (funcall *org-scan-files-1* sFile pattern buffer scanner))
   )
 )
+;;
+;; 検索文字列を強調表示する
+;;
+(require "pickup-pattern")
+(require "pickup-grep")
+(add-hook '*show-match-hook* 'pickup-pattern-last-search)
+(add-hook '*show-match-hook* 'ed::show-match)
+
