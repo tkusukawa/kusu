@@ -47,43 +47,46 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
-  * Ver0.0.55(Rev93) [http://kusu.googlecode.com/files/redmine_work_time-0.0.55.tar.gz redmine_work_time-0.0.55.tar.gz] Date: 18:08:32, 2009年11月29日
+  * Ver0.0.56(r102) [http://kusu.googlecode.com/files/redmine_work_time-0.0.56.tar.gz redmine_work_time-0.0.56.tar.gz] Date: 23:18:51, 2009年12月12日
+  「Issue 15:IEでの日毎工数-チケット追加」への対応
+
+  * Ver0.0.55(r93) [http://kusu.googlecode.com/files/redmine_work_time-0.0.55.tar.gz redmine_work_time-0.0.55.tar.gz] Date: 18:08:32, 2009年11月29日
   チケットを削除すると場合によってはエラーで何も出来なくなるとの連絡をいただいたので対応しました
 
-  * Ver0.0.54(Rev90) [http://kusu.googlecode.com/files/redmine_work_time-0.0.54.tar.gz redmine_work_time-0.0.54.tar.gz] Date: 11:02:19, 2009年11月29日
+  * Ver0.0.54(r90) [http://kusu.googlecode.com/files/redmine_work_time-0.0.54.tar.gz redmine_work_time-0.0.54.tar.gz] Date: 11:02:19, 2009年11月29日
   「Issue 12: Redmine 0.8.7 でチケットを追加できない」への対応<br>
   ↑haru.ii.a9i1e様：詳細なご報告ありがとうございました。<br>
   ↑Ajax.Updateのmethodをgetにすることで解決いたしました。
 
-  * Ver0.0.53(Rev72) [http://kusu.googlecode.com/files/redmine_work_time-0.0.53.tar.gz redmine_work_time-0.0.53.tar.gz] Date: 21:31:39, 2009年11月1日
+  * Ver0.0.53(r72) [http://kusu.googlecode.com/files/redmine_work_time-0.0.53.tar.gz redmine_work_time-0.0.53.tar.gz] Date: 21:31:39, 2009年11月1日
   日毎工数入力のリストで既存のチケットを複製する機能を追加<br>
   メモの日付表示に曜日の表示を追加<br>
   チケット選択のポップアップダイアログで初期フォーカスが番号入力、且つEnterで適用されるように修正
 
-  * Ver0.0.52(Rev63) [http://kusu.googlecode.com/files/redmine_work_time-0.0.52.tar.gz redmine_work_time-0.0.52.tar.gz] Date: 18:05:49, 2009年9月13日
+  * Ver0.0.52(r63) [http://kusu.googlecode.com/files/redmine_work_time-0.0.52.tar.gz redmine_work_time-0.0.52.tar.gz] Date: 18:05:49, 2009年9月13日
   休日表示の機能追加(raku0893さんに送って頂いたコードをベースにしました)<br>
   チケット選択を番号入力でも行えるように修正
 
-  * Ver0.0.51(Rev61) Date: 8:51:19, 2009年9月13日
+  * Ver0.0.51(r61) Date: 8:51:19, 2009年9月13日
   「Issue 9: Developmentモードでエラー」の対応。
   developmentモードでも動作するように修正(情報提供ありがとうございます＞raku0893様)
 
-  * Ver0.0.50(Rev60) Date: 14:38:37, 2009年8月9日
+  * Ver0.0.50(r60) Date: 14:38:37, 2009年8月9日
   データ列出力用の画面を追加
 
-  * Ver0.0.49(Rev59) Date: 13:33:10, 2009年8月9日
+  * Ver0.0.49(r59) Date: 13:33:10, 2009年8月9日
 
   チケット洗濯時にクローズ状態のチケットを最初表示しないように修正
 
-  * Ver0.0.48(Rev56) [http://kusu.googlecode.com/files/redmine_work_time-0.0.48.tar.gz redmine_work_time-0.0.48.tar.gz] (2009-07-26 12:26:28)
+  * Ver0.0.48(r56) [http://kusu.googlecode.com/files/redmine_work_time-0.0.48.tar.gz redmine_work_time-0.0.48.tar.gz] (2009-07-26 12:26:28)
 
   「Issue 6:チケット付替設定の月の変更手段」の対応<br>
   チケット選択ポップアップにあるプロジェクトと選択プルダウンの文言修正<br>
 
-  * Ver0.0.47(Rev55)
+  * Ver0.0.47(r55)
   「Issue 3:一度に複数のチケットを追加したい」への対応
 
-  * Ver0.0.46(Rev54)
+  * Ver0.0.46(r54)
   日毎メモの編集状態時にも日付が表示されるように修正
 
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.45.tar.gz redmine_work_time-0.0.45.tar.gz] (2009-07-01 23:51:19)
@@ -108,6 +111,6 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
   * [http://kusu.googlecode.com/files/redmine_work_time-0.0.39.tar.gz redmine_work_time-0.0.39.tar.gz] (2009-6-15 19:05:20)
 
 
-過去のバージョンは
+もっと過去のバージョンは
 http://kusu.way-nifty.com/blog/redmine_work_time.html
 にあります。
