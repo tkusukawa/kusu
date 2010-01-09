@@ -32,13 +32,13 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
     m_hide = false;
-    // デフォルトの透明度は200。マウス接近時の透明度は50。
-    m_alphaDefault = 200;
-    m_alphaMouse = 50;
+    // デフォルトの透明度、マウス接近時の透明度を設定。
+    m_alphaDefault = 150;
+    m_alphaMouse = 30;
     // デフォルトのアクティブキーはCtrl+Alt
     m_confCtrl = true;
     m_confShift = false;
-    m_confAlt = true;
+    m_confAlt = false;
     m_confWin = false;
     // テンプレート
     for(int i=0; i<TEMPLATE_NUM;i++)
@@ -332,12 +332,6 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         if(m_activeKey) {
             m_activeKey = false;
             SetViewState();
-            if(!m_activate) { // 編集状態でなければ
-                // アクティブキーが離されたタイミングでクリップボードにコピー
-                CString str;
-                m_edit.GetWindowText(str);
-                SetTextToClipboard(str);
-            }
         }
     }
 
@@ -771,6 +765,10 @@ void CGhostBoardDlg::HistoryBackward()
         m_lookupPos[m_template]+=m_template?HISTORY_NUM:m_historyNum;
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    // 編集状態でなければクリップボードにコピー
+	if(!m_activate) {
+	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+    }
     
     TRACE("HistoryBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
 
@@ -792,7 +790,12 @@ void CGhostBoardDlg::HistoryForward()
     }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
-    TRACE("HistoryForward():%d,%d\n", m_template, m_lookupPos[m_template]);
+    // 編集状態でなければクリップボードにコピー
+	if(!m_activate) {
+	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+    }
+
+	TRACE("HistoryForward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_ACTIVE); // バルーン表示
 }
@@ -805,7 +808,12 @@ void CGhostBoardDlg::TemplateBackward()
     if(m_template < 0) m_template += TEMPLATE_NUM;
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
-    TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
+    // 編集状態でなければクリップボードにコピー
+	if(!m_activate) {
+	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+    }
+
+	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_ACTIVE); // バルーン表示
     SetViewState();
@@ -819,7 +827,12 @@ void CGhostBoardDlg::TemplateForward()
     if(m_template >= TEMPLATE_NUM) m_template -= TEMPLATE_NUM;
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
-    TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
+    // 編集状態でなければクリップボードにコピー
+	if(!m_activate) {
+	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+    }
+
+	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_ACTIVE); // バルーン表示
     SetViewState();
