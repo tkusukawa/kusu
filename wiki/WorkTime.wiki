@@ -47,6 +47,10 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
+  * Ver0.0.57(r104) [http://kusu.googlecode.com/files/redmine_work_time-0.0.57.tar.gz redmine_work_time-0.0.57.tar.gz] Date: 14:16:53, 2009年12月30日
+  「Issue 16: 経過時間のカスタムフィールド追加」への対応<br>
+  経過時間のカスタムフィールドを作成した場合に、日毎工数入力の画面でカスタムフィールドを入力できるように機能追加しました。
+  
   * Ver0.0.56(r102) [http://kusu.googlecode.com/files/redmine_work_time-0.0.56.tar.gz redmine_work_time-0.0.56.tar.gz] Date: 23:18:51, 2009年12月12日
   「Issue 15:IEでの日毎工数-チケット追加」への対応
 
