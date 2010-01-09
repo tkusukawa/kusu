@@ -441,47 +441,29 @@ void CGhostBoardDlg::OnDrawClipboard()
 {
     CDialog::OnDrawClipboard();
 
-    for(int i = 0;; i++) {
-        if(i >= 3) {
-            m_edit.SetWindowText(_T("Open try out"));
-            return;
-        }
-        if(OpenClipboard())
-            break;
-
-        Sleep(10);
+	BOOL isOpen = false;
+    for(int i = 0;; i++, Sleep(10)) {
+		isOpen = OpenClipboard();
+        if(isOpen) break;
     }
 
-    if (IsClipboardFormatAvailable(CF_TEXT)) {
+    CString str("");
+    if(!isOpen) {
+        TRACE("CRIPBOARD OPEN TRY OUT\n");
+    }
+    else if (!IsClipboardFormatAvailable(CF_TEXT)) {
+        TRACE("CLIPBOARD is not TEXT\n");
+        UINT format=0;
+        while(format=EnumClipboardFormats(format)) {
+            TRACE("format=%d\n", format);
+        }
+    }
+    else {
         const HGLOBAL data = GetClipboardData(CF_TEXT);
-        if (data != (HGLOBAL)0) {
+        if(data != (HGLOBAL)0) {
             const char* text = (char*)GlobalLock(data);
-            if (text != NULL) {
-                CString str(text);
-                if(m_textArray[m_template][m_lookupPos[m_template]] != str) {
-                    // 現在参照中と異なる文字列の場合のみ更新する
-                    m_historyCount ++;
-                    m_historyPos ++;
-                    if(m_historyPos>=m_historyNum && m_historyNum < HISTORY_NUM)
-                        m_historyNum ++;
-                    if(m_historyPos >= m_historyNum) m_historyPos -= m_historyNum;
-
-                    // ヒストリに記入
-                    m_textArray[0][m_historyPos] = str;
-                    m_historyTime[m_historyPos] = CTime::GetCurrentTime();
-                    TRACE("save history:%d\n", m_historyPos);
-
-                    // アクティブでないか、表示中のバッファが更新された場合は表示
-                    if(!m_activate || (m_template == 0 && m_lookupPos[0] == m_historyPos)) {
-                        m_edit.SetWindowText(str);
-                        m_template = 0;
-                        m_lookupPos[0] = m_historyPos;
-                        SetViewState();
-                    }
-
-                    // バルーンにコピー番号を表示
-                    DispInfo(BALLOON_COPY);
-                }
+            if(text != NULL) {
+                str = text; // クリップボードのテキストを取得
             }
             else {
                 TRACE("TEXT is NULL\n");
@@ -492,15 +474,40 @@ void CGhostBoardDlg::OnDrawClipboard()
             TRACE("CLIPBOARD is NULL\n");
         }
     }
-    else {
-        TRACE("CLIPBOARD is not TEXT\n");
-        UINT format=0;
-        while(format=EnumClipboardFormats(format)) {
-            TRACE("format=%d\n", format);
-        }
-    }
-
     CloseClipboard();
+
+	if(str == "") {
+        // クリップボードにテキストが無い旨を表示
+        m_edit.SetWindowText(str);
+        m_template = -1;
+        m_lookupPos[0] = 0;
+        SetViewState();
+        DispInfo(BALLOON_COPY);
+    }
+    else if(m_textArray[m_template][m_lookupPos[m_template]] != str) {
+        // 現在参照中と異なる文字列の場合のみ更新する
+        m_historyCount ++;
+        m_historyPos ++;
+        if(m_historyPos>=m_historyNum && m_historyNum < HISTORY_NUM)
+            m_historyNum ++;
+        if(m_historyPos >= m_historyNum) m_historyPos -= m_historyNum;
+
+        // ヒストリに記入
+        m_textArray[0][m_historyPos] = str;
+        m_historyTime[m_historyPos] = CTime::GetCurrentTime();
+        TRACE("save history:%d\n", m_historyPos);
+
+        // アクティブでないか、表示中のバッファが更新された場合は表示
+        if(!m_activate || (m_template == 0 && m_lookupPos[0] == m_historyPos)) {
+            m_edit.SetWindowText(str);
+            m_template = 0;
+            m_lookupPos[0] = m_historyPos;
+            SetViewState();
+        }
+
+        // バルーンにコピー番号を表示
+        DispInfo(BALLOON_COPY);
+    }
 
     ::SendMessage(m_nextClipboardViewerHandle, WM_DRAWCLIPBOARD, 0, 0L);
 }
@@ -840,6 +847,12 @@ void CGhostBoardDlg::TemplateForward()
 
 void CGhostBoardDlg::rememberTemplate()
 {
+    if(m_template<0) {
+        // N/A状態の場合
+        m_template = 0;
+        return;
+    }
+
     // 現在の編集テキストを履歴orテンプレートに格納
     CString str;
     m_edit.GetWindowText(str);
@@ -850,16 +863,20 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms)
 {
     //バルーン表示
     m_icon.uFlags = NIF_INFO;
-    if(m_template) {
-        // テンプレート表示
-        wsprintf(m_icon.szInfo, _T("%c:%d"), " RGB"[m_template], m_lookupPos[m_template]);
-    }
-    else {
+    if(m_template == 0) {
         // クリップボード履歴
         int hisNum = m_lookupPos[0] - m_historyPos;
         if(hisNum>0) hisNum -= m_historyNum;
         hisNum += m_historyCount;
         wsprintf(m_icon.szInfo, _T("%d (%s)"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M:%S"));
+    }
+    else if(m_template > 0) {
+        // テンプレート表示
+        wsprintf(m_icon.szInfo, _T("%c:%d"), " RGB"[m_template], m_lookupPos[m_template]);
+    }
+    else {
+        // テンプレート表示
+        wsprintf(m_icon.szInfo, _T("not TEXT"));
     }
     ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
     m_balloonTime = timeout_ms;
