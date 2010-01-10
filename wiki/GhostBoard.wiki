@@ -100,7 +100,12 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == バイナリダウンロード ==
 
-  * [http://kusu.googlecode.com/files/GhostBoard-1.1.4.zip GhostBoard-1.1.4(BETA)]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.5.zip GhostBoard-1.1.5(BETA)]
+    2010/01/10 r110<br>
+    エクセルのセルをコピーすると正常にクリップボードを監視出来なくなる問題の対応<br>
+    ファイルコピー時にファイルのパスを表示するように修正
+
+  * !GhostBoard-1.1.4(BETA)
     2010/01/10 r105 r107 r108<br>
     クリップボードの更新タイミングを「アクテイブキーOFF時」→「履歴表示時」に変更<br>
     アクティブキーのデフォルトを「Ctrl+Alt」→「Ctrl」に変更<br>
