@@ -44,16 +44,16 @@
 ;;
 ;; インクリメンタルサーチの強化
 ;;
-(require "igsearch") ; ni-autoloadしている人は不要
-(setf *igsearch-init-state* :migemo) ; 最初はmigemo
-(setf *igsearch-escape-sequence* t)  ; エスケープシーケンスを理解する
+;(require "igsearch") ; ni-autoloadしている人は不要
+;(setf *igsearch-init-state* :migemo) ; 最初はmigemo
+;(setf *igsearch-escape-sequence* t)  ; エスケープシーケンスを理解する
 ;(setf *igsearch-grep* nil)           ; 候補列挙はいらない
 
 ;;
 ;; お好みキーバインド
 ;;
 
-;(require "isearch")
+(require "isearch")
 (global-set-key #\F5 'goto-line)
 (global-set-key #\F6 'grep-dialog)
 (global-set-key #\M-% 'replace-dialog)
@@ -73,7 +73,7 @@
 (global-set-key #\C-s 'save-buffer)
 
 (setf (svref *kbd-translate-table* (char-code #\C-i)) #\C-F13)
-(global-set-key #\C-F13 'igsearch-forward)
+(global-set-key #\C-F13 'isearch-forward)
 (define-key *isearch-map* #\C-F13 'isearch-repeat-forward)
 ;(define-key *isearch-map* #\C-f 'isearch-repeat-forward)
 
@@ -200,7 +200,8 @@
               (gtags-mode 1)))
 (add-hook '*php-mode-hook*
           #'(lambda ()
-              (gtags-mode 1)))
+              (gtags-mode 1)
+			  (setq c-indent-level 4)))
 (in-package "user")
 
 ;; メニューいらんよなの切り替えスイッチ
