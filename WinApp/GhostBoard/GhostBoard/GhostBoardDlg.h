@@ -61,7 +61,7 @@ public:
 
     // タスクトレイ化
     NOTIFYICONDATA m_icon;
-    void DispInfo(UINT timeout_ms); // バルーン表示
+    void DispInfo(UINT timeout_ms, LPCWSTR msg = NULL); // バルーン表示
     void EraseInfo(); // バルーン表示解除
     UINT m_balloonTime;
 

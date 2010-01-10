@@ -428,7 +428,9 @@ void CGhostBoardDlg::lostFocus()
     TRACE("LostFocus\n");
     rememberTemplate();
 
-    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+    if(m_template>=0) {
+        SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+    }
 
     m_activate = false;
     SetViewState();
@@ -439,26 +441,26 @@ void CGhostBoardDlg::lostFocus()
 //*************************************************** クリップボードの監視と書き込み
 void CGhostBoardDlg::OnDrawClipboard()
 {
+    static int s_count=0;
+    int count = s_count++;
+
+    TRACE("%d:OnDrawClipboard()\n", count);
     CDialog::OnDrawClipboard();
 
 	BOOL isOpen = false;
-    for(int i = 0;; i++, Sleep(10)) {
+    for(int i = 0; i< 3; i++) {
 		isOpen = OpenClipboard();
         if(isOpen) break;
+        TRACE("%d:OpenClipboard():fail\n", count);
+        Sleep(10);
     }
 
+    LPWSTR err = NULL;
     CString str("");
     if(!isOpen) {
-        TRACE("CRIPBOARD OPEN TRY OUT\n");
+        err = _T("CRIPBOARD OPEN ERROR\n");
     }
-    else if (!IsClipboardFormatAvailable(CF_TEXT)) {
-        TRACE("CLIPBOARD is not TEXT\n");
-        UINT format=0;
-        while(format=EnumClipboardFormats(format)) {
-            TRACE("format=%d\n", format);
-        }
-    }
-    else {
+    else if (IsClipboardFormatAvailable(CF_TEXT)) {
         const HGLOBAL data = GetClipboardData(CF_TEXT);
         if(data != (HGLOBAL)0) {
             const char* text = (char*)GlobalLock(data);
@@ -466,25 +468,45 @@ void CGhostBoardDlg::OnDrawClipboard()
                 str = text; // クリップボードのテキストを取得
             }
             else {
-                TRACE("TEXT is NULL\n");
+                err = _T("TEXT is NULL\n");
             }
             GlobalUnlock(data);
         }
         else {
-            TRACE("CLIPBOARD is NULL\n");
+            err = _T("CLIPBOARD is NULL\n");
+        }
+    }
+    else if(IsClipboardFormatAvailable(CF_HDROP)) {
+        HDROP hData = (HDROP)GetClipboardData(CF_HDROP);
+        UINT fileNum = DragQueryFile((HDROP)hData, (UINT)-1, NULL, 0);
+        for (UINT idx=0; idx<fileNum; idx++) {
+            WCHAR fn[512];
+            DragQueryFile((HDROP)hData, idx, fn, sizeof(fn));
+            str += fn;
+            str += "\r\n";
+        }
+        err = _T("CLIPBOARD is FILE\n");
+    }
+    else {
+        err = _T("CLIPBOARD has not TEXT\n");
+        UINT format=0;
+        while(format=EnumClipboardFormats(format)) {
+            TRACE("%d:format=%d\n", count, format);
         }
     }
     CloseClipboard();
 
-	if(str == "") {
+	if(err) {
+        TRACE("%d:", count);
+        TRACE(err);
         // クリップボードにテキストが無い旨を表示
         m_edit.SetWindowText(str);
         m_template = -1;
         m_lookupPos[0] = 0;
         SetViewState();
-        DispInfo(BALLOON_COPY);
+        DispInfo(BALLOON_COPY, err);
     }
-    else if(m_textArray[m_template][m_lookupPos[m_template]] != str) {
+    else if((m_template < 0) || (m_textArray[m_template][m_lookupPos[m_template]] != str)) {
         // 現在参照中と異なる文字列の場合のみ更新する
         m_historyCount ++;
         m_historyPos ++;
@@ -495,10 +517,10 @@ void CGhostBoardDlg::OnDrawClipboard()
         // ヒストリに記入
         m_textArray[0][m_historyPos] = str;
         m_historyTime[m_historyPos] = CTime::GetCurrentTime();
-        TRACE("save history:%d\n", m_historyPos);
+        TRACE("%d:save history:%d\n", count, m_historyPos);
 
-        // アクティブでないか、表示中のバッファが更新された場合は表示
-        if(!m_activate || (m_template == 0 && m_lookupPos[0] == m_historyPos)) {
+        // アクティブでない場合のみ表示を更新
+        if(!m_activate) {
             m_edit.SetWindowText(str);
             m_template = 0;
             m_lookupPos[0] = m_historyPos;
@@ -507,6 +529,9 @@ void CGhostBoardDlg::OnDrawClipboard()
 
         // バルーンにコピー番号を表示
         DispInfo(BALLOON_COPY);
+    }
+    else {
+        TRACE("%d:same str\n", count);
     }
 
     ::SendMessage(m_nextClipboardViewerHandle, WM_DRAWCLIPBOARD, 0, 0L);
@@ -752,11 +777,13 @@ HBRUSH CGhostBoardDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
     HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
+    int idx = m_template;
+    if(idx < 0) idx = 0;
     if(nCtlColor == CTLCOLOR_DLG) {
         TRACE("OnCtlColor() t=%d\n", m_template);
         pDC->SetBkMode(OPAQUE); 
-        pDC->SetBkColor(sm_color[m_template]);
-        return m_brush[m_template];
+        pDC->SetBkColor(sm_color[idx]);
+        return m_brush[idx];
     }
 
     // TODO:  既定値を使用したくない場合は別のブラシを返します。
@@ -859,11 +886,14 @@ void CGhostBoardDlg::rememberTemplate()
     m_textArray[m_template][m_lookupPos[m_template]] = str;
 }
 
-void CGhostBoardDlg::DispInfo(UINT timeout_ms)
+void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
 {
     //バルーン表示
     m_icon.uFlags = NIF_INFO;
-    if(m_template == 0) {
+    if(msg) {
+        wsprintf(m_icon.szInfo, msg);
+    }
+    else if(m_template == 0) {
         // クリップボード履歴
         int hisNum = m_lookupPos[0] - m_historyPos;
         if(hisNum>0) hisNum -= m_historyNum;
@@ -915,8 +945,8 @@ void CGhostBoardDlg::StartHotKey()
     if(!::RegisterHotKey(m_hWnd, m_hotKeyRight, m_hotKeyRight>>8, m_hotKeyRight&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template next"));
 
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyEnter, m_hotKeyEnter>>8, m_hotKeyEnter&0xFF ))
-        MessageBox(_T("FAIL: RegisterHotKey(): focus"));
+//    if(!::RegisterHotKey(m_hWnd, m_hotKeyEnter, m_hotKeyEnter>>8, m_hotKeyEnter&0xFF ))
+//        MessageBox(_T("FAIL: RegisterHotKey(): focus"));
 }
 
 void CGhostBoardDlg::StopHotKey()
@@ -933,6 +963,6 @@ void CGhostBoardDlg::StopHotKey()
     if(!::UnregisterHotKey(m_hWnd, m_hotKeyRight))
         MessageBox(_T("FAIL: UnregisterHotKey(): template next"));
 
-    if(!::UnregisterHotKey(m_hWnd, m_hotKeyEnter))
-        MessageBox(_T("FAIL: UnregisterHotKey(): focus"));
+//    if(!::UnregisterHotKey(m_hWnd, m_hotKeyEnter))
+//        MessageBox(_T("FAIL: UnregisterHotKey(): focus"));
 }
