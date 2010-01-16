@@ -55,6 +55,7 @@ public:
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
     // “§–¾‰»
+    int m_alphaActive;
     int m_alphaDefault;
     int m_alphaMouse;
     void SetViewState();
