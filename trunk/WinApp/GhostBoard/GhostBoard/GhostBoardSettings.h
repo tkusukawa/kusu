@@ -18,6 +18,7 @@ public:
 
 	virtual BOOL OnInitDialog();
 
+    UINT m_alphaActive;
     UINT m_alphaDefault;
     UINT m_alphaMouse;
     bool m_ctrl;
@@ -30,6 +31,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+    CSliderCtrl m_sliderAlphaActive;
     CSliderCtrl m_sliderAlphaDefault;
     CSliderCtrl m_sliderAlphaMouse;
     afx_msg void OnBnClickedOk();

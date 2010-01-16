@@ -23,6 +23,7 @@ CGhostBoardSettings::~CGhostBoardSettings()
 void CGhostBoardSettings::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
+    DDX_Control(pDX, IDC_SLIDER_APLHA_ACTIVE, m_sliderAlphaActive);
     DDX_Control(pDX, IDC_SLIDER_ALPHA_DEFAULT, m_sliderAlphaDefault);
     DDX_Control(pDX, IDC_SLIDER_ALPHA_MOUSE, m_sliderAlphaMouse);
     DDX_Control(pDX, IDC_CHECK_CTRL, m_checkCtrl);
@@ -48,8 +49,11 @@ BOOL CGhostBoardSettings::OnInitDialog()
 
     TRACE("Settings Open\n");
     // ÉXÉâÉCÉ_ÇÃèâä˙èÛë‘Çê›íË
+    m_sliderAlphaActive.SetRange(0,255);
     m_sliderAlphaDefault.SetRange(0,255);
     m_sliderAlphaMouse.SetRange(0,255);
+
+    m_sliderAlphaActive.SetPos(m_alphaActive);
     m_sliderAlphaDefault.SetPos(m_alphaDefault);
     m_sliderAlphaMouse.SetPos(m_alphaMouse);
 
@@ -109,8 +113,10 @@ void CGhostBoardSettings::OnBnClickedCheckWin()
 void CGhostBoardSettings::OnBnClickedOk()
 {
     // OKéûÇ… èÛë‘ÇîΩâf
+    m_alphaActive = m_sliderAlphaActive.GetPos();
     m_alphaDefault = m_sliderAlphaDefault.GetPos();
     m_alphaMouse = m_sliderAlphaMouse.GetPos();
+
     m_ctrl = (m_checkCtrl.GetCheck() == BST_CHECKED);
     m_shift = (m_checkShift.GetCheck() == BST_CHECKED);
     m_alt = (m_checkAlt.GetCheck() == BST_CHECKED);

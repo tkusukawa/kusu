@@ -33,9 +33,10 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_mouseDistanceFar = 100;
     m_hide = false;
     // デフォルトの透明度、マウス接近時の透明度を設定。
+    m_alphaActive = 255;
     m_alphaDefault = 150;
     m_alphaMouse = 30;
-    // デフォルトのアクティブキーはCtrl+Alt
+    // デフォルトのアクティブキーはCtrl
     m_confCtrl = true;
     m_confShift = false;
     m_confAlt = false;
@@ -128,6 +129,14 @@ BOOL CGhostBoardDlg::OnInitDialog()
 
     //---- 初期化完了フラグ
     m_initialized = true;
+
+    //---- デフォルトの画面位置を設定
+    WINDOWPLACEMENT wPos;
+    wPos.rcNormalPosition.right = GetSystemMetrics(SM_CXSCREEN);
+    wPos.rcNormalPosition.bottom = GetSystemMetrics(SM_CYSCREEN);
+    wPos.rcNormalPosition.left = wPos.rcNormalPosition.right - 400;
+    wPos.rcNormalPosition.top = wPos.rcNormalPosition.bottom - 80;
+    SetWindowPlacement(&wPos);
 
     //---- 前状態の読み出し
     Load();
@@ -362,7 +371,9 @@ void CGhostBoardDlg::SetViewState()
             // アクティブになった時
             s_active = true;
             ModifyStyleEx(WS_EX_TRANSPARENT, 0); // 透過解除
-            SetLayeredWindowAttributes(0, 255, LWA_ALPHA); // 表示濃淡100％
+            SetLayeredWindowAttributes(0, m_alphaActive, LWA_ALPHA);
+            SetWindowPos(&wndTopMost, 0,0,0,0,
+                SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
 
             //バルーン表示
             DispInfo(BALLOON_ACTIVE);
@@ -410,6 +421,7 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
     TRACE("OnActivate:%d\n", nState);
     if(nState == WA_ACTIVE || nState == WA_CLICKACTIVE) {
         getFocus();
+        SetLayeredWindowAttributes(0, 255, LWA_ALPHA);
     }
     else {
         lostFocus();
@@ -596,7 +608,7 @@ bool CGhostBoardDlg::Save()
     fprintf(fp, "left:%d, top:%d, right:%d, bottom:%d\n", 
          wPos.rcNormalPosition.left, wPos.rcNormalPosition.top, wPos.rcNormalPosition.right, wPos.rcNormalPosition.bottom);
     fprintf(fp, "hide:%d\n", m_hide);
-    fprintf(fp, "alphaDefault:%d, alphaMouse:%d\n", m_alphaDefault, m_alphaMouse);
+    fprintf(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", m_alphaDefault, m_alphaMouse, m_alphaActive);
     fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", m_confCtrl, m_confShift, m_confAlt, m_confWin);
 
     for(int j=1; j<TEMPLATE_NUM; j++) {
@@ -632,11 +644,14 @@ bool CGhostBoardDlg::Load()
     }
  
     fscanf_s(fp, "left:%d, top:%d, right:%d, bottom:%d\n", 
-         &wPos.rcNormalPosition.left, &wPos.rcNormalPosition.top, &wPos.rcNormalPosition.right, &wPos.rcNormalPosition.bottom);
+         &wPos.rcNormalPosition.left,
+         &wPos.rcNormalPosition.top,
+         &wPos.rcNormalPosition.right,
+         &wPos.rcNormalPosition.bottom);
     SetWindowPlacement(&wPos);
 
     fscanf_s(fp, "hide:%d\n", &m_hide);
-    fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d\n", &m_alphaDefault, &m_alphaMouse); 
+    fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", &m_alphaDefault, &m_alphaMouse, &m_alphaActive); 
     fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
 
     do{
@@ -701,6 +716,7 @@ void CGhostBoardDlg::OnMenuHide()
 void CGhostBoardDlg::OnMenuSettings()
 {
     CGhostBoardSettings dlg;
+    dlg.m_alphaActive = m_alphaActive;
     dlg.m_alphaDefault = m_alphaDefault;
     dlg.m_alphaMouse = m_alphaMouse;
     dlg.m_ctrl = m_confCtrl;
@@ -712,6 +728,7 @@ void CGhostBoardDlg::OnMenuSettings()
 	{
         TRACE("Setting OK\n");
         // 透明度を設定
+        m_alphaActive = dlg.m_alphaActive;
         m_alphaDefault = dlg.m_alphaDefault;
         m_alphaMouse = dlg.m_alphaMouse;
         // ホットキーを再設定
