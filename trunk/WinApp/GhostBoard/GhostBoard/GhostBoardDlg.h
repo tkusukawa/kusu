@@ -5,12 +5,19 @@
 #include "myedit.h"
 
 #define		WM_TRYCLK		WM_APP + 3			//タスクトレイ化
+
 #define     TEMPLATE_NUM    4
-#define     HISTORY_NUM     100
+#define     HISTORY_NUM     32
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  10000
 #define     BALLOON_COPY    1500
 #define     SAVE_TEXT_SIZE  8192
+
+#define     ID_SEL_HISTORY  0xD000
+#define     ID_SEL_RED      0xD100
+#define     ID_SEL_GREEN    0xD200
+#define     ID_SEL_BLUE     0xD300
+#define     ID_SEL_MAX      0xD400
 
 // CGhostBoardDlg ダイアログ
 class CGhostBoardDlg : public CDialog
@@ -98,6 +105,7 @@ public:
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMenuClose();
     afx_msg void OnMenuSettings();
+    afx_msg void OnExecMenu(UINT uID);
 
     // 履歴・テンプレート
     static COLORREF sm_color[TEMPLATE_NUM];

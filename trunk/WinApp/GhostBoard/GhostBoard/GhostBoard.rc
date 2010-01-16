@@ -177,6 +177,23 @@ IDR_MENU_RBUTTON MENU
 BEGIN
     POPUP "menu"
     BEGIN
+        POPUP "history"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+        MENUITEM SEPARATOR
+        POPUP "red"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+        POPUP "green"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+        POPUP "blue"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
         MENUITEM SEPARATOR
         MENUITEM "Settings",                    ID_MENU_SETTINGS
         MENUITEM "Exit",                        ID_MENU_CLOSE
