@@ -69,6 +69,7 @@ BEGIN_MESSAGE_MAP(CGhostBoardDlg, CDialog)
     ON_WM_DESTROY()
     ON_COMMAND(ID_MENU_SETTINGS, &CGhostBoardDlg::OnMenuSettings)
     ON_WM_CTLCOLOR()
+    ON_COMMAND_RANGE(ID_SEL_HISTORY, ID_SEL_MAX, OnExecMenu)
 END_MESSAGE_MAP()
 
 
@@ -685,8 +686,38 @@ void CGhostBoardDlg::PopUpMenu()
     GetCursorPos(&pnt);
     static int tgl;
 
-    CMenu menu;
+    CMenu menu, *addPos;
     menu.LoadMenu(IDR_MENU_RBUTTON); // IDR_MENU1はResourceViewで追加したメニュー
+
+    addPos = menu.GetSubMenu(0)->GetSubMenu(0);
+    int startCount = m_historyCount>HISTORY_NUM?m_historyCount-HISTORY_NUM:1;
+    for(int i = startCount; i <= m_historyCount; i++) {
+        int pos = i % HISTORY_NUM;
+        CString str;
+        str.Format(_T("%02d(%s): "), i, m_historyTime[pos].Format("%H:%M"));
+        str += m_textArray[0][pos].Left(32);
+        str.Replace(_T("\n"),_T("|"));
+        str.Replace(_T("\r"),_T(""));
+        str.Replace(_T("\t"),_T("    "));
+        addPos->AppendMenuW(MF_STRING, ID_SEL_HISTORY+pos, str);
+    }
+
+    UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
+    for(int grp = 0; grp < 3; grp++) {
+        addPos = menu.GetSubMenu(0)->GetSubMenu(grp+2);
+        for(int i = 0; i < HISTORY_NUM; i++) {
+            if(m_textArray[grp+1][i] != "") {
+                CString str;
+                str.Format(_T("%02d: "), i);
+                str += m_textArray[grp+1][i].Left(32);
+                str.Replace(_T("\n"),_T("|"));
+                str.Replace(_T("\r"),_T(""));
+                str.Replace(_T("\t"),_T("    "));
+                addPos->AppendMenuW(MF_STRING, ids[grp]+i, str);
+            }
+        }
+    }
+
     menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pnt.x, pnt.y, this);
 }
 
@@ -728,6 +759,39 @@ void CGhostBoardDlg::OnMenuSettings()
 	{
         TRACE("Setting Cancel\n");
 	}
+}
+
+void CGhostBoardDlg::OnExecMenu(UINT uID)
+{
+    TRACE("OnExecMenu(%d)\n", uID - ID_SEL_HISTORY);
+
+    if(uID >= ID_SEL_HISTORY && uID < ID_SEL_HISTORY+HISTORY_NUM) {
+        m_template = 0;
+        m_lookupPos[m_template] = uID - ID_SEL_HISTORY;
+    }
+    
+    if(uID >= ID_SEL_RED && uID < ID_SEL_RED+HISTORY_NUM) {
+        m_template = 1;
+        m_lookupPos[m_template] = uID - ID_SEL_RED;
+    }
+
+    if(uID >= ID_SEL_GREEN && uID < ID_SEL_GREEN+HISTORY_NUM) {
+        m_template = 2;
+        m_lookupPos[m_template] = uID - ID_SEL_GREEN;
+    }
+
+    if(uID >= ID_SEL_BLUE && uID < ID_SEL_BLUE+HISTORY_NUM) {
+        m_template = 3;
+        m_lookupPos[m_template] = uID - ID_SEL_BLUE;
+    }
+
+    // 履歴の内容を編集テキストに表示
+    m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    // クリップボードにコピー
+    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+
+    SetViewState();
+    DispInfo(BALLOON_ACTIVE); // バルーン表示
 }
 
 LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
@@ -900,11 +964,11 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
         int hisNum = m_lookupPos[0] - m_historyPos;
         if(hisNum>0) hisNum -= m_historyNum;
         hisNum += m_historyCount;
-        wsprintf(m_icon.szInfo, _T("%d (%s)"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M:%S"));
+        wsprintf(m_icon.szInfo, _T("%02d(%s)"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
     }
     else if(m_template > 0) {
         // テンプレート表示
-        wsprintf(m_icon.szInfo, _T("%c:%d"), " RGB"[m_template], m_lookupPos[m_template]);
+        wsprintf(m_icon.szInfo, _T("%c%02d"), " RGB"[m_template], m_lookupPos[m_template]);
     }
     else {
         // テンプレート表示

@@ -19,13 +19,22 @@
 #define ID_MENU_CLOSE                   32771
 #define ID_MENU_SETTINGS                32775
 #define ID_MENU_ICON_NOTIF              32776
+#define ID_MENU_HISTORY                 32780
+#define ID_MENU_RED                     32781
+#define ID_MENU_GREEN                   32782
+#define ID_MENU_BLUE                    32783
+#define ID_HISTORY_HOGE                 32784
+#define ID_RED_DUMMY                    32785
+#define ID_GREEN_DUMMY                  32786
+#define ID_BLUE_DUMMY                   32787
+#define ID_Menu                         32788
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        134
-#define _APS_NEXT_COMMAND_VALUE         32780
+#define _APS_NEXT_COMMAND_VALUE         32789
 #define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
