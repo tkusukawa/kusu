@@ -25,6 +25,7 @@ public:
     bool m_shift;
     bool m_alt;
     bool m_win;
+    bool *m_iconNotifP;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
@@ -43,4 +44,5 @@ public:
     afx_msg void OnBnClickedCheckShift();
     afx_msg void OnBnClickedCheckAlt();
     afx_msg void OnBnClickedCheckWin();
+    CButton m_checkIconNotif;
 };
