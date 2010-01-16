@@ -92,12 +92,11 @@ public:
     bool Load();
 
     // ポップアップメニュー
-    bool m_hide; // 非表示状態
+    bool m_iconNotif; // バルーン表示イネーブル
     void PopUpMenu();
 
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMenuClose();
-    afx_msg void OnMenuHide();
     afx_msg void OnMenuSettings();
 
     // 履歴・テンプレート

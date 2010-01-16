@@ -31,7 +31,7 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_activeKey = false;
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
-    m_hide = false;
+    m_iconNotif = false;
     // デフォルトの透明度、マウス接近時の透明度を設定。
     m_alphaActive = 255;
     m_alphaDefault = 150;
@@ -66,7 +66,6 @@ BEGIN_MESSAGE_MAP(CGhostBoardDlg, CDialog)
     ON_WM_CHANGECBCHAIN()
     ON_WM_RBUTTONDOWN()
     ON_COMMAND(ID_MENU_CLOSE, &CGhostBoardDlg::OnMenuClose)
-    ON_COMMAND(ID_MENU_HIDE, &CGhostBoardDlg::OnMenuHide)
     ON_WM_DESTROY()
     ON_COMMAND(ID_MENU_SETTINGS, &CGhostBoardDlg::OnMenuSettings)
     ON_WM_CTLCOLOR()
@@ -101,7 +100,6 @@ BOOL CGhostBoardDlg::OnInitDialog()
 
     //---- 最小化ボタンの表示
     //ModifyStyle(0, WS_MINIMIZEBOX);
-    m_hide = false;
 
     //---- タスクトレイ表示
     m_icon.cbSize = sizeof(NOTIFYICONDATA);
@@ -137,6 +135,9 @@ BOOL CGhostBoardDlg::OnInitDialog()
     wPos.rcNormalPosition.left = wPos.rcNormalPosition.right - 400;
     wPos.rcNormalPosition.top = wPos.rcNormalPosition.bottom - 80;
     SetWindowPlacement(&wPos);
+
+    //---- 起動直後はバルーン表示を抑制
+    m_iconNotif = false;
 
     //---- 前状態の読み出し
     Load();
@@ -391,10 +392,7 @@ void CGhostBoardDlg::SetViewState()
         }
 
         BYTE alpha;
-        if(m_hide) {
-            alpha = 0;
-        }
-        else if(m_mouseDistance > m_mouseDistanceFar) {
+        if(m_mouseDistance > m_mouseDistanceFar) {
             alpha = m_alphaDefault;
         }
         else if(m_alphaDefault > m_alphaMouse) {
@@ -607,7 +605,7 @@ bool CGhostBoardDlg::Save()
  
     fprintf(fp, "left:%d, top:%d, right:%d, bottom:%d\n", 
          wPos.rcNormalPosition.left, wPos.rcNormalPosition.top, wPos.rcNormalPosition.right, wPos.rcNormalPosition.bottom);
-    fprintf(fp, "hide:%d\n", m_hide);
+    fprintf(fp, "iconNotif:%d\n", m_iconNotif);
     fprintf(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", m_alphaDefault, m_alphaMouse, m_alphaActive);
     fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", m_confCtrl, m_confShift, m_confAlt, m_confWin);
 
@@ -650,7 +648,7 @@ bool CGhostBoardDlg::Load()
          &wPos.rcNormalPosition.bottom);
     SetWindowPlacement(&wPos);
 
-    fscanf_s(fp, "hide:%d\n", &m_hide);
+    fscanf_s(fp, "iconNotif:%d\n", &m_iconNotif);
     fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", &m_alphaDefault, &m_alphaMouse, &m_alphaActive); 
     fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
 
@@ -689,28 +687,12 @@ void CGhostBoardDlg::PopUpMenu()
 
     CMenu menu;
     menu.LoadMenu(IDR_MENU_RBUTTON); // IDR_MENU1はResourceViewで追加したメニュー
-    menu.CheckMenuItem(ID_MENU_HIDE, m_hide?MF_CHECKED:MF_UNCHECKED); // 非表示状態をチェックで表示
     menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pnt.x, pnt.y, this);
 }
+
 void CGhostBoardDlg::OnMenuClose()
 {
     PostMessage(WM_CLOSE, 0, 0);
-}
-
-void CGhostBoardDlg::OnMenuHide()
-{
-    if(m_hide) {
-        //ShowWindow(SW_SHOWNORMAL);
-        m_hide = false;
-        SetViewState();
-        Save();
-    }
-    else {
-        //ShowWindow(SW_HIDE);
-        m_hide = true;
-        SetViewState();
-        Save();
-    }
 }
 
 void CGhostBoardDlg::OnMenuSettings()
@@ -723,6 +705,7 @@ void CGhostBoardDlg::OnMenuSettings()
     dlg.m_shift = m_confShift;
     dlg.m_alt = m_confAlt;
     dlg.m_win = m_confWin;
+    dlg.m_iconNotifP = &m_iconNotif;
     INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
@@ -906,6 +889,8 @@ void CGhostBoardDlg::rememberTemplate()
 void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
 {
     //バルーン表示
+    if(!m_iconNotif) return;
+
     m_icon.uFlags = NIF_INFO;
     if(msg) {
         wsprintf(m_icon.szInfo, msg);

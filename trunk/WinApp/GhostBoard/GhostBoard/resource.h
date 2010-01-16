@@ -14,17 +14,19 @@
 #define IDC_CHECK_ALT                   1005
 #define IDC_CHECK_WIN                   1006
 #define IDC_SLIDER_APLHA_ACTIVE         1007
+#define IDC_CHECK1                      1008
+#define IDC_CHECK_ICON_NOTIF            1008
 #define ID_MENU_CLOSE                   32771
-#define ID_MENU_HIDE                    32774
 #define ID_MENU_SETTINGS                32775
+#define ID_MENU_ICON_NOTIF              32776
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        134
-#define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1008
+#define _APS_NEXT_COMMAND_VALUE         32780
+#define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

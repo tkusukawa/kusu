@@ -30,6 +30,7 @@ void CGhostBoardSettings::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_CHECK_SHIFT, m_checkShift);
     DDX_Control(pDX, IDC_CHECK_ALT, m_checkAlt);
     DDX_Control(pDX, IDC_CHECK_WIN, m_checkWin);
+    DDX_Control(pDX, IDC_CHECK_ICON_NOTIF, m_checkIconNotif);
 }
 
 
@@ -62,6 +63,7 @@ BOOL CGhostBoardSettings::OnInitDialog()
     if(m_shift) m_checkShift.SetCheck(BST_CHECKED);
     if(m_alt)   m_checkAlt.SetCheck(BST_CHECKED);
     if(m_win)   m_checkWin.SetCheck(BST_CHECKED);
+    if(*m_iconNotifP) m_checkIconNotif.SetCheck(BST_CHECKED);
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -121,6 +123,8 @@ void CGhostBoardSettings::OnBnClickedOk()
     m_shift = (m_checkShift.GetCheck() == BST_CHECKED);
     m_alt = (m_checkAlt.GetCheck() == BST_CHECKED);
     m_win = (m_checkWin.GetCheck() == BST_CHECKED);
+
+    *m_iconNotifP = (m_checkIconNotif.GetCheck() == BST_CHECKED);
 
     OnOK();
 }
