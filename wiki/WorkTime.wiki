@@ -37,17 +37,19 @@ Redmineのルートに戻ってDBの初期化を行います。
 
 == 動作環境 ==
 
-redmine-0.8.0と0.8.4で動作が確認できています。
-
-redmine-0.8.～ なら大丈夫だと思います。
-
-redmine-0.9.1での動作が確認できました(WorkTime 0.0.58: 2010-02-01)
+ redmine-0.8.＊<br>
+ redmine-0.9.＊<br>
+で、大丈夫ではないかと。
+不具合があったらご連絡いただけると助かります。
 
 == SVN Repository ==
 
 http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
+
+  * Ver0.0.59(r124) [http://kusu.googlecode.com/files/redmine_work_time-0.0.59.tar.gz redmine_work_time-0.0.59.tar.gz] Date: 17:20:23, 2010年2月11日
+  「Issue 19: プロジェクトメンバとしてグループを設定するとエラーになる」への対応
 
   * Ver0.0.58(r120) [http://kusu.googlecode.com/files/redmine_work_time-0.0.58.tar.gz redmine_work_time-0.0.58.tar.gz] Date: 0:35:52, 2010年2月2日
   大変長らく対応できていなかったIssue 5 (Redmine0.9で動作しない)への対応になります。<br>
