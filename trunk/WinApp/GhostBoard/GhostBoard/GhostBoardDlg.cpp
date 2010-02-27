@@ -10,11 +10,12 @@
 #define new DEBUG_NEW
 #endif
 
-COLORREF CGhostBoardDlg::sm_color[TEMPLATE_NUM] = {
+COLORREF CGhostBoardDlg::sm_color[TEMPLATE_NUM+1] = {
         RGB(255,255,255),
         RGB(255,150,150),
         RGB(150,255,150),
-        RGB(150,150,255)
+        RGB(150,150,255),
+        RGB(150,150,150)
 };
 
 // CGhostBoardDlg ダイアログ
@@ -25,15 +26,15 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
     // メンバ変数初期化
+    m_status = booting;
     m_leftDown = false;
     m_initialized = false;
     m_activate = false;
     m_activeKey = false;
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
-    m_iconNotif = false;
     // デフォルトの透明度、マウス接近時の透明度を設定。
-    m_alphaActive = 255;
+    m_alphaActive = 200;
     m_alphaDefault = 150;
     m_alphaMouse = 30;
     // デフォルトのアクティブキーはCtrl
@@ -41,8 +42,10 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_confShift = false;
     m_confAlt = false;
     m_confWin = false;
+    // デフォルトのバルーン表示はあり
+    m_iconNotif = true;
     // テンプレート
-    for(int i=0; i<TEMPLATE_NUM;i++)
+    for(int i=0; i<=TEMPLATE_NUM;i++)
         m_brush[i].CreateSolidBrush(sm_color[i]);
 }
 
@@ -137,14 +140,14 @@ BOOL CGhostBoardDlg::OnInitDialog()
     wPos.rcNormalPosition.top = wPos.rcNormalPosition.bottom - 80;
     SetWindowPlacement(&wPos);
 
-    //---- 起動直後はバルーン表示を抑制
-    m_iconNotif = false;
-
     //---- 前状態の読み出し
     Load();
 
     //---- ホットキーの設定
     StartHotKey();
+
+    //---- 起動完了
+    m_status = ready;
 
 	return ret;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -439,10 +442,6 @@ void CGhostBoardDlg::lostFocus()
     TRACE("LostFocus\n");
     rememberTemplate();
 
-    if(m_template>=0) {
-        SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
-    }
-
     m_activate = false;
     SetViewState();
 
@@ -493,6 +492,7 @@ void CGhostBoardDlg::OnDrawClipboard()
         for (UINT idx=0; idx<fileNum; idx++) {
             WCHAR fn[512];
             DragQueryFile((HDROP)hData, idx, fn, sizeof(fn));
+            str += "FILE: ";
             str += fn;
             str += "\r\n";
         }
@@ -513,7 +513,6 @@ void CGhostBoardDlg::OnDrawClipboard()
         // クリップボードにテキストが無い旨を表示
         m_edit.SetWindowText(str);
         m_template = -1;
-        m_lookupPos[0] = 0;
         SetViewState();
         DispInfo(BALLOON_COPY, err);
     }
@@ -842,9 +841,15 @@ HBRUSH CGhostBoardDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
     HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 
     int idx = m_template;
-    if(idx < 0) idx = 0;
-    if(nCtlColor == CTLCOLOR_DLG) {
+    if(idx < 0) idx = TEMPLATE_NUM; // クリップボードがテキストを含まない時
+
+    if(nCtlColor == CTLCOLOR_DLG) { // ダイアログ枠の色
         TRACE("OnCtlColor() t=%d\n", m_template);
+        pDC->SetBkMode(OPAQUE); 
+        pDC->SetBkColor(sm_color[idx]);
+        return m_brush[idx];
+    }
+    if(idx == TEMPLATE_NUM && nCtlColor == CTLCOLOR_EDIT) { // エディット表示の色
         pDC->SetBkMode(OPAQUE); 
         pDC->SetBkColor(sm_color[idx]);
         return m_brush[idx];
@@ -856,11 +861,16 @@ HBRUSH CGhostBoardDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CGhostBoardDlg::HistoryBackward()
 {
-    rememberTemplate();
-    // 履歴参照位置を更新
-    m_lookupPos[m_template] --;
-    if(m_lookupPos[m_template] < 0)
-        m_lookupPos[m_template]+=m_template?HISTORY_NUM:m_historyNum;
+    if(m_template<0) {
+        m_template = 0;
+    }
+    else {
+        rememberTemplate();
+        // 履歴参照位置を更新
+        m_lookupPos[m_template] --;
+        if(m_lookupPos[m_template] < 0)
+            m_lookupPos[m_template]+=m_template?HISTORY_NUM:m_historyNum;
+    }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
     // 編集状態でなければクリップボードにコピー
@@ -875,16 +885,21 @@ void CGhostBoardDlg::HistoryBackward()
 
 void CGhostBoardDlg::HistoryForward()
 {
-    rememberTemplate();
-    // 履歴参照位置を更新
-    m_lookupPos[m_template] ++;
-    if(m_template) {
-        if(m_lookupPos[m_template] >= HISTORY_NUM)
-            m_lookupPos[m_template] -= HISTORY_NUM;
+    if(m_template<0) {
+        m_template = 0;
     }
     else {
-        if(m_lookupPos[m_template] >= m_historyNum)
-            m_lookupPos[m_template] -= m_historyNum;
+        rememberTemplate();
+        // 履歴参照位置を更新
+        m_lookupPos[m_template] ++;
+        if(m_template) {
+            if(m_lookupPos[m_template] >= HISTORY_NUM)
+                m_lookupPos[m_template] -= HISTORY_NUM;
+        }
+        else {
+            if(m_lookupPos[m_template] >= m_historyNum)
+                m_lookupPos[m_template] -= m_historyNum;
+        }
     }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
@@ -940,7 +955,6 @@ void CGhostBoardDlg::rememberTemplate()
 {
     if(m_template<0) {
         // N/A状態の場合
-        m_template = 0;
         return;
     }
 
@@ -948,12 +962,13 @@ void CGhostBoardDlg::rememberTemplate()
     CString str;
     m_edit.GetWindowText(str);
     m_textArray[m_template][m_lookupPos[m_template]] = str;
+    SetTextToClipboard(str);
 }
 
 void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
 {
     //バルーン表示
-    if(!m_iconNotif) return;
+    if(!m_iconNotif || m_status == booting) return;
 
     m_icon.uFlags = NIF_INFO;
     if(msg) {
