@@ -19,6 +19,11 @@
 #define     ID_SEL_BLUE     0xD300
 #define     ID_SEL_MAX      0xD400
 
+enum Status {
+    booting,
+    ready
+};
+
 // CGhostBoardDlg ダイアログ
 class CGhostBoardDlg : public CDialog
 {
@@ -46,6 +51,9 @@ protected:
     afx_msg LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
     afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 public:
+    // 起動状態
+    Status m_status;
+
     // コントロール
     CMyEdit m_edit; 
 
@@ -108,8 +116,8 @@ public:
     afx_msg void OnExecMenu(UINT uID);
 
     // 履歴・テンプレート
-    static COLORREF sm_color[TEMPLATE_NUM];
-    CBrush m_brush[TEMPLATE_NUM];
+    static COLORREF sm_color[TEMPLATE_NUM+1];
+    CBrush m_brush[TEMPLATE_NUM+1];
     int     m_template, m_historyPos, m_historyNum, m_historyCount;
     int     m_lookupPos[TEMPLATE_NUM];
     CString m_textArray[TEMPLATE_NUM][HISTORY_NUM];
