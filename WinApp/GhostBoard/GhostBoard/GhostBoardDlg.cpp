@@ -131,12 +131,12 @@ BOOL CGhostBoardDlg::OnInitDialog()
     SetTimer(0, WATCH_INTERVAL, NULL);
 
     //---- デフォルトの画面位置を設定
-    WINDOWPLACEMENT wPos;
-    wPos.rcNormalPosition.right = GetSystemMetrics(SM_CXSCREEN);
-    wPos.rcNormalPosition.bottom = GetSystemMetrics(SM_CYSCREEN);
-    wPos.rcNormalPosition.left = wPos.rcNormalPosition.right - 400;
-    wPos.rcNormalPosition.top = wPos.rcNormalPosition.bottom - 80;
-    SetWindowPlacement(&wPos);
+    m_windowPos.rcNormalPosition.right = GetSystemMetrics(SM_CXSCREEN);
+    m_windowPos.rcNormalPosition.bottom = GetSystemMetrics(SM_CYSCREEN);
+    m_windowPos.rcNormalPosition.left = m_windowPos.rcNormalPosition.right - 400;
+    m_windowPos.rcNormalPosition.top = m_windowPos.rcNormalPosition.bottom - 80;
+    SetWindowPlacement(&m_windowPos);
+    m_chkScrTimer = CHK_SCR_INTERVAL;
 
     //---- 前状態の読み出し
     Load();
@@ -263,19 +263,18 @@ void CGhostBoardDlg::OnMouseMove(UINT nFlags, CPoint point)
 
     if(m_leftDown) {
         POINT nowCursorPos;
-        WINDOWPLACEMENT newWindowPos;
 
         GetCursorPos(&nowCursorPos);
-        newWindowPos = m_leftDownWindowPos;
-        newWindowPos.rcNormalPosition.left += 
+        m_windowPos = m_leftDownWindowPos;
+        m_windowPos.rcNormalPosition.left += 
             nowCursorPos.x - m_leftDownCursorPos.x;
-        newWindowPos.rcNormalPosition.right += 
+        m_windowPos.rcNormalPosition.right += 
             nowCursorPos.x - m_leftDownCursorPos.x;
-        newWindowPos.rcNormalPosition.top += 
+        m_windowPos.rcNormalPosition.top += 
             nowCursorPos.y - m_leftDownCursorPos.y;
-        newWindowPos.rcNormalPosition.bottom += 
+        m_windowPos.rcNormalPosition.bottom += 
             nowCursorPos.y - m_leftDownCursorPos.y;
-        SetWindowPlacement(&newWindowPos);
+        SetWindowPlacement(&m_windowPos);
     }
 
     CDialog::OnMouseMove(nFlags, point);
@@ -285,7 +284,6 @@ void CGhostBoardDlg::OnMouseMove(UINT nFlags, CPoint point)
 void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
 {
     POINT mousePnt;
-    WINDOWPLACEMENT windowPos;
     UINT dist, distX, distY;
 
     // クリップボードイベント処理
@@ -304,23 +302,22 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
 
     // マウス位置の監視
     GetCursorPos(&mousePnt);
-    GetWindowPlacement(&windowPos);
     
-    if(mousePnt.x < windowPos.rcNormalPosition.left) {
-        distX = windowPos.rcNormalPosition.left - mousePnt.x;
+    if(mousePnt.x < m_windowPos.rcNormalPosition.left) {
+        distX = m_windowPos.rcNormalPosition.left - mousePnt.x;
     }
-    else if(mousePnt.x > windowPos.rcNormalPosition.right) {
-        distX = mousePnt.x - windowPos.rcNormalPosition.right;
+    else if(mousePnt.x > m_windowPos.rcNormalPosition.right) {
+        distX = mousePnt.x - m_windowPos.rcNormalPosition.right;
     }
     else {
         distX = 0;
     }
 
-    if(mousePnt.y < windowPos.rcNormalPosition.top) {
-        distY = windowPos.rcNormalPosition.top - mousePnt.y;
+    if(mousePnt.y < m_windowPos.rcNormalPosition.top) {
+        distY = m_windowPos.rcNormalPosition.top - mousePnt.y;
     }
-    else if(mousePnt.y > windowPos.rcNormalPosition.bottom) {
-        distY = mousePnt.y - windowPos.rcNormalPosition.bottom;
+    else if(mousePnt.y > m_windowPos.rcNormalPosition.bottom) {
+        distY = mousePnt.y - m_windowPos.rcNormalPosition.bottom;
     }
     else {
         distY = 0;
@@ -372,9 +369,29 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         }
     }
 
+    if(m_chkScrTimer < WATCH_INTERVAL) { // 画面サイズ確認インターバル
+        int x = GetSystemMetrics(SM_CXSCREEN);
+        if(m_windowPos.rcNormalPosition.right > x) {
+            x = m_windowPos.rcNormalPosition.right - x;
+            m_windowPos.rcNormalPosition.left  -= x;
+            m_windowPos.rcNormalPosition.right -= x;
+            SetWindowPlacement(&m_windowPos);
+        }
+        int y = GetSystemMetrics(SM_CYSCREEN);
+        if(m_windowPos.rcNormalPosition.bottom > y) {
+            y = m_windowPos.rcNormalPosition.bottom - y;
+            m_windowPos.rcNormalPosition.top    -= y;
+            m_windowPos.rcNormalPosition.bottom -= y;
+            SetWindowPlacement(&m_windowPos);
+        }
+        m_chkScrTimer = CHK_SCR_INTERVAL;
+    }
+    else {
+        m_chkScrTimer -= WATCH_INTERVAL;
+    }
+
     if(m_bootStatus == BS_booting) {
-        //---- 起動完了
-        m_bootStatus = BS_ready;
+        m_bootStatus = BS_ready; //---- 起動完了
     }
 
     CDialog::OnTimer(nIDEvent);
@@ -637,8 +654,7 @@ bool CGhostBoardDlg::Save()
     errno_t err;
     char buf[SAVE_TEXT_SIZE];
 
-    WINDOWPLACEMENT wPos;
-    GetWindowPlacement(&wPos);
+    GetWindowPlacement(&m_windowPos);
 
     if((err = fopen_s(&fp, "GhostBoard.dat", "w")) != 0) {
         MessageBox(_T("Can not open file <GhostBoard.dat>"));
@@ -646,7 +662,10 @@ bool CGhostBoardDlg::Save()
     }
  
     fprintf(fp, "left:%d, top:%d, right:%d, bottom:%d\n", 
-         wPos.rcNormalPosition.left, wPos.rcNormalPosition.top, wPos.rcNormalPosition.right, wPos.rcNormalPosition.bottom);
+         m_windowPos.rcNormalPosition.left,
+         m_windowPos.rcNormalPosition.top,
+         m_windowPos.rcNormalPosition.right,
+         m_windowPos.rcNormalPosition.bottom);
     fprintf(fp, "iconNotif:%d\n", m_iconNotif);
     fprintf(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", m_alphaDefault, m_alphaMouse, m_alphaActive);
     fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", m_confCtrl, m_confShift, m_confAlt, m_confWin);
@@ -676,19 +695,18 @@ bool CGhostBoardDlg::Load()
     errno_t err;
     int ret;
 
-    WINDOWPLACEMENT wPos;
-    GetWindowPlacement(&wPos);
+    GetWindowPlacement(&m_windowPos);
 
     if((err = fopen_s(&fp, "GhostBoard.dat", "r")) != 0) {
         return false;
     }
  
     fscanf_s(fp, "left:%d, top:%d, right:%d, bottom:%d\n", 
-         &wPos.rcNormalPosition.left,
-         &wPos.rcNormalPosition.top,
-         &wPos.rcNormalPosition.right,
-         &wPos.rcNormalPosition.bottom);
-    SetWindowPlacement(&wPos);
+         &m_windowPos.rcNormalPosition.left,
+         &m_windowPos.rcNormalPosition.top,
+         &m_windowPos.rcNormalPosition.right,
+         &m_windowPos.rcNormalPosition.bottom);
+    SetWindowPlacement(&m_windowPos);
 
     fscanf_s(fp, "iconNotif:%d\n", &m_iconNotif);
     fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", &m_alphaDefault, &m_alphaMouse, &m_alphaActive); 
