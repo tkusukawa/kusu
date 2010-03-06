@@ -4,12 +4,15 @@
 #pragma once
 #include "myedit.h"
 
-#define		WM_TRYCLK		WM_APP + 3			//タスクトレイ化
+#define     APP_NAME        _T("GhostBoard-1.1.8") // リソースからのバージョン取得方法不明
 
+#define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
+
+#define     CB_RETRY        3
 #define     TEMPLATE_NUM    4
 #define     HISTORY_NUM     32
 #define     WATCH_INTERVAL  100
-#define     BALLOON_ACTIVE  10000
+#define     BALLOON_ACTIVE  5000
 #define     BALLOON_COPY    1500
 #define     SAVE_TEXT_SIZE  8192
 
@@ -19,9 +22,16 @@
 #define     ID_SEL_BLUE     0xD300
 #define     ID_SEL_MAX      0xD400
 
-enum Status {
-    booting,
-    ready
+enum BootStatus {
+    BS_none,
+    BS_booting,
+    BS_ready
+};
+
+enum DispStatus {
+    DS_none,
+    DS_activeKey,
+    DS_focus
 };
 
 // CGhostBoardDlg ダイアログ
@@ -51,8 +61,10 @@ protected:
     afx_msg LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
     afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 public:
-    // 起動状態
-    Status m_status;
+    // 状態
+    BootStatus m_bootStatus;
+    DispStatus m_dispStatus;
+    bool       m_actKeyStatus;
 
     // コントロール
     CMyEdit m_edit; 
@@ -82,14 +94,11 @@ public:
     UINT m_balloonTime;
 
     // フォーカス監視
-    bool m_activate;
     afx_msg void OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized);
     void getFocus();
     void lostFocus();
 
     // アクティブキー＆マウス位置の定期監視
-    bool m_initialized;
-    bool m_activeKey;
     UINT m_mouseDistance, m_mouseDistanceFar;
     bool m_confCtrl, m_confShift, m_confAlt, m_confWin;
 
@@ -97,8 +106,10 @@ public:
 
     // クリップボードの監視と書き込み
     HWND m_nextClipboardViewerHandle;
+    bool m_cbEventFlg;
 
     afx_msg void OnDrawClipboard();
+    void OnCbUpdate();
     afx_msg void OnChangeCbChain(HWND hWndRemove, HWND hWndAfter);
     bool SetTextToClipboard(CString& str);
 
