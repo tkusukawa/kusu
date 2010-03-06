@@ -11,9 +11,12 @@
 #define     CB_RETRY        3
 #define     TEMPLATE_NUM    4
 #define     HISTORY_NUM     32
+
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
 #define     BALLOON_COPY    1500
+#define     CHK_SCR_INTERVAL 10000
+
 #define     SAVE_TEXT_SIZE  8192
 
 #define     ID_SEL_HISTORY  0xD000
@@ -76,10 +79,12 @@ public:
     afx_msg void OnSize(UINT nType, int cx, int cy);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     bool            m_leftDown;
     POINT           m_leftDownCursorPos;
     WINDOWPLACEMENT m_leftDownWindowPos;
-    afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+    WINDOWPLACEMENT m_windowPos;
+    int             m_chkScrTimer;
 
     // “§–¾‰»
     int m_alphaActive;
