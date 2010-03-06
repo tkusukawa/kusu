@@ -11,11 +11,11 @@
 #endif
 
 COLORREF CGhostBoardDlg::sm_color[TEMPLATE_NUM+1] = {
-        RGB(255,255,255),
-        RGB(255,150,150),
-        RGB(150,255,150),
-        RGB(150,150,255),
-        RGB(150,150,150)
+        RGB(255,255,255), // クリップボード履歴
+        RGB(255,150,150), // 赤
+        RGB(150,255,150), // 緑
+        RGB(150,150,255), // 青
+        RGB(150,150,150)  // クリップボード NOT TEXT
 };
 
 // CGhostBoardDlg ダイアログ
@@ -26,11 +26,10 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
     // メンバ変数初期化
-    m_status = booting;
+    m_bootStatus = BS_none;
+    m_dispStatus = DS_none;
+    m_cbEventFlg = false;
     m_leftDown = false;
-    m_initialized = false;
-    m_activate = false;
-    m_activeKey = false;
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
     // デフォルトの透明度、マウス接近時の透明度を設定。
@@ -89,6 +88,8 @@ BOOL CGhostBoardDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 大きいアイコンの設定
 	SetIcon(m_hIcon, FALSE);		// 小さいアイコンの設定
 
+    m_bootStatus = BS_booting;
+
     //---- ウィンドウタイトル
     SetWindowText(_T("GhostBoard"));
 
@@ -112,7 +113,7 @@ BOOL CGhostBoardDlg::OnInitDialog()
     m_icon.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     m_icon.hIcon = AfxGetApp()->LoadIcon( IDR_MAINFRAME );
     m_icon.uCallbackMessage = WM_TRYCLK;
-    lstrcpy( m_icon.szTip, _T("GhostBoard"));
+    lstrcpy( m_icon.szTip, APP_NAME);
     // バルーン設定
     m_icon.uTimeout = 10000;
     m_icon.dwInfoFlags = NIIF_NONE|NIIF_NOSOUND;
@@ -129,9 +130,6 @@ BOOL CGhostBoardDlg::OnInitDialog()
     //---- アクティブキー＆マウス位置の定期監視タイマースタート
     SetTimer(0, WATCH_INTERVAL, NULL);
 
-    //---- 初期化完了フラグ
-    m_initialized = true;
-
     //---- デフォルトの画面位置を設定
     WINDOWPLACEMENT wPos;
     wPos.rcNormalPosition.right = GetSystemMetrics(SM_CXSCREEN);
@@ -146,8 +144,8 @@ BOOL CGhostBoardDlg::OnInitDialog()
     //---- ホットキーの設定
     StartHotKey();
 
-    //---- 起動完了
-    m_status = ready;
+    m_textArray[0][0] = APP_NAME;
+    m_edit.SetWindowText(APP_NAME);
 
 	return ret;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -228,7 +226,7 @@ void CGhostBoardDlg::OnSize(UINT nType, int cx, int cy)
 {
     CDialog::OnSize(nType, cx, cy);
 
-    if(!m_initialized) 
+    if(m_bootStatus == BS_none) 
         return;
 
     m_edit.MoveWindow(4,3,cx-7,cy-6);
@@ -290,8 +288,14 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     WINDOWPLACEMENT windowPos;
     UINT dist, distX, distY;
 
+    // クリップボードイベント処理
+    if(m_cbEventFlg) {
+        m_cbEventFlg = false;
+        OnCbUpdate();
+    }
+
     // フォーカス状態の確認（ごくまれにフォーカス消失の通知が受けられないので）
-    if(m_activate == true && 
+    if(m_dispStatus == DS_focus && 
         (GetActiveWindow() != this || 
         GetForegroundWindow() != this ||
         GetFocus() != &m_edit)) {
@@ -337,15 +341,23 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         (!m_confAlt   || ::GetAsyncKeyState(VK_MENU)) &
         (!m_confWin   || ::GetAsyncKeyState(VK_LWIN) || ::GetAsyncKeyState(VK_RWIN))) {
         // アクティブキーが押されているなら
-        if(!m_activeKey) {
-            m_activeKey = true;
+        if(m_dispStatus == DS_none) {
+            m_dispStatus = DS_activeKey;
             SetViewState();
+        }
+        if(m_actKeyStatus == false) {
+            m_actKeyStatus = true;
+            DispInfo(BALLOON_ACTIVE);
         }
     }
     else{ // アクティブキーが離されているなら
-        if(m_activeKey) {
-            m_activeKey = false;
+        if(m_dispStatus == DS_activeKey) {
+            m_dispStatus = DS_none;
             SetViewState();
+        }
+        if(m_actKeyStatus == true) {
+            m_actKeyStatus = false;
+            EraseInfo();
         }
     }
 
@@ -360,6 +372,11 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         }
     }
 
+    if(m_bootStatus == BS_booting) {
+        //---- 起動完了
+        m_bootStatus = BS_ready;
+    }
+
     CDialog::OnTimer(nIDEvent);
 }
 
@@ -367,34 +384,40 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
 //************************************************** 透明化
 void CGhostBoardDlg::SetViewState()
 {
-    static bool s_active = false;
+    static DispStatus s_status = DS_none;
     static int s_template = 0;
+    static BYTE s_alpha = 0;
 
-    if(m_activate || m_activeKey) {
-        if(s_active == false) {
-            TRACE("SetViewState():active\n");
-            // アクティブになった時
-            s_active = true;
-            ModifyStyleEx(WS_EX_TRANSPARENT, 0); // 透過解除
-            SetLayeredWindowAttributes(0, m_alphaActive, LWA_ALPHA);
-            SetWindowPos(&wndTopMost, 0,0,0,0,
-                SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
-
-            //バルーン表示
-            DispInfo(BALLOON_ACTIVE);
+    if(s_status != m_dispStatus) { // 状態が変化した時に行う処理
+        s_status = m_dispStatus;
+        switch(m_dispStatus) {
+            case DS_none:
+                TRACE("SetViewState():none\n");
+                s_alpha = 0;
+                // 非アクティブになった時
+                ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
+                break;
+            case DS_activeKey:
+                TRACE("SetViewState():active\n");
+                // アクティブになった時
+                ModifyStyleEx(WS_EX_TRANSPARENT, 0); // 透過解除
+                SetLayeredWindowAttributes(0, m_alphaActive, LWA_ALPHA);
+                SetWindowPos(&wndTopMost, 0,0,0,0,
+                    SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
+                break;
+            case DS_focus:
+                TRACE("SetViewState():focus\n");
+                // フォーカスを受けたとき
+                ModifyStyleEx(WS_EX_TRANSPARENT, 0); // 透過解除
+                SetLayeredWindowAttributes(0, 255, LWA_ALPHA);
+                SetWindowPos(&wndTopMost, 0,0,0,0,
+                    SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
+                break;
         }
     }
-    else {
-        if(s_active == true) {
-            TRACE("SetViewState():alpha\n");
-            s_active = false;
-            // 非アクティブになった時
-            ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
 
-            //バルーン表示解除
-            EraseInfo();
-        }
-
+    if(m_dispStatus == DS_none) {
+        // 透明度をマウス位置から計算
         BYTE alpha;
         if(m_mouseDistance > m_mouseDistanceFar) {
             alpha = m_alphaDefault;
@@ -405,9 +428,12 @@ void CGhostBoardDlg::SetViewState()
         else {
             alpha = m_alphaMouse - (m_alphaMouse - m_alphaDefault)*m_mouseDistance/m_mouseDistanceFar;
         }
-        SetLayeredWindowAttributes(0, alpha, LWA_ALPHA);
+        if(alpha != s_alpha) { // 計算結果が変わっていれば透明度を変更
+            s_alpha = alpha;
+            SetLayeredWindowAttributes(0, alpha, LWA_ALPHA);
+        }
     }
-
+        
     if(s_template != m_template) {
         // テンプレートグループが変わったときは再描画
         s_template = m_template;
@@ -423,7 +449,6 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
     TRACE("OnActivate:%d\n", nState);
     if(nState == WA_ACTIVE || nState == WA_CLICKACTIVE) {
         getFocus();
-        SetLayeredWindowAttributes(0, 255, LWA_ALPHA);
     }
     else {
         lostFocus();
@@ -433,16 +458,21 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 void CGhostBoardDlg::getFocus()
 {
     TRACE("GetFocus\n");
-    m_activate = true;
+    m_dispStatus = DS_focus;
     SetViewState();
 }
 
 void CGhostBoardDlg::lostFocus()
 {
     TRACE("LostFocus\n");
+
+    CString str;
+    m_edit.GetWindowText(str);
+    SetTextToClipboard(str);
+
     rememberTemplate();
 
-    m_activate = false;
+    m_dispStatus = DS_none;
     SetViewState();
 
     Save();
@@ -451,18 +481,36 @@ void CGhostBoardDlg::lostFocus()
 //*************************************************** クリップボードの監視と書き込み
 void CGhostBoardDlg::OnDrawClipboard()
 {
-    static int s_count=0;
-    int count = s_count++;
-
-    TRACE("%d:OnDrawClipboard()\n", count);
+    TRACE("OnDrawClipboard()\n");
     CDialog::OnDrawClipboard();
 
-	BOOL isOpen = false;
-    for(int i = 0; i< 3; i++) {
-		isOpen = OpenClipboard();
-        if(isOpen) break;
-        TRACE("%d:OpenClipboard():fail\n", count);
-        Sleep(10);
+    m_cbEventFlg = true;
+    SetTimer(0, WATCH_INTERVAL, NULL);
+
+    ::SendMessage(m_nextClipboardViewerHandle, WM_DRAWCLIPBOARD, 0, 0L);
+}
+
+void CGhostBoardDlg::OnCbUpdate()
+{
+    static int s_retry=0;
+    static int s_count=0;
+    int count = s_count++;
+    TRACE("%d:OnCbUpdate()\n", count);
+
+    m_cbEventFlg = false;
+    BOOL isOpen = OpenClipboard(); // クリップボードオープン
+    if(isOpen) {
+        s_retry = 0;
+    }
+    else {
+        s_retry ++;
+        if(s_retry >= CB_RETRY) {
+            TRACE("%d:Retry Out!!!!!!!!!!\n", count);
+        }
+        else {
+            m_cbEventFlg = true; // リトライ
+            return;
+        }
     }
 
     LPWSTR err = NULL;
@@ -529,8 +577,8 @@ void CGhostBoardDlg::OnDrawClipboard()
         m_historyTime[m_historyPos] = CTime::GetCurrentTime();
         TRACE("%d:save history:%d\n", count, m_historyPos);
 
-        // アクティブでない場合のみ表示を更新
-        if(!m_activate) {
+        // 起動中かアクティブでない場合のみ表示を更新
+        if(m_bootStatus != BS_ready || m_dispStatus != DS_focus) {
             m_edit.SetWindowText(str);
             m_template = 0;
             m_lookupPos[0] = m_historyPos;
@@ -543,8 +591,6 @@ void CGhostBoardDlg::OnDrawClipboard()
     else {
         TRACE("%d:same str\n", count);
     }
-
-    ::SendMessage(m_nextClipboardViewerHandle, WM_DRAWCLIPBOARD, 0, 0L);
 }
 
 void CGhostBoardDlg::OnChangeCbChain(HWND hWndRemove, HWND hWndAfter)
@@ -563,10 +609,6 @@ void CGhostBoardDlg::OnChangeCbChain(HWND hWndRemove, HWND hWndAfter)
 bool CGhostBoardDlg::SetTextToClipboard(CString &strText)
 {
     TRACE("SetTextToClipboard\n");
-
-    // 文字列が空の場合はコピーしない
-    if( strText.IsEmpty() )
-        return false;
 
     // グローバルヒープ上にメモリ領域を確保し、文字列をコピー
     int iStrLen = WideCharToMultiByte(CP_ACP,0,strText,-1,NULL,0,NULL,NULL);	//必要なバイト数を取得
@@ -874,7 +916,7 @@ void CGhostBoardDlg::HistoryBackward()
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
     // 編集状態でなければクリップボードにコピー
-	if(!m_activate) {
+	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
     }
     
@@ -904,10 +946,10 @@ void CGhostBoardDlg::HistoryForward()
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
     // 編集状態でなければクリップボードにコピー
-	if(!m_activate) {
+	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
     }
-
+    
 	TRACE("HistoryForward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_ACTIVE); // バルーン表示
@@ -917,12 +959,19 @@ void CGhostBoardDlg::TemplateBackward()
 {
     rememberTemplate();
     // 参照テンプレートを更新
-    m_template --;
-    if(m_template < 0) m_template += TEMPLATE_NUM;
+    if(m_template < 0) {
+        m_template = 0;
+    }
+    else if(m_template == 0) {
+        m_template = TEMPLATE_NUM - 1;
+    }
+    else {
+        m_template --;
+    }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
     // 編集状態でなければクリップボードにコピー
-	if(!m_activate) {
+	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
     }
 
@@ -941,7 +990,7 @@ void CGhostBoardDlg::TemplateForward()
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
     // 編集状態でなければクリップボードにコピー
-	if(!m_activate) {
+	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
     }
 
@@ -962,13 +1011,12 @@ void CGhostBoardDlg::rememberTemplate()
     CString str;
     m_edit.GetWindowText(str);
     m_textArray[m_template][m_lookupPos[m_template]] = str;
-    SetTextToClipboard(str);
 }
 
 void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
 {
     //バルーン表示
-    if(!m_iconNotif || m_status == booting) return;
+    if(!m_iconNotif || m_bootStatus != BS_ready) return;
 
     m_icon.uFlags = NIF_INFO;
     if(msg) {
