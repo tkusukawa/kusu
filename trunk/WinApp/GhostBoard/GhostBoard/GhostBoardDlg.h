@@ -4,7 +4,7 @@
 #pragma once
 #include "myedit.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.8") // リソースからのバージョン取得方法不明
+#define     APP_NAME        _T("GhostBoard-1.1.9") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
@@ -15,7 +15,8 @@
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
 #define     BALLOON_COPY    1500
-#define     CHK_SCR_INTERVAL 10000
+#define     CHK_SCR_INTERVAL 10000 // 10秒毎に画面サイズを確認する 
+#define     CHK_CB_INTERVAL  60000 // 1分CBイベントが無かったらCB更新チェックする
 
 #define     SAVE_TEXT_SIZE  8192
 
@@ -84,7 +85,7 @@ public:
     POINT           m_leftDownCursorPos;
     WINDOWPLACEMENT m_leftDownWindowPos;
     WINDOWPLACEMENT m_windowPos;
-    int             m_chkScrTimer;
+    int             m_chkScrTimer; // 画面サイズ確認ダウンタイマ
 
     // 透明化
     int m_alphaActive;
@@ -105,16 +106,17 @@ public:
 
     // アクティブキー＆マウス位置の定期監視
     UINT m_mouseDistance, m_mouseDistanceFar;
-    bool m_confCtrl, m_confShift, m_confAlt, m_confWin;
+    int m_confCtrl, m_confShift, m_confAlt, m_confWin;
 
     afx_msg void OnTimer(UINT_PTR nIDEvent);
 
     // クリップボードの監視と書き込み
     HWND m_nextClipboardViewerHandle;
     bool m_cbEventFlg;
+    int  m_cbChainCheckTimer; // クリップボードチェイン確認アップタイマ
 
     afx_msg void OnDrawClipboard();
-    void OnCbUpdate();
+    bool OnCbUpdate();
     afx_msg void OnChangeCbChain(HWND hWndRemove, HWND hWndAfter);
     bool SetTextToClipboard(CString& str);
 
@@ -152,4 +154,7 @@ public:
     int m_hotKeyEnter;  // フォーカス設定
     void StartHotKey();
     void StopHotKey();
+
+    // アラート表示
+    void DispAlert(LPCWSTR msg);
 };

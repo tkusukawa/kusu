@@ -21,10 +21,10 @@ public:
     UINT m_alphaActive;
     UINT m_alphaDefault;
     UINT m_alphaMouse;
-    bool m_ctrl;
-    bool m_shift;
-    bool m_alt;
-    bool m_win;
+    int  m_ctrl;
+    int  m_shift;
+    int  m_alt;
+    int  m_win;
     bool *m_iconNotifP;
 
 protected:
