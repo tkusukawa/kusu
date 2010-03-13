@@ -32,6 +32,7 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_leftDown = false;
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
+    m_cbChainCheckTimer = 0;
     // デフォルトの透明度、マウス接近時の透明度を設定。
     m_alphaActive = 200;
     m_alphaDefault = 150;
@@ -121,9 +122,6 @@ BOOL CGhostBoardDlg::OnInitDialog()
     lstrcpy(m_icon.szInfo, _T(""));
     ::Shell_NotifyIcon( NIM_ADD, &m_icon );
 
-    //---- クリップボードの監視
-    m_nextClipboardViewerHandle = SetClipboardViewer();
-
     //---- 透明化
     SetViewState();
 
@@ -153,6 +151,10 @@ BOOL CGhostBoardDlg::OnInitDialog()
 void CGhostBoardDlg::OnDestroy()
 {
     CDialog::OnDestroy();
+
+    // クリップボードチエーンから外してもらう
+    ChangeClipboardChain(m_nextClipboardViewerHandle);
+    m_nextClipboardViewerHandle = 0;
 
     // 現在の編集テキストを履歴に格納
     rememberTemplate();
@@ -286,6 +288,14 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     POINT mousePnt;
     UINT dist, distX, distY;
 
+    // 起動完了状態更新
+    if(m_bootStatus == BS_booting) {
+        //---- クリップボードの監視開始
+        m_nextClipboardViewerHandle = SetClipboardViewer();
+
+        m_bootStatus = BS_ready; //---- 起動完了
+    }
+
     // クリップボードイベント処理
     if(m_cbEventFlg) {
         m_cbEventFlg = false;
@@ -298,6 +308,11 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         GetForegroundWindow() != this ||
         GetFocus() != &m_edit)) {
             lostFocus();
+    }
+    if(m_bootStatus == BS_ready &&
+        m_dispStatus != DS_focus &&
+        GetFocus() == &m_edit) {
+            getFocus();
     }
 
     // マウス位置の監視
@@ -342,9 +357,23 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
             m_dispStatus = DS_activeKey;
             SetViewState();
         }
-        if(m_actKeyStatus == false) {
+        if(m_actKeyStatus != true) {
             m_actKeyStatus = true;
             DispInfo(BALLOON_ACTIVE);
+
+            if(m_cbChainCheckTimer >= CHK_CB_INTERVAL) {
+                // アクティブキーが押されたときCBチェインチェックタイマがオーバーしていたら
+                m_cbChainCheckTimer = 0;
+                bool update = OnCbUpdate(); // クリップボードが更新されていないか確認
+                if(update) { // 更新されていた＝CBイベントが受け取れていなかったら
+                    // 一旦クリップボードチエーンから切断
+                    ChangeClipboardChain(m_nextClipboardViewerHandle);
+                    m_nextClipboardViewerHandle = 0;
+
+                    // 起動処理からやりなおし→ CBチェイン再接続
+                    m_bootStatus = BS_booting;
+                }
+            }
         }
     }
     else{ // アクティブキーが離されているなら
@@ -352,7 +381,7 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
             m_dispStatus = DS_none;
             SetViewState();
         }
-        if(m_actKeyStatus == true) {
+        if(m_actKeyStatus != false) {
             m_actKeyStatus = false;
             EraseInfo();
         }
@@ -369,7 +398,13 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         }
     }
 
-    if(m_chkScrTimer < WATCH_INTERVAL) { // 画面サイズ確認インターバル
+    if(m_chkScrTimer > WATCH_INTERVAL) { // 画面サイズ確認インターバル
+        m_chkScrTimer -= WATCH_INTERVAL;
+    }
+    else {
+        // expire
+        m_chkScrTimer = CHK_SCR_INTERVAL;
+
         int x = GetSystemMetrics(SM_CXSCREEN);
         if(m_windowPos.rcNormalPosition.right > x) {
             x = m_windowPos.rcNormalPosition.right - x;
@@ -384,14 +419,11 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
             m_windowPos.rcNormalPosition.bottom -= y;
             SetWindowPlacement(&m_windowPos);
         }
-        m_chkScrTimer = CHK_SCR_INTERVAL;
-    }
-    else {
-        m_chkScrTimer -= WATCH_INTERVAL;
     }
 
-    if(m_bootStatus == BS_booting) {
-        m_bootStatus = BS_ready; //---- 起動完了
+    //------------------------------- クリップボードチェイン定期確認タイマ
+    if(m_cbChainCheckTimer < CHK_CB_INTERVAL) {
+        m_cbChainCheckTimer += WATCH_INTERVAL;
     }
 
     CDialog::OnTimer(nIDEvent);
@@ -474,9 +506,11 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
 void CGhostBoardDlg::getFocus()
 {
+    if(m_bootStatus == BS_ready) {
     TRACE("GetFocus\n");
     m_dispStatus = DS_focus;
     SetViewState();
+    }
 }
 
 void CGhostBoardDlg::lostFocus()
@@ -501,13 +535,15 @@ void CGhostBoardDlg::OnDrawClipboard()
     TRACE("OnDrawClipboard()\n");
     CDialog::OnDrawClipboard();
 
-    m_cbEventFlg = true;
+    m_cbChainCheckTimer = 0; // CBチェインチェックタイマリセット
+
+    m_cbEventFlg = true; // フラグセット：次のタイマイベントでCB取得処理を行う
     SetTimer(0, WATCH_INTERVAL, NULL);
 
     ::SendMessage(m_nextClipboardViewerHandle, WM_DRAWCLIPBOARD, 0, 0L);
 }
 
-void CGhostBoardDlg::OnCbUpdate()
+bool CGhostBoardDlg::OnCbUpdate()
 {
     static int s_retry=0;
     static int s_count=0;
@@ -526,7 +562,7 @@ void CGhostBoardDlg::OnCbUpdate()
         }
         else {
             m_cbEventFlg = true; // リトライ
-            return;
+            return false;
         }
     }
 
@@ -575,11 +611,15 @@ void CGhostBoardDlg::OnCbUpdate()
 	if(err) {
         TRACE("%d:", count);
         TRACE(err);
-        // クリップボードにテキストが無い旨を表示
-        m_edit.SetWindowText(str);
-        m_template = -1;
-        SetViewState();
-        DispInfo(BALLOON_COPY, err);
+        // 起動中かアクティブでない場合のみ表示を更新
+        if(m_bootStatus != BS_ready || m_dispStatus != DS_focus) {
+            // クリップボードにテキストが無い旨を表示
+            DispAlert(str);
+            DispInfo(BALLOON_COPY, err);
+        }
+    }
+    else if(str.GetLength() == 0) {
+        // 長さ0の文字列は無視
     }
     else if((m_template < 0) || (m_textArray[m_template][m_lookupPos[m_template]] != str)) {
         // 現在参照中と異なる文字列の場合のみ更新する
@@ -604,23 +644,30 @@ void CGhostBoardDlg::OnCbUpdate()
 
         // バルーンにコピー番号を表示
         DispInfo(BALLOON_COPY);
+        return true;
     }
     else {
         TRACE("%d:same str\n", count);
     }
+    return false;
 }
 
 void CGhostBoardDlg::OnChangeCbChain(HWND hWndRemove, HWND hWndAfter)
 {
+    CString msg(_T("OnChangeCbChain\n"));
     CDialog::OnChangeCbChain(hWndRemove, hWndAfter);
 
-    if (hWndRemove == m_nextClipboardViewerHandle)
+    if (hWndRemove == m_nextClipboardViewerHandle) {
         m_nextClipboardViewerHandle = hWndAfter;
+        msg += _T("reconnect nextClip\n");
+    }
 
     if (m_nextClipboardViewerHandle != (HWND)0) {
         /* 次のクリップボード ビューアへ送る */
         ::SendMessage(m_nextClipboardViewerHandle, WM_CHANGECBCHAIN, (WPARAM)hWndRemove, (LPARAM)hWndAfter);
+        msg += _T("send WM_CHANGECBCHAIN");
     }
+    DispInfo(BALLOON_ACTIVE, msg);
 }
 
 bool CGhostBoardDlg::SetTextToClipboard(CString &strText)
@@ -734,6 +781,8 @@ bool CGhostBoardDlg::Load()
 //*************************************************** ポップアップメニュー
 void CGhostBoardDlg::OnRButtonDown(UINT nFlags, CPoint point)
 {
+    rememberTemplate();
+
     PopUpMenu();
 
     CDialog::OnRButtonDown(nFlags, point);
@@ -743,27 +792,28 @@ void CGhostBoardDlg::PopUpMenu()
 {
     POINT pnt;
     GetCursorPos(&pnt);
-    static int tgl;
+    int count;
 
     CMenu menu, *addPos;
-    menu.LoadMenu(IDR_MENU_RBUTTON); // IDR_MENU1はResourceViewで追加したメニュー
+    menu.LoadMenu(IDR_MENU_RBUTTON); // IDR_MENU_RBUTTONはResourceViewで追加したメニュー
 
-    addPos = menu.GetSubMenu(0)->GetSubMenu(0);
-    int startCount = m_historyCount>HISTORY_NUM?m_historyCount-HISTORY_NUM:1;
+    count = 0;
+    addPos = menu.GetSubMenu(0);
+    int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
     for(int i = startCount; i <= m_historyCount; i++) {
         int pos = i % HISTORY_NUM;
         CString str;
-        str.Format(_T("%02d(%s): "), i, m_historyTime[pos].Format("%H:%M"));
+        str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
         str += m_textArray[0][pos].Left(32);
         str.Replace(_T("\n"),_T("|"));
         str.Replace(_T("\r"),_T(""));
         str.Replace(_T("\t"),_T("    "));
-        addPos->AppendMenuW(MF_STRING, ID_SEL_HISTORY+pos, str);
+        addPos->InsertMenu(count++, MF_STRING | MF_BYPOSITION, ID_SEL_HISTORY+pos, str);
     }
 
     UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
     for(int grp = 0; grp < 3; grp++) {
-        addPos = menu.GetSubMenu(0)->GetSubMenu(grp+2);
+        addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
         for(int i = 0; i < HISTORY_NUM; i++) {
             if(m_textArray[grp+1][i] != "") {
                 CString str;
@@ -1045,7 +1095,7 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
         int hisNum = m_lookupPos[0] - m_historyPos;
         if(hisNum>0) hisNum -= m_historyNum;
         hisNum += m_historyCount;
-        wsprintf(m_icon.szInfo, _T("%02d(%s)"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
+        wsprintf(m_icon.szInfo, _T("%02d [%s]"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
     }
     else if(m_template > 0) {
         // テンプレート表示
@@ -1066,6 +1116,13 @@ void CGhostBoardDlg::EraseInfo()
     wsprintf(m_icon.szInfo, _T(""));
     ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
     m_balloonTime = 0;
+}
+
+void CGhostBoardDlg::DispAlert(LPCWSTR msg)
+{
+    m_edit.SetWindowText(msg);
+    m_template = -1;
+    SetViewState();
 }
 
 void CGhostBoardDlg::StartHotKey()
