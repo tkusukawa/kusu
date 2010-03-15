@@ -198,3 +198,4 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
     ホットキーで過去のコピーの履歴をクリップボードに呼び出せるように修正
 
   * [http://kusu.googlecode.com/files/ghostboard-1.0.0.3.zip ghostboard-1.0.0.3.zip]
+
