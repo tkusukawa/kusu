@@ -307,12 +307,21 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         GetFocus() != &m_edit)) {
             lostFocus();
     }
-    else if(m_dispStatus != DS_focus &&
-        m_bootStatus == BS_ready &&
-        GetActiveWindow() == this && 
-        GetForegroundWindow() == this &&
-        GetFocus() == &m_edit) {
-            getFocus();
+    else if(m_bootStatus == BS_ready &&
+            m_dispStatus != DS_focus) {
+        CWnd *foreground = GetForegroundWindow();
+        if(this == foreground) {
+            if( GetActiveWindow() == this &&
+                GetFocus() == &m_edit) {
+                    getFocus();
+            }
+        }
+        else { // フォーカスを戻すために元のウィンドウを記憶
+            if(foreground != NULL && foreground != m_lastWindow) {
+                m_lastWindow = foreground;
+                TRACE("OtherFocus=%X\n", foreground->m_hWnd);
+            }
+        }
     }
 
     // マウス位置の監視
@@ -892,13 +901,27 @@ void CGhostBoardDlg::OnExecMenu(UINT uID)
         m_lookupPos[m_template] = uID - ID_SEL_BLUE;
     }
 
+    CString &selectedString = m_textArray[m_template][m_lookupPos[m_template]];
     // 履歴の内容を編集テキストに表示
-    m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    m_edit.SetWindowText(selectedString);
     // クリップボードにコピー
-    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
+    SetTextToClipboard(selectedString);
 
     SetViewState();
     DispInfo(BALLOON_ACTIVE); // バルーン表示
+
+    if(m_lastWindow) {
+        if(!m_actKeyStatus) { // アクテイブキーが押されてなければ
+            // 前のウィンドウにフォーカスを戻す
+            ::SetForegroundWindow(m_lastWindow->m_hWnd);
+        }
+
+        /* // ペースト処理
+        if(m_actKeyStatus) {
+            TextInsertToOther(m_lastWindow->m_hWnd, selectedString);
+        }
+        */
+    }
 }
 
 LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
@@ -1168,3 +1191,28 @@ void CGhostBoardDlg::StopHotKey()
 //    if(!::UnregisterHotKey(m_hWnd, m_hotKeyEnter))
 //        MessageBox(_T("FAIL: UnregisterHotKey(): focus"));
 }
+/*
+// 他のアプリケーションへの文字列挿入
+void CGhostBoardDlg::TextInsertToOther(HWND hWnd, CString &str)
+{
+    // 先方のフォーカスWindowを取得
+    Sleep(GET_FOCUS_WAIT);
+    DWORD dw_me=GetWindowThreadProcessId(m_hWnd,NULL);
+    DWORD dw_he=GetWindowThreadProcessId(hWnd,NULL);
+    AttachThreadInput(dw_me,dw_he,TRUE);
+    HWND w = ::GetFocus();
+    AttachThreadInput(dw_me,dw_he,FALSE);
+
+    TRACE("TextInsertToOther->%X\n", w);
+    //::SendMessage(w, WM_PASTE, 0, 0); 効かないアプリがある
+
+    int len=str.GetLength();
+    for(int i=0; i < len; i++) {
+        TRACE("%X ", str[i]);
+        if(str[i] == 0x0d) break; // 改行があるとおかしくなるアプリがある
+        //::SendMessage(w, WM_CHAR, (WPARAM)str[i], 0);
+        ::SendMessage(w, WM_IME_CHAR, (WPARAM)str[i], 0);
+    }
+    TRACE("\n");
+}
+*/
