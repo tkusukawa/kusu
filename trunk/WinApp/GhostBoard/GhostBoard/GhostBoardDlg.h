@@ -4,7 +4,7 @@
 #pragma once
 #include "myedit.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.10b") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.10") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
@@ -16,6 +16,7 @@
 #define     BALLOON_ACTIVE  5000
 #define     BALLOON_COPY    1500
 #define     CHK_SCR_INTERVAL 10000 // 10秒毎に画面サイズを確認する
+#define     GET_FOCUS_WAIT  100
 
 #define     SAVE_TEXT_SIZE  8192
 
@@ -156,4 +157,8 @@ public:
 
     // アラート表示
     void DispAlert(LPCWSTR msg);
+
+    // 他のアプリケーションへの文字列挿入
+    CWnd* m_lastWindow;
+    void TextInsertToOther(HWND hWnd, CString &str);
 };
