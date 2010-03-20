@@ -66,6 +66,9 @@ Ctrl,Shift,Alt,Winの4つのキーの中から任意の組合せを設定する�
 「白」はクリップボードの履歴を参照するグループ、
 その他のグループは定形テキストを保存・参照するグループとなっています。
 
+各グループにはそれぞれ32個の定型文を保存することができ、
+グループ選択後に「アクティブキー＋↑/↓」で選択します。
+
 ● フォーカス（編集）<br>
 定形テキストの内容を編集する際は
 アクティブキーを押しながらウィンドウをクリックするか、
@@ -114,6 +117,13 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 お気づきの点がございましたらご連絡いただけると助かります。
 
 == バイナリダウンロード ==
+
+  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.10.zip GhostBoard-1.1.10 インストーラ]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.10.zip GhostBoard-1.1.10 EXEファイル]
+    2010/03/20 r136<br>
+    クリップボード監視の正常性確認をアクティブキー操作毎に行うように修正<br>
+    稀にフォーカス状態の認識が切り替わり続ける問題の修正<br>
+    メニューから履歴/定型文を選択した際にフォーカスを元のアプリに戻す機能を追加
 
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.9.zip GhostBoard-1.1.9 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.9.zip GhostBoard-1.1.9 EXEファイル]
@@ -198,4 +208,3 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
     ホットキーで過去のコピーの履歴をクリップボードに呼び出せるように修正
 
   * [http://kusu.googlecode.com/files/ghostboard-1.0.0.3.zip ghostboard-1.0.0.3.zip]
-
