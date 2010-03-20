@@ -4,7 +4,7 @@
 #pragma once
 #include "myedit.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.9") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.10b") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
@@ -15,8 +15,7 @@
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
 #define     BALLOON_COPY    1500
-#define     CHK_SCR_INTERVAL 10000 // 10秒毎に画面サイズを確認する 
-#define     CHK_CB_INTERVAL  60000 // 1分CBイベントが無かったらCB更新チェックする
+#define     CHK_SCR_INTERVAL 10000 // 10秒毎に画面サイズを確認する
 
 #define     SAVE_TEXT_SIZE  8192
 
@@ -113,11 +112,11 @@ public:
     // クリップボードの監視と書き込み
     HWND m_nextClipboardViewerHandle;
     bool m_cbEventFlg;
-    int  m_cbChainCheckTimer; // クリップボードチェイン確認アップタイマ
 
     afx_msg void OnDrawClipboard();
     bool OnCbUpdate();
     afx_msg void OnChangeCbChain(HWND hWndRemove, HWND hWndAfter);
+    bool CheckCbConnect();
     bool SetTextToClipboard(CString& str);
 
     // 状態の保存と読み出し

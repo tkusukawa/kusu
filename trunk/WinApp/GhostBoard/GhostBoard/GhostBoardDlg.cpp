@@ -32,7 +32,6 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_leftDown = false;
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
-    m_cbChainCheckTimer = 0;
     // デフォルトの透明度、マウス接近時の透明度を設定。
     m_alphaActive = 200;
     m_alphaDefault = 150;
@@ -240,7 +239,6 @@ void CGhostBoardDlg::OnLButtonDown(UINT nFlags, CPoint point)
     GetCursorPos(&m_leftDownCursorPos);
     GetWindowPlacement(&m_leftDownWindowPos);
     m_leftDown = true;
-    
 
     CDialog::OnLButtonDown(nFlags, point);
 
@@ -309,8 +307,10 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         GetFocus() != &m_edit)) {
             lostFocus();
     }
-    if(m_bootStatus == BS_ready &&
-        m_dispStatus != DS_focus &&
+    else if(m_dispStatus != DS_focus &&
+        m_bootStatus == BS_ready &&
+        GetActiveWindow() == this && 
+        GetForegroundWindow() == this &&
         GetFocus() == &m_edit) {
             getFocus();
     }
@@ -357,23 +357,11 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
             m_dispStatus = DS_activeKey;
             SetViewState();
         }
-        if(m_actKeyStatus != true) {
+        if(m_actKeyStatus != true) { // 押されたなう
             m_actKeyStatus = true;
             DispInfo(BALLOON_ACTIVE);
 
-            if(m_cbChainCheckTimer >= CHK_CB_INTERVAL) {
-                // アクティブキーが押されたときCBチェインチェックタイマがオーバーしていたら
-                m_cbChainCheckTimer = 0;
-                bool update = OnCbUpdate(); // クリップボードが更新されていないか確認
-                if(update) { // 更新されていた＝CBイベントが受け取れていなかったら
-                    // 一旦クリップボードチエーンから切断
-                    ChangeClipboardChain(m_nextClipboardViewerHandle);
-                    m_nextClipboardViewerHandle = 0;
-
-                    // 起動処理からやりなおし→ CBチェイン再接続
-                    m_bootStatus = BS_booting;
-                }
-            }
+            CheckCbConnect(); // クリップボードの正常性確認
         }
     }
     else{ // アクティブキーが離されているなら
@@ -419,11 +407,6 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
             m_windowPos.rcNormalPosition.bottom -= y;
             SetWindowPlacement(&m_windowPos);
         }
-    }
-
-    //------------------------------- クリップボードチェイン定期確認タイマ
-    if(m_cbChainCheckTimer < CHK_CB_INTERVAL) {
-        m_cbChainCheckTimer += WATCH_INTERVAL;
     }
 
     CDialog::OnTimer(nIDEvent);
@@ -507,9 +490,11 @@ void CGhostBoardDlg::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 void CGhostBoardDlg::getFocus()
 {
     if(m_bootStatus == BS_ready) {
-    TRACE("GetFocus\n");
-    m_dispStatus = DS_focus;
-    SetViewState();
+        TRACE("GetFocus\n");
+        if(CheckCbConnect()) {
+            m_dispStatus = DS_focus;
+            SetViewState();
+        }
     }
 }
 
@@ -534,8 +519,6 @@ void CGhostBoardDlg::OnDrawClipboard()
 {
     TRACE("OnDrawClipboard()\n");
     CDialog::OnDrawClipboard();
-
-    m_cbChainCheckTimer = 0; // CBチェインチェックタイマリセット
 
     m_cbEventFlg = true; // フラグセット：次のタイマイベントでCB取得処理を行う
     SetTimer(0, WATCH_INTERVAL, NULL);
@@ -650,6 +633,21 @@ bool CGhostBoardDlg::OnCbUpdate()
         TRACE("%d:same str\n", count);
     }
     return false;
+}
+
+// クリップボードの内容が認識と一致しているか確認して違ったら再接続する
+bool CGhostBoardDlg::CheckCbConnect()
+{
+    bool update = OnCbUpdate(); // クリップボードが更新されていないか確認
+    if(update) { // 更新されていた＝CBイベントが受け取れていなかったら
+        // 一旦クリップボードチエーンから切断
+        ChangeClipboardChain(m_nextClipboardViewerHandle);
+        m_nextClipboardViewerHandle = 0;
+        // 起動処理からやりなおし→ CBチェイン再接続
+        m_bootStatus = BS_booting;
+        return false;
+    }
+    return true;
 }
 
 void CGhostBoardDlg::OnChangeCbChain(HWND hWndRemove, HWND hWndAfter)
