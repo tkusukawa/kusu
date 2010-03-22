@@ -4,7 +4,7 @@
 #pragma once
 #include "myedit.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.10") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.11") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
