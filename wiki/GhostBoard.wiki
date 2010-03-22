@@ -138,7 +138,7 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.11.zip GhostBoard-1.1.11 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.11.zip GhostBoard-1.1.11 EXEファイル]
     2010/03/22 r138<br>
-    ReadMe.txtへの操作方法の追記<br>
+    !ReadMe.txtへの操作方法の追記<br>
     登録されていない定型文の記憶領域をメニューに表示するように修正<br>
     (久米様：ご助言ありがとうございました)<br>
     起動直後にフォーカスを失っても透明化されない場合があった問題の修正<br>
