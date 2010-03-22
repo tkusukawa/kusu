@@ -27,7 +27,7 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
 
     // メンバ変数初期化
     m_bootStatus = BS_none;
-    m_dispStatus = DS_none;
+    m_dispStatus = DS_focus;
     m_cbEventFlg = false;
     m_leftDown = false;
     m_mouseDistance = 0;
@@ -288,6 +288,8 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
 
     // 起動完了状態更新
     if(m_bootStatus == BS_booting) {
+        OnCbUpdate(); // 起動前にクリップボードの内容を取得しておく
+        
         //---- クリップボードの監視開始
         m_nextClipboardViewerHandle = SetClipboardViewer();
 
@@ -301,25 +303,27 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     }
 
     // フォーカス状態の確認（ごくまれにフォーカス消失の通知が受けられないので）
-    if(m_dispStatus == DS_focus && 
-        (GetActiveWindow() != this || 
-        GetForegroundWindow() != this ||
-        GetFocus() != &m_edit)) {
-            lostFocus();
-    }
-    else if(m_bootStatus == BS_ready &&
-            m_dispStatus != DS_focus) {
-        CWnd *foreground = GetForegroundWindow();
-        if(this == foreground) {
-            if( GetActiveWindow() == this &&
-                GetFocus() == &m_edit) {
-                    getFocus();
+    if(m_bootStatus == BS_ready) {
+        if(m_dispStatus == DS_focus) {
+            if(GetActiveWindow() != this || 
+               GetForegroundWindow() != this ||
+               GetFocus() != &m_edit) {
+                lostFocus();
             }
         }
-        else { // フォーカスを戻すために元のウィンドウを記憶
-            if(foreground != NULL && foreground != m_lastWindow) {
-                m_lastWindow = foreground;
-                TRACE("OtherFocus=%X\n", foreground->m_hWnd);
+        else { // m_dispStatus != DS_focus
+            CWnd *foreground = GetForegroundWindow();
+            if(this == foreground) {
+                if( GetActiveWindow() == this &&
+                    GetFocus() == &m_edit) {
+                        getFocus();
+                }
+            }
+            else { // フォーカスを戻すために元のウィンドウを記憶
+                if(foreground != NULL && foreground != m_lastWindow) {
+                    m_lastWindow = foreground;
+                    TRACE("OtherFocus=%X\n", foreground->m_hWnd);
+                }
             }
         }
     }
@@ -613,7 +617,9 @@ bool CGhostBoardDlg::OnCbUpdate()
     else if(str.GetLength() == 0) {
         // 長さ0の文字列は無視
     }
-    else if((m_template < 0) || (m_textArray[m_template][m_lookupPos[m_template]] != str)) {
+    else if(m_textArray[0][m_historyPos] != str &&
+        ((m_template <= 0) || (m_textArray[m_template][m_lookupPos[m_template]] != str)))
+    {
         // 現在参照中と異なる文字列の場合のみ更新する
         m_historyCount ++;
         m_historyPos ++;
@@ -821,8 +827,7 @@ void CGhostBoardDlg::PopUpMenu()
     UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
     for(int grp = 0; grp < 3; grp++) {
         addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
-        for(int i = 0; i < HISTORY_NUM; i++) {
-            if(m_textArray[grp+1][i] != "") {
+        for(int i = HISTORY_NUM - 1; i >=0; i--) {
                 CString str;
                 str.Format(_T("%02d: "), i);
                 str += m_textArray[grp+1][i].Left(32);
@@ -830,7 +835,6 @@ void CGhostBoardDlg::PopUpMenu()
                 str.Replace(_T("\r"),_T(""));
                 str.Replace(_T("\t"),_T("    "));
                 addPos->AppendMenuW(MF_STRING, ids[grp]+i, str);
-            }
         }
     }
 
@@ -904,17 +908,16 @@ void CGhostBoardDlg::OnExecMenu(UINT uID)
     CString &selectedString = m_textArray[m_template][m_lookupPos[m_template]];
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(selectedString);
-    // クリップボードにコピー
-    SetTextToClipboard(selectedString);
 
     SetViewState();
     DispInfo(BALLOON_ACTIVE); // バルーン表示
 
-    if(m_lastWindow) {
-        if(!m_actKeyStatus) { // アクテイブキーが押されてなければ
-            // 前のウィンドウにフォーカスを戻す
-            ::SetForegroundWindow(m_lastWindow->m_hWnd);
-        }
+    if(m_lastWindow && // 元ウィンドウが取得できていて、
+       !m_actKeyStatus && // アクテイブキーが押されておらず、且つ
+       selectedString != "") // 選択された文字列が空でなければ
+    {
+        // 前のウィンドウにフォーカスを戻す
+        ::SetForegroundWindow(m_lastWindow->m_hWnd);
 
         /* // ペースト処理
         if(m_actKeyStatus) {
@@ -929,7 +932,7 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	switch( message )
 	{
 	case WM_HOTKEY:	//ホットキーを押しました。
-		TRACE( "%d, %d, %d\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
+		TRACE( "HotKey %d, %d, %d\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
         if(wParam == m_hotKeyUp) {
             HistoryBackward();
         }
