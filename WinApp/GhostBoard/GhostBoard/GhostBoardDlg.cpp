@@ -514,17 +514,23 @@ void CGhostBoardDlg::getFocus()
 void CGhostBoardDlg::lostFocus()
 {
     TRACE("LostFocus\n");
-
-    CString str;
-    m_edit.GetWindowText(str);
-    SetTextToClipboard(str);
-
-    rememberTemplate();
-
     m_dispStatus = DS_none;
-    SetViewState();
 
-    Save();
+    if(m_template >= 0) { // 履歴か定型文の場合は
+        // 表示内容にクリップボードをあわせる
+        CString str;
+        m_edit.GetWindowText(str);
+        SetTextToClipboard(str);
+
+        rememberTemplate();
+        Save();
+    }
+    else { // 表示不可の状態だったら
+        // クリップボードに表示内容をあわせる
+        OnCbUpdate();
+    }
+
+    SetViewState();
 }
 
 //*************************************************** クリップボードの監視と書き込み
@@ -604,6 +610,7 @@ bool CGhostBoardDlg::OnCbUpdate()
     }
     CloseClipboard();
 
+    bool historyAdd, needDispUpdate;
 	if(err) {
         TRACE("%d:", count);
         TRACE(err);
@@ -613,14 +620,28 @@ bool CGhostBoardDlg::OnCbUpdate()
             DispAlert(str);
             DispInfo(BALLOON_COPY, err);
         }
+        historyAdd = false;
+        needDispUpdate = false;
     }
     else if(str.GetLength() == 0) {
         // 長さ0の文字列は無視
+        historyAdd = false;
+        needDispUpdate = false;
     }
-    else if(m_textArray[0][m_historyPos] != str &&
-        ((m_template <= 0) || (m_textArray[m_template][m_lookupPos[m_template]] != str)))
-    {
-        // 現在参照中と異なる文字列の場合のみ更新する
+    else if((m_template >= 0) && (m_textArray[m_template][m_lookupPos[m_template]] == str)) {
+        // 表示内容と同じなので履歴の追加は行わない
+        TRACE("%d:same as display\n", count);
+        historyAdd = false;
+        needDispUpdate = false;
+    }
+    else if(m_textArray[0][m_historyPos] == str) {
+        // 最新の履歴と同じ場合
+        TRACE("%d:same as newest\n", count);
+        historyAdd = false; // 履歴の追加は行わないが
+        needDispUpdate = true; // 表示を更新する必要がある
+    }
+    else {
+        // 表示内容とも最新の履歴とも異なる文字列の場合のみ履歴に追加する
         m_historyCount ++;
         m_historyPos ++;
         if(m_historyPos>=m_historyNum && m_historyNum < HISTORY_NUM)
@@ -631,23 +652,23 @@ bool CGhostBoardDlg::OnCbUpdate()
         m_textArray[0][m_historyPos] = str;
         m_historyTime[m_historyPos] = CTime::GetCurrentTime();
         TRACE("%d:save history:%d\n", count, m_historyPos);
+        historyAdd = true;
+        needDispUpdate = true;
+    }
 
-        // 起動中かアクティブでない場合のみ表示を更新
-        if(m_bootStatus != BS_ready || m_dispStatus != DS_focus) {
+    if(needDispUpdate) { // 表示を更新すべき状況で
+        // フォーカスが無いか、フォーカスがあっても起動中ならば表示を更新
+        if(m_dispStatus != DS_focus || m_bootStatus != BS_ready) {
             m_edit.SetWindowText(str);
             m_template = 0;
             m_lookupPos[0] = m_historyPos;
             SetViewState();
-        }
 
-        // バルーンにコピー番号を表示
-        DispInfo(BALLOON_COPY);
-        return true;
+            // バルーンにコピー番号を表示
+            DispInfo(BALLOON_COPY);
+        }
     }
-    else {
-        TRACE("%d:same str\n", count);
-    }
-    return false;
+    return historyAdd;
 }
 
 // クリップボードの内容が認識と一致しているか確認して違ったら再接続する
@@ -773,10 +794,10 @@ bool CGhostBoardDlg::Load()
     fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
 
     do{
-        int tmp, idx;
+        unsigned int tmp, idx;
         char buf[SAVE_TEXT_SIZE];
         ret = fscanf_s(fp, "%d:%d:", &tmp, &idx);
-        if(ret > 0) {
+        if(ret > 0 && tmp < TEMPLATE_NUM && idx < HISTORY_NUM) {
             fgets(buf, SAVE_TEXT_SIZE, fp);
             m_textArray[tmp][idx] = buf;
             m_textArray[tmp][idx].Replace(_T("\r"), _T("")); // 改行文字を削除
