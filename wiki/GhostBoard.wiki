@@ -135,6 +135,11 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == バイナリダウンロード ==
 
+  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.12.zip GhostBoard-1.1.12 インストーラ]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.12.zip GhostBoard-1.1.12 EXEファイル]
+    2010/03/27 r142<br>
+    ホットキーで履歴を参照した際に履歴を更新してしまう場合があった問題を修正
+
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.11.zip GhostBoard-1.1.11 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.11.zip GhostBoard-1.1.11 EXEファイル]
     2010/03/22 r138<br>
