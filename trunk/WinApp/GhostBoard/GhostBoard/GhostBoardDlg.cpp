@@ -72,6 +72,7 @@ BEGIN_MESSAGE_MAP(CGhostBoardDlg, CDialog)
     ON_COMMAND(ID_MENU_SETTINGS, &CGhostBoardDlg::OnMenuSettings)
     ON_WM_CTLCOLOR()
     ON_COMMAND_RANGE(ID_SEL_HISTORY, ID_SEL_MAX, OnExecMenu)
+    ON_EN_CHANGE(IDC_EDIT, &CGhostBoardDlg::OnEnChangeEdit)
 END_MESSAGE_MAP()
 
 
@@ -143,6 +144,7 @@ BOOL CGhostBoardDlg::OnInitDialog()
 
     m_textArray[0][0] = APP_NAME;
     m_edit.SetWindowText(APP_NAME);
+    m_lastOp = LO_edit;
 
 	return ret;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -288,7 +290,7 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
 
     // 起動完了状態更新
     if(m_bootStatus == BS_booting) {
-        OnCbUpdate(); // 起動前にクリップボードの内容を取得しておく
+        GetTextFromClilpboard(); // 起動前にクリップボードの内容を取得しておく
         
         //---- クリップボードの監視開始
         m_nextClipboardViewerHandle = SetClipboardViewer();
@@ -299,7 +301,7 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     // クリップボードイベント処理
     if(m_cbEventFlg) {
         m_cbEventFlg = false;
-        OnCbUpdate();
+        GetTextFromClilpboard();
     }
 
     // フォーカス状態の確認（ごくまれにフォーカス消失の通知が受けられないので）
@@ -516,18 +518,20 @@ void CGhostBoardDlg::lostFocus()
     TRACE("LostFocus\n");
     m_dispStatus = DS_none;
 
-    if(m_template >= 0) { // 履歴か定型文の場合は
-        // 表示内容にクリップボードをあわせる
+    if(m_template >= 0) { // テンプレート編集中だった場合
+        rememberTemplate(); // 表示内容を記憶して
+        Save(); // 永続化する
+    }
+
+    if(m_lastOp == LO_edit) { // 最後の操作が編集なら
+        // クリップボードを表示内容にあわせる
         CString str;
         m_edit.GetWindowText(str);
         SetTextToClipboard(str);
-
-        rememberTemplate();
-        Save();
     }
-    else { // 表示不可の状態だったら
-        // クリップボードに表示内容をあわせる
-        OnCbUpdate();
+    else if(m_lastOp == LO_copy) { //最後の操作がコピーだったら
+        // 表示内容をクリップボードにあわせる
+        GetTextFromClilpboard();
     }
 
     SetViewState();
@@ -545,12 +549,12 @@ void CGhostBoardDlg::OnDrawClipboard()
     ::SendMessage(m_nextClipboardViewerHandle, WM_DRAWCLIPBOARD, 0, 0L);
 }
 
-bool CGhostBoardDlg::OnCbUpdate()
+bool CGhostBoardDlg::GetTextFromClilpboard()
 {
     static int s_retry=0;
     static int s_count=0;
     int count = s_count++;
-    TRACE("%d:OnCbUpdate()\n", count);
+    TRACE("%d:GetTextFromClilpboard()\n", count);
 
     m_cbEventFlg = false;
     BOOL isOpen = OpenClipboard(); // クリップボードオープン
@@ -652,6 +656,7 @@ bool CGhostBoardDlg::OnCbUpdate()
         m_textArray[0][m_historyPos] = str;
         m_historyTime[m_historyPos] = CTime::GetCurrentTime();
         TRACE("%d:save history:%d\n", count, m_historyPos);
+        m_lastOp = LO_copy;
         historyAdd = true;
         needDispUpdate = true;
     }
@@ -660,6 +665,7 @@ bool CGhostBoardDlg::OnCbUpdate()
         // フォーカスが無いか、フォーカスがあっても起動中ならば表示を更新
         if(m_dispStatus != DS_focus || m_bootStatus != BS_ready) {
             m_edit.SetWindowText(str);
+            m_lastOp = LO_none;
             m_template = 0;
             m_lookupPos[0] = m_historyPos;
             SetViewState();
@@ -674,7 +680,7 @@ bool CGhostBoardDlg::OnCbUpdate()
 // クリップボードの内容が認識と一致しているか確認して違ったら再接続する
 bool CGhostBoardDlg::CheckCbConnect()
 {
-    bool update = OnCbUpdate(); // クリップボードが更新されていないか確認
+    bool update = GetTextFromClilpboard(); // クリップボードが更新されていないか確認
     if(update) { // 更新されていた＝CBイベントが受け取れていなかったら
         // 一旦クリップボードチエーンから切断
         ChangeClipboardChain(m_nextClipboardViewerHandle);
@@ -929,6 +935,7 @@ void CGhostBoardDlg::OnExecMenu(UINT uID)
     CString &selectedString = m_textArray[m_template][m_lookupPos[m_template]];
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(selectedString);
+    m_lastOp = LO_edit;
 
     SetViewState();
     DispInfo(BALLOON_ACTIVE); // バルーン表示
@@ -1028,6 +1035,7 @@ void CGhostBoardDlg::HistoryBackward()
     }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    m_lastOp = LO_edit;
     // 編集状態でなければクリップボードにコピー
 	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
@@ -1058,6 +1066,7 @@ void CGhostBoardDlg::HistoryForward()
     }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    m_lastOp = LO_edit;
     // 編集状態でなければクリップボードにコピー
 	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
@@ -1083,6 +1092,7 @@ void CGhostBoardDlg::TemplateBackward()
     }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    m_lastOp = LO_edit;
     // 編集状態でなければクリップボードにコピー
 	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
@@ -1102,6 +1112,7 @@ void CGhostBoardDlg::TemplateForward()
     if(m_template >= TEMPLATE_NUM) m_template -= TEMPLATE_NUM;
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
+    m_lastOp = LO_edit;
     // 編集状態でなければクリップボードにコピー
 	if(m_dispStatus != DS_focus) {
 	    SetTextToClipboard(m_textArray[m_template][m_lookupPos[m_template]]);
@@ -1166,6 +1177,7 @@ void CGhostBoardDlg::EraseInfo()
 void CGhostBoardDlg::DispAlert(LPCWSTR msg)
 {
     m_edit.SetWindowText(msg);
+    m_lastOp = LO_none;
     m_template = -1;
     SetViewState();
 }
@@ -1240,3 +1252,9 @@ void CGhostBoardDlg::TextInsertToOther(HWND hWnd, CString &str)
     TRACE("\n");
 }
 */
+
+void CGhostBoardDlg::OnEnChangeEdit()
+{
+    TRACE("OnEnChangeEdit\n");
+    m_lastOp = LO_edit;
+}
