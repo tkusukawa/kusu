@@ -4,7 +4,7 @@
 #pragma once
 #include "myedit.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.12") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.13b") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
@@ -38,6 +38,12 @@ enum DispStatus {
     DS_focus
 };
 
+enum LastOperation {
+    LO_none,
+    LO_edit,
+    LO_copy
+};
+
 // CGhostBoardDlg ダイアログ
 class CGhostBoardDlg : public CDialog
 {
@@ -69,6 +75,8 @@ public:
     BootStatus m_bootStatus;
     DispStatus m_dispStatus;
     bool       m_actKeyStatus;
+    LastOperation m_lastOp;
+    afx_msg void OnEnChangeEdit();
 
     // コントロール
     CMyEdit m_edit; 
@@ -115,9 +123,9 @@ public:
     bool m_cbEventFlg;
 
     afx_msg void OnDrawClipboard();
-    bool OnCbUpdate();
     afx_msg void OnChangeCbChain(HWND hWndRemove, HWND hWndAfter);
     bool CheckCbConnect();
+    bool GetTextFromClilpboard();
     bool SetTextToClipboard(CString& str);
 
     // 状態の保存と読み出し
