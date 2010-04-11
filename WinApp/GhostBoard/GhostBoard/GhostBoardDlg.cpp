@@ -26,6 +26,7 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 
     // メンバ変数初期化
+    m_lastWindow = NULL;
     m_bootStatus = BS_none;
     m_dispStatus = DS_focus;
     m_cbEventFlg = false;
@@ -80,6 +81,7 @@ BEGIN_MESSAGE_MAP(CGhostBoardDlg, CDialog)
     ON_WM_CTLCOLOR()
     ON_COMMAND_RANGE(ID_SEL_HISTORY, ID_SEL_MAX, OnExecMenu)
     ON_EN_CHANGE(IDC_EDIT, &CGhostBoardDlg::OnEnChangeEdit)
+    ON_WM_MENUSELECT()
 END_MESSAGE_MAP()
 
 
@@ -136,9 +138,9 @@ BOOL CGhostBoardDlg::OnInitDialog()
     SetTimer(0, WATCH_INTERVAL, NULL);
 
     //---- デフォルトの画面位置を設定
-    m_windowPos.rcNormalPosition.right = GetSystemMetrics(SM_CXSCREEN);
+    m_windowPos.rcNormalPosition.left = 80;
+    m_windowPos.rcNormalPosition.right = m_windowPos.rcNormalPosition.right + 600;
     m_windowPos.rcNormalPosition.bottom = GetSystemMetrics(SM_CYSCREEN);
-    m_windowPos.rcNormalPosition.left = m_windowPos.rcNormalPosition.right - 400;
     m_windowPos.rcNormalPosition.top = m_windowPos.rcNormalPosition.bottom - 80;
     SetWindowPlacement(&m_windowPos);
     m_chkScrTimer = CHK_SCR_INTERVAL;
@@ -370,10 +372,10 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
     }
 
     // アクティブキーの監視
-    if( (!m_confCtrl  || ::GetAsyncKeyState(VK_CONTROL)) &
-        (!m_confShift || ::GetAsyncKeyState(VK_SHIFT)) &
-        (!m_confAlt   || ::GetAsyncKeyState(VK_MENU)) &
-        (!m_confWin   || ::GetAsyncKeyState(VK_LWIN) || ::GetAsyncKeyState(VK_RWIN))) {
+    if( (m_confCtrl  == (::GetAsyncKeyState(VK_CONTROL) != 0)) &
+        (m_confShift == (::GetAsyncKeyState(VK_SHIFT) != 0)) &
+        (m_confAlt   == (::GetAsyncKeyState(VK_MENU) != 0)) &
+        (m_confWin   == (::GetAsyncKeyState(VK_LWIN) != 0 || ::GetAsyncKeyState(VK_RWIN) != 0))) {
         // アクティブキーが押されているなら
         if(m_dispStatus == DS_none) {
             m_dispStatus = DS_activeKey;
@@ -415,20 +417,42 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         // expire
         m_chkScrTimer = CHK_SCR_INTERVAL;
 
-        int x = GetSystemMetrics(SM_CXSCREEN);
-        if(m_windowPos.rcNormalPosition.right > x) {
-            x = m_windowPos.rcNormalPosition.right - x;
-            m_windowPos.rcNormalPosition.left  -= x;
-            m_windowPos.rcNormalPosition.right -= x;
+        int x_min = GetSystemMetrics(SM_XVIRTUALSCREEN);
+        if(m_windowPos.rcNormalPosition.left < x_min) {
+            int x = x_min - m_windowPos.rcNormalPosition.left;
+            m_windowPos.rcNormalPosition.left  += x;
+            m_windowPos.rcNormalPosition.right += x;
             SetWindowPlacement(&m_windowPos);
         }
-        int y = GetSystemMetrics(SM_CYSCREEN);
-        if(m_windowPos.rcNormalPosition.bottom > y) {
-            y = m_windowPos.rcNormalPosition.bottom - y;
-            m_windowPos.rcNormalPosition.top    -= y;
-            m_windowPos.rcNormalPosition.bottom -= y;
+        int x_max = x_min + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        if(m_windowPos.rcNormalPosition.right > x_max) {
+            int x = x_max - m_windowPos.rcNormalPosition.right;
+            m_windowPos.rcNormalPosition.left  += x;
+            m_windowPos.rcNormalPosition.right += x;
             SetWindowPlacement(&m_windowPos);
         }
+        int y_min = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        if(m_windowPos.rcNormalPosition.top < y_min) {
+            int y = y_min - m_windowPos.rcNormalPosition.top;
+            m_windowPos.rcNormalPosition.top    += y;
+            m_windowPos.rcNormalPosition.bottom += y;
+            SetWindowPlacement(&m_windowPos);
+        }
+        int y_max = y_min + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        if(m_windowPos.rcNormalPosition.bottom > y_max) {
+            int y = y_max - m_windowPos.rcNormalPosition.bottom;
+            m_windowPos.rcNormalPosition.top    += y;
+            m_windowPos.rcNormalPosition.bottom += y;
+            SetWindowPlacement(&m_windowPos);
+        }
+    }
+
+    if(m_dropFocus) {
+        if(GetForegroundWindow() == this && m_lastWindow != NULL) { // フォーカスを握っていたら
+           // 前のウィンドウにフォーカスを戻す
+            ::SetForegroundWindow(m_lastWindow->m_hWnd);
+        }
+        m_dropFocus = false;
     }
 
     CDialog::OnTimer(nIDEvent);
@@ -838,15 +862,15 @@ void CGhostBoardDlg::OnRButtonDown(UINT nFlags, CPoint point)
 {
     rememberTemplate();
 
-    PopUpMenu();
+    POINT pnt;
+    GetCursorPos(&pnt);
+    PopUpMenu(pnt);
 
     CDialog::OnRButtonDown(nFlags, point);
 }
 
-void CGhostBoardDlg::PopUpMenu()
+void CGhostBoardDlg::PopUpMenu(const POINT &pnt)
 {
-    POINT pnt;
-    GetCursorPos(&pnt);
     int count;
 
     CMenu menu, *addPos;
@@ -869,6 +893,46 @@ void CGhostBoardDlg::PopUpMenu()
     UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
     for(int grp = 0; grp < 3; grp++) {
         addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
+        for(int i = HISTORY_NUM - 1; i >=0; i--) {
+                CString str;
+                str.Format(_T("%02d: "), i);
+                str += m_textArray[grp+1][i].Left(32);
+                str.Replace(_T("\n"),_T("|"));
+                str.Replace(_T("\r"),_T(""));
+                str.Replace(_T("\t"),_T("    "));
+                addPos->AppendMenuW(MF_STRING, ids[grp]+i, str);
+        }
+    }
+
+    menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pnt.x, pnt.y, this);
+}
+
+void CGhostBoardDlg::PopUpMenuQuick(const POINT &pnt)
+{
+    //int count;
+
+    CMenu menu, *addPos;
+    menu.LoadMenu(IDR_MENU_QUICK); // IDR_MENU_QUICKはResourceViewで追加したメニュー
+
+    //count = 2;
+    addPos = menu.GetSubMenu(0);
+    int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
+    for(int i = startCount; i <= m_historyCount; i++) {
+        int pos = i % HISTORY_NUM;
+        CString str;
+        str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
+        str += m_textArray[0][pos].Left(32);
+        str.Replace(_T("\n"),_T("|"));
+        str.Replace(_T("\r"),_T(""));
+        str.Replace(_T("\t"),_T("    "));
+        //addPos->InsertMenu(count++, MF_STRING | MF_BYPOSITION, ID_SEL_HISTORY+pos, str);
+        addPos->AppendMenuW(MF_STRING, ID_SEL_HISTORY+pos, str);
+    }
+
+    UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
+    for(int grp = 0; grp < 3; grp++) {
+        //addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
+        addPos = menu.GetSubMenu(0)->GetSubMenu(grp);
         for(int i = HISTORY_NUM - 1; i >=0; i--) {
                 CString str;
                 str.Format(_T("%02d: "), i);
@@ -992,6 +1056,20 @@ void CGhostBoardDlg::OnExecMenu(UINT uID)
     }
 }
 
+void CGhostBoardDlg::OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu)
+{
+    TRACE("OnMenuSelect nItemID=0x%X, nFlags=0x%X, hSysMenu=0x%X\n",
+        nItemID, nFlags, hSysMenu);
+
+    CDialog::OnMenuSelect(nItemID, nFlags, hSysMenu);
+
+    if(nFlags == 0xFFFF && hSysMenu == 0) { // メニューキャンセルが
+        if(::GetAsyncKeyState(VK_ESCAPE)) { // ESCによるものであれば
+            m_dropFocus = true; // フォーカスを捨てる
+        }
+    }
+}
+
 LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
 {
 	switch( message )
@@ -1011,6 +1089,15 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
             TemplateForward();
         }
         else if(wParam == m_hotKeyMenu) {
+            CPoint p = GetCaretPos();
+
+            //m_edit.SetFocus();
+            SetForegroundWindow();
+
+            POINT pnt;
+            pnt.y = m_windowPos.rcNormalPosition.top;
+            pnt.x = m_windowPos.rcNormalPosition.left;
+            PopUpMenuQuick(pnt);
         }
 		return 1;
     
@@ -1023,7 +1110,10 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         case WM_RBUTTONDOWN:
             TRACE("WM_RBUTTONDOWN\n");
             SetForegroundWindow();
-            PopUpMenu();
+            
+            POINT pnt;
+            GetCursorPos(&pnt);
+            PopUpMenu(pnt);
             return 1;
         }
         break;

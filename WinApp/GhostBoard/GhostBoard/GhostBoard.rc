@@ -207,6 +207,25 @@ BEGIN
     END
 END
 
+IDR_MENU_QUICK MENU 
+BEGIN
+    POPUP "menu"
+    BEGIN
+        POPUP "red"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+        POPUP "green"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+        POPUP "blue"
+        BEGIN
+            MENUITEM SEPARATOR
+        END
+    END
+END
+
 #endif    // “ú–{Œê resources
 /////////////////////////////////////////////////////////////////////////////
 
