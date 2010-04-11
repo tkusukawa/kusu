@@ -134,12 +134,15 @@ public:
 
     // ポップアップメニュー
     bool m_iconNotif; // バルーン表示イネーブル
-    void PopUpMenu();
+    void PopUpMenu(const POINT &pnt);
+    void PopUpMenuQuick(const POINT &pnt);
 
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMenuClose();
     afx_msg void OnMenuSettings();
     afx_msg void OnExecMenu(UINT uID);
+    afx_msg void OnMenuSelect(UINT nItemID, UINT nFlags, HMENU hSysMenu);
+    bool m_dropFocus;
 
     // 履歴・テンプレート
     static COLORREF sm_color[TEMPLATE_NUM+1];

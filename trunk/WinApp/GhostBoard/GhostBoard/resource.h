@@ -6,6 +6,8 @@
 #define IDR_MAINFRAME                   128
 #define IDR_MENU_RBUTTON                132
 #define IDD_DIALOG_SETTINGS             133
+#define IDR_MENU1                       134
+#define IDR_MENU_QUICK                  134
 #define IDC_EDIT                        1000
 #define IDC_SLIDER_ALPHA_DEFAULT        1001
 #define IDC_SLIDER_ALPHA_MOUSE          1002
@@ -20,7 +22,6 @@
 #define IDC_HOTKEY_DOWN                 1011
 #define IDC_HOTKEY_LEFT                 1012
 #define IDC_HOTKEY_RIGHT                1013
-#define IDC_HOTKEY6                     1014
 #define IDC_HOTKEY_MENU                 1014
 #define ID_MENU_CLOSE                   32771
 #define ID_MENU_SETTINGS                32775
@@ -35,13 +36,16 @@
 #define ID_BLUE_DUMMY                   32787
 #define ID_Menu                         32788
 #define ID_HISTORY_HOGE32789            32789
+#define ID_MENU_RED32790                32790
+#define ID_MENU_GREEN32791              32791
+#define ID_MENU_BLUE32792               32792
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        134
-#define _APS_NEXT_COMMAND_VALUE         32790
+#define _APS_NEXT_RESOURCE_VALUE        135
+#define _APS_NEXT_COMMAND_VALUE         32793
 #define _APS_NEXT_CONTROL_VALUE         1011
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
