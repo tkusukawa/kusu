@@ -27,6 +27,12 @@ public:
     int  m_win;
     bool *m_iconNotifP;
 
+    int  m_hotKeyUpCode;
+    int  m_hotKeyDownCode;
+    int  m_hotKeyLeftCode;
+    int  m_hotKeyRightCode;
+    int  m_hotKeyMenuCode;
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 
@@ -45,4 +51,9 @@ public:
     afx_msg void OnBnClickedCheckAlt();
     afx_msg void OnBnClickedCheckWin();
     CButton m_checkIconNotif;
+    CHotKeyCtrl m_hotKeyUp;
+    CHotKeyCtrl m_hotKeyDown;
+    CHotKeyCtrl m_hotKeyLeft;
+    CHotKeyCtrl m_hotKeyRight;
+    CHotKeyCtrl m_hotKeyMenu;
 };

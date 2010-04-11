@@ -159,9 +159,10 @@ public:
     int m_hotKeyDown; // 履歴後
     int m_hotKeyLeft;   // テンプレート前
     int m_hotKeyRight;  // テンプレート後
-    int m_hotKeyEnter;  // フォーカス設定
+    int m_hotKeyMenu;   // クイックメニュー
     void StartHotKey();
     void StopHotKey();
+    int hotKeyF2mod(int hotKeyF);
 
     // アラート表示
     void DispAlert(LPCWSTR msg);

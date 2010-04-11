@@ -31,6 +31,11 @@ void CGhostBoardSettings::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_CHECK_ALT, m_checkAlt);
     DDX_Control(pDX, IDC_CHECK_WIN, m_checkWin);
     DDX_Control(pDX, IDC_CHECK_ICON_NOTIF, m_checkIconNotif);
+    DDX_Control(pDX, IDC_HOTKEY_UP, m_hotKeyUp);
+    DDX_Control(pDX, IDC_HOTKEY_DOWN, m_hotKeyDown);
+    DDX_Control(pDX, IDC_HOTKEY_LEFT, m_hotKeyLeft);
+    DDX_Control(pDX, IDC_HOTKEY_RIGHT, m_hotKeyRight);
+    DDX_Control(pDX, IDC_HOTKEY_MENU, m_hotKeyMenu);
 }
 
 
@@ -64,6 +69,13 @@ BOOL CGhostBoardSettings::OnInitDialog()
     if(m_alt)   m_checkAlt.SetCheck(BST_CHECKED);
     if(m_win)   m_checkWin.SetCheck(BST_CHECKED);
     if(*m_iconNotifP) m_checkIconNotif.SetCheck(BST_CHECKED);
+
+    // ホットキーの初期状態を設定
+    m_hotKeyUp   .SetHotKey(m_hotKeyUpCode    & 0xFF, m_hotKeyUpCode >> 8);
+    m_hotKeyDown .SetHotKey(m_hotKeyDownCode  & 0xFF, m_hotKeyDownCode >> 8);
+    m_hotKeyLeft .SetHotKey(m_hotKeyLeftCode  & 0xFF, m_hotKeyLeftCode >> 8);
+    m_hotKeyRight.SetHotKey(m_hotKeyRightCode & 0xFF, m_hotKeyRightCode >> 8);
+    m_hotKeyMenu .SetHotKey(m_hotKeyMenuCode  & 0xFF, m_hotKeyMenuCode >> 8);
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -125,6 +137,13 @@ void CGhostBoardSettings::OnBnClickedOk()
     m_win = (m_checkWin.GetCheck() == BST_CHECKED);
 
     *m_iconNotifP = (m_checkIconNotif.GetCheck() == BST_CHECKED);
+
+    // ホットキーの初期状態を設定
+    m_hotKeyUpCode    = m_hotKeyUp   .GetHotKey();
+    m_hotKeyDownCode  = m_hotKeyDown .GetHotKey();
+    m_hotKeyLeftCode  = m_hotKeyLeft .GetHotKey();
+    m_hotKeyRightCode = m_hotKeyRight.GetHotKey();
+    m_hotKeyMenuCode  = m_hotKeyMenu .GetHotKey();
 
     OnOK();
 }

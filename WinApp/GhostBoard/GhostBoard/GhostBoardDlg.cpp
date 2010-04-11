@@ -46,6 +46,13 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     // テンプレート
     for(int i=0; i<=TEMPLATE_NUM;i++)
         m_brush[i].CreateSolidBrush(sm_color[i]);
+
+    // デフォルトのホットキー
+    m_hotKeyUp   = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_UP;   // 履歴前
+    m_hotKeyDown = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_DOWN; // 履歴後
+    m_hotKeyLeft = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_LEFT;   // テンプレート逆
+    m_hotKeyRight= ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_RIGHT;  // テンプレート順
+    m_hotKeyMenu = (HOTKEYF_CONTROL << 8) + 'M'; // クイックメニュー
 }
 
 void CGhostBoardDlg::DoDataExchange(CDataExchange* pDX)
@@ -754,8 +761,12 @@ bool CGhostBoardDlg::Save()
          m_windowPos.rcNormalPosition.right,
          m_windowPos.rcNormalPosition.bottom);
     fprintf(fp, "iconNotif:%d\n", m_iconNotif);
-    fprintf(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", m_alphaDefault, m_alphaMouse, m_alphaActive);
-    fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", m_confCtrl, m_confShift, m_confAlt, m_confWin);
+    fprintf(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n",
+        m_alphaDefault, m_alphaMouse, m_alphaActive);
+    fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n",
+        m_confCtrl, m_confShift, m_confAlt, m_confWin);
+    fprintf(fp, "hotKey:%X, %X, %X, %X, %X\n",
+        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu);
 
     for(int j=1; j<TEMPLATE_NUM; j++) {
         for(int i=0; i<HISTORY_NUM; i++) {
@@ -796,8 +807,12 @@ bool CGhostBoardDlg::Load()
     SetWindowPlacement(&m_windowPos);
 
     fscanf_s(fp, "iconNotif:%d\n", &m_iconNotif);
-    fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n", &m_alphaDefault, &m_alphaMouse, &m_alphaActive); 
-    fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n", &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
+    fscanf_s(fp, "alphaDefault:%d, alphaMouse:%d alphaActive:%d\n",
+        &m_alphaDefault, &m_alphaMouse, &m_alphaActive); 
+    fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n",
+        &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
+    fscanf_s(fp, "hotKey:%X, %X, %X, %X, %X\n",
+        &m_hotKeyUp, &m_hotKeyDown, &m_hotKeyLeft, &m_hotKeyRight, &m_hotKeyMenu);
 
     do{
         unsigned int tmp, idx;
@@ -884,6 +899,17 @@ void CGhostBoardDlg::OnMenuSettings()
     dlg.m_alt = m_confAlt;
     dlg.m_win = m_confWin;
     dlg.m_iconNotifP = &m_iconNotif;
+
+    // ホットキーストップ
+    StopHotKey();
+    dlg.m_hotKeyUpCode    = m_hotKeyUp;
+    dlg.m_hotKeyDownCode  = m_hotKeyDown;
+    dlg.m_hotKeyLeftCode  = m_hotKeyLeft;
+    dlg.m_hotKeyRightCode = m_hotKeyRight;
+    dlg.m_hotKeyMenuCode  = m_hotKeyMenu;
+    TRACE("HotKey before: %x %x %x %x %x\n",
+        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu);
+
     INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
@@ -892,13 +918,21 @@ void CGhostBoardDlg::OnMenuSettings()
         m_alphaActive = dlg.m_alphaActive;
         m_alphaDefault = dlg.m_alphaDefault;
         m_alphaMouse = dlg.m_alphaMouse;
-        // ホットキーを再設定
-        StopHotKey();
+
+        // アクテイブキーの設定を反映
         m_confCtrl = dlg.m_ctrl;
         m_confShift = dlg.m_shift;
         m_confAlt = dlg.m_alt;
         m_confWin = dlg.m_win;
-        StartHotKey();
+
+        // ホットキーの設定を反映
+        m_hotKeyUp    = dlg.m_hotKeyUpCode;
+        m_hotKeyDown  = dlg.m_hotKeyDownCode;
+        m_hotKeyLeft  = dlg.m_hotKeyLeftCode;
+        m_hotKeyRight = dlg.m_hotKeyRightCode;
+        m_hotKeyMenu  = dlg.m_hotKeyMenuCode;
+        TRACE("HotKey after: %x %x %x %x %x\n",
+            m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu);
  
         Save();
 	}
@@ -906,6 +940,9 @@ void CGhostBoardDlg::OnMenuSettings()
 	{
         TRACE("Setting Cancel\n");
 	}
+
+    // ホットキー スタート
+    StartHotKey();
 }
 
 void CGhostBoardDlg::OnExecMenu(UINT uID)
@@ -960,7 +997,7 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	switch( message )
 	{
 	case WM_HOTKEY:	//ホットキーを押しました。
-		TRACE( "HotKey %d, %d, %d\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
+        TRACE( "HotKey w0x%02X, ll0x%02X, lh0x%02X\n", wParam, LOWORD( lParam ), HIWORD( lParam ) );
         if(wParam == m_hotKeyUp) {
             HistoryBackward();
         }
@@ -973,10 +1010,7 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         else if(wParam == m_hotKeyRight) {
             TemplateForward();
         }
-        else if(wParam == m_hotKeyEnter) {
-            m_edit.SetFocus();
-            SetForegroundWindow();
-            //SetActiveWindow();
+        else if(wParam == m_hotKeyMenu) {
         }
 		return 1;
     
@@ -1184,30 +1218,20 @@ void CGhostBoardDlg::DispAlert(LPCWSTR msg)
 
 void CGhostBoardDlg::StartHotKey()
 {
-    int actKey = (m_confCtrl?MOD_CONTROL:0)
-               | (m_confShift?MOD_SHIFT:0)
-               | (m_confAlt?MOD_ALT:0)
-               | (m_confWin?MOD_WIN:0);
-    m_hotKeyUp  =(actKey<<8) + VK_UP;   // 履歴前
-    m_hotKeyDown=(actKey<<8) + VK_DOWN; // 履歴後
-    m_hotKeyLeft =(actKey<<8) + VK_LEFT;   // テンプレート逆
-    m_hotKeyRight=(actKey<<8) + VK_RIGHT;  // テンプレート順
-    m_hotKeyEnter=(actKey<<8) + VK_RETURN; // フォーカス
-
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyUp,   m_hotKeyUp  >>8, m_hotKeyUp  &0xFF ))
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyUp,   hotKeyF2mod(m_hotKeyUp>>8), m_hotKeyUp  &0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): history prior"));
 
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyDown, m_hotKeyDown>>8, m_hotKeyDown&0xFF ))
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyDown, hotKeyF2mod(m_hotKeyDown>>8), m_hotKeyDown&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): history next"));
 
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyLeft, m_hotKeyLeft>>8, m_hotKeyLeft&0xFF ))
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyLeft, hotKeyF2mod(m_hotKeyLeft>>8), m_hotKeyLeft&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template prior"));
 
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyRight, m_hotKeyRight>>8, m_hotKeyRight&0xFF ))
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyRight, hotKeyF2mod(m_hotKeyRight>>8), m_hotKeyRight&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template next"));
 
-//    if(!::RegisterHotKey(m_hWnd, m_hotKeyEnter, m_hotKeyEnter>>8, m_hotKeyEnter&0xFF ))
-//        MessageBox(_T("FAIL: RegisterHotKey(): focus"));
+    if(!::RegisterHotKey(m_hWnd, m_hotKeyMenu,  hotKeyF2mod(m_hotKeyMenu>>8), m_hotKeyMenu&0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): menu"));
 }
 
 void CGhostBoardDlg::StopHotKey()
@@ -1224,8 +1248,8 @@ void CGhostBoardDlg::StopHotKey()
     if(!::UnregisterHotKey(m_hWnd, m_hotKeyRight))
         MessageBox(_T("FAIL: UnregisterHotKey(): template next"));
 
-//    if(!::UnregisterHotKey(m_hWnd, m_hotKeyEnter))
-//        MessageBox(_T("FAIL: UnregisterHotKey(): focus"));
+    if(!::UnregisterHotKey(m_hWnd, m_hotKeyMenu))
+        MessageBox(_T("FAIL: UnregisterHotKey(): menu"));
 }
 /*
 // 他のアプリケーションへの文字列挿入
@@ -1257,4 +1281,16 @@ void CGhostBoardDlg::OnEnChangeEdit()
 {
     TRACE("OnEnChangeEdit\n");
     m_lastOp = LO_edit;
+}
+
+int CGhostBoardDlg::hotKeyF2mod(int hotKeyF)
+{
+    int res = 0;
+    if(hotKeyF & HOTKEYF_SHIFT)
+        res |= MOD_SHIFT;
+    if(hotKeyF & HOTKEYF_CONTROL)
+        res |= MOD_CONTROL;
+    if(hotKeyF & HOTKEYF_ALT)
+        res |= MOD_ALT;
+    return res;
 }
