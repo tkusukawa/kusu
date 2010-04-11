@@ -19,6 +19,18 @@
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
+        "Entry"
+        {
+        "MsmKey" = "8:_D1B3D0C32772496B856F193AE9E4576D"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_D3B821AD15DE4F69ABFE410B297F280E"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -121,6 +133,46 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D1B3D0C32772496B856F193AE9E4576D"
+            {
+            "SourcePath" = "8:..\\GhostBoard\\ReadMe.txt"
+            "TargetName" = "8:ReadMe.txt"
+            "Tag" = "8:"
+            "Folder" = "8:_48606576171A40E7AE9B08D10292D589"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D3B821AD15DE4F69ABFE410B297F280E"
+            {
+            "SourcePath" = "8:GhostBoard.dat"
+            "TargetName" = "8:GhostBoard.dat"
+            "Tag" = "8:"
+            "Folder" = "8:_80BA56A00DCA4ADB8B9C2B1D566ACDAF"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -136,6 +188,17 @@
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_724CFC8FD2E54A38A2AB87520A2A27CA"
+                    {
+                    "Name" = "8:GhostBoard"
+                    "AlwaysCreate" = "11:FALSE"
+                    "Condition" = "8:"
+                    "Transitive" = "11:FALSE"
+                    "Property" = "8:_D4A8A2CBDDC24929B877CAFF29248B1D"
+                        "Folders"
+                        {
+                        }
+                    }
                 }
             }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_48606576171A40E7AE9B08D10292D589"
@@ -186,7 +249,7 @@
                     "Name" = "8:GhostBoard"
                     "AlwaysCreate" = "11:TRUE"
                     "Condition" = "8:"
-                    "Transitive" = "11:TRUE"
+                    "Transitive" = "11:FALSE"
                     "Property" = "8:_DBDC6A1B8BC84B21BC84C9BBC9992618"
                         "Folders"
                         {
@@ -210,7 +273,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GhostBoard"
         "ProductCode" = "8:{328B61D3-677F-4B30-8026-A906730F68E7}"
-        "PackageCode" = "8:{6A0350E6-0A43-46B3-960A-E7DF082FD184}"
+        "PackageCode" = "8:{2A41E927-3B0C-41C6-8BFD-62C0E74B36E3}"
         "UpgradeCode" = "8:{4060D869-95C1-42FB-BCFE-D4FD33B4C380}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
@@ -343,6 +406,20 @@
             "Icon" = "8:_7960B39CA2BD42EBAB4ADBE628588886"
             "Feature" = "8:"
             }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_53B1BA7E74D74282A448E90A537B80C3"
+            {
+            "Name" = "8:ReadMe.txt"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_D1B3D0C32772496B856F193AE9E4576D"
+            "Folder" = "8:_724CFC8FD2E54A38A2AB87520A2A27CA"
+            "WorkingFolder" = "8:_48606576171A40E7AE9B08D10292D589"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_9E5CDE1195A346D483CE16E2947D724B"
             {
             "Name" = "8:GhostBoard"
@@ -352,7 +429,7 @@
             "IconIndex" = "3:128"
             "Transitive" = "11:FALSE"
             "Target" = "8:_7960B39CA2BD42EBAB4ADBE628588886"
-            "Folder" = "8:_0E7ACADD20844CD58589D3F755261349"
+            "Folder" = "8:_724CFC8FD2E54A38A2AB87520A2A27CA"
             "WorkingFolder" = "8:_80BA56A00DCA4ADB8B9C2B1D566ACDAF"
             "Icon" = "8:_7960B39CA2BD42EBAB4ADBE628588886"
             "Feature" = "8:"
