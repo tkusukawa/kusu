@@ -10,7 +10,7 @@
 
 #define     CB_RETRY        3
 #define     TEMPLATE_NUM    4
-#define     HISTORY_NUM     32
+#define     HISTORY_NUM     16
 
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
