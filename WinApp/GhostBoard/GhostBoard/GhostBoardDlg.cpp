@@ -893,7 +893,7 @@ void CGhostBoardDlg::PopUpMenu(const POINT &pnt)
     UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
     for(int grp = 0; grp < 3; grp++) {
         addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
-        for(int i = HISTORY_NUM - 1; i >=0; i--) {
+        for(int i = 0; i < HISTORY_NUM; i++) {
                 CString str;
                 str.Format(_T("%02d: "), i);
                 str += m_textArray[grp+1][i].Left(32);
@@ -1167,7 +1167,7 @@ void CGhostBoardDlg::HistoryBackward()
     
     TRACE("HistoryBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
 
-    DispInfo(BALLOON_ACTIVE); // バルーン表示
+    DispInfo(0); // バルーン表示
 }
 
 void CGhostBoardDlg::HistoryForward()
@@ -1198,7 +1198,7 @@ void CGhostBoardDlg::HistoryForward()
     
 	TRACE("HistoryForward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
-    DispInfo(BALLOON_ACTIVE); // バルーン表示
+    DispInfo(0); // バルーン表示
 }
 
 void CGhostBoardDlg::TemplateBackward()
@@ -1224,7 +1224,7 @@ void CGhostBoardDlg::TemplateBackward()
 
 	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
-    DispInfo(BALLOON_ACTIVE); // バルーン表示
+    DispInfo(0); // バルーン表示
     SetViewState();
 }
 
@@ -1244,7 +1244,7 @@ void CGhostBoardDlg::TemplateForward()
 
 	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
-    DispInfo(BALLOON_ACTIVE); // バルーン表示
+    DispInfo(0); // バルーン表示
     SetViewState();
 }
 
@@ -1269,6 +1269,40 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
     m_icon.uFlags = NIF_INFO;
     if(msg) {
         wsprintf(m_icon.szInfo, msg);
+    }
+    else if(m_template == 0 && timeout_ms == 0) {
+        CString bStr;
+        int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
+        for(int i = startCount; i <= m_historyCount; i++) {
+            int pos = i % HISTORY_NUM;
+            CString str;
+            wchar_t *mrk = (pos == m_lookupPos[0]) ? _T("*") : _T("  ");
+            str.Format(_T("%s%02d"), mrk, i);
+            str += m_textArray[0][pos].Left(15);
+            str.Replace(_T("\n"),_T("|"));
+            str.Replace(_T("\r"),_T(""));
+            str.Replace(_T("\t"),_T("    "));
+            bStr += str.Left(15);
+            bStr += "\n";
+        }
+        wcscpy_s(m_icon.szInfo, 256, bStr.Left(255));
+    }
+    else if(m_template > 0 && timeout_ms == 0) {
+        CString bStr;
+        for(int i = 0; i < HISTORY_NUM; i++) {
+            CString str;
+            wchar_t mrkc[] = _T("*");
+            mrkc[0] = " RGB"[m_template];
+            wchar_t *mrk = (i == m_lookupPos[m_template]) ? mrkc : _T("  ");
+            str.Format(_T("%s %02d: "), mrk, i);
+            str += m_textArray[m_template][i].Left(15);
+            str.Replace(_T("\n"),_T("|"));
+            str.Replace(_T("\r"),_T(""));
+            str.Replace(_T("\t"),_T("    "));
+            bStr += str.Left(15);
+            bStr += "\n";
+        }
+        wcscpy_s(m_icon.szInfo, 256, bStr.Left(255));
     }
     else if(m_template == 0) {
         // クリップボード履歴
