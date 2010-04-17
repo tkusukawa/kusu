@@ -6,8 +6,6 @@
 #define IDR_MAINFRAME                   128
 #define IDR_MENU_RBUTTON                132
 #define IDD_DIALOG_SETTINGS             133
-#define IDR_MENU1                       134
-#define IDR_MENU_QUICK                  134
 #define IDC_EDIT                        1000
 #define IDC_SLIDER_ALPHA_DEFAULT        1001
 #define IDC_SLIDER_ALPHA_MOUSE          1002

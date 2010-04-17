@@ -11,6 +11,7 @@
 #define     CB_RETRY        3
 #define     TEMPLATE_NUM    4
 #define     HISTORY_NUM     16
+#define     LOOKUP_NUM      8
 
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
@@ -135,7 +136,6 @@ public:
     // ポップアップメニュー
     bool m_iconNotif; // バルーン表示イネーブル
     void PopUpMenu(const POINT &pnt);
-    void PopUpMenuQuick(const POINT &pnt);
 
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnMenuClose();
@@ -162,7 +162,6 @@ public:
     int m_hotKeyDown; // 履歴後
     int m_hotKeyLeft;   // テンプレート前
     int m_hotKeyRight;  // テンプレート後
-    int m_hotKeyMenu;   // クイックメニュー
     void StartHotKey();
     void StopHotKey();
     int hotKeyF2mod(int hotKeyF);

@@ -70,13 +70,13 @@ BEGIN
     EDITTEXT        IDC_EDIT,2,2,318,202,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
 END
 
-IDD_DIALOG_SETTINGS DIALOGEX 0, 0, 186, 194
+IDD_DIALOG_SETTINGS DIALOGEX 0, 0, 186, 176
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Ghost Board Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,75,173,50,14
-    PUSHBUTTON      "キャンセル",IDCANCEL,129,173,50,14
+    DEFPUSHBUTTON   "OK",IDOK,75,155,50,14
+    PUSHBUTTON      "キャンセル",IDCANCEL,129,155,50,14
     LTEXT           "default alpha:",IDC_STATIC,7,22,51,10
     CONTROL         "",IDC_SLIDER_ALPHA_DEFAULT,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,71,21,108,13
     LTEXT           "on mouse alpha:",IDC_STATIC,7,36,59,10
@@ -90,7 +90,7 @@ BEGIN
     CONTROL         "",IDC_SLIDER_APLHA_ACTIVE,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,71,7,108,13
     LTEXT           "icon notif.:",IDC_STATIC,7,63,43,10
     CONTROL         "enable",IDC_CHECK_ICON_NOTIF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,55,62,34,11
-    GROUPBOX        "Hot Key",IDC_STATIC,7,75,172,96
+    GROUPBOX        "Hot Key",IDC_STATIC,7,75,172,78
     LTEXT           "prior idx:",IDC_STATIC,12,84,43,14
     LTEXT           "next idx:",IDC_STATIC,12,101,43,14
     LTEXT           "prior grp:",IDC_STATIC,12,118,43,14
@@ -99,8 +99,6 @@ BEGIN
     CONTROL         "",IDC_HOTKEY_DOWN,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,101,123,14
     CONTROL         "",IDC_HOTKEY_LEFT,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,118,123,14
     CONTROL         "",IDC_HOTKEY_RIGHT,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,135,123,14
-    LTEXT           "quick menu:",IDC_STATIC,12,152,43,14
-    CONTROL         "",IDC_HOTKEY_MENU,"msctls_hotkey32",WS_BORDER | WS_TABSTOP,52,152,123,14
 END
 
 
@@ -164,7 +162,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 179
         TOPMARGIN, 7
-        BOTTOMMARGIN, 187
+        BOTTOMMARGIN, 169
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -204,25 +202,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Settings",                    ID_MENU_SETTINGS
         MENUITEM "Exit",                        ID_MENU_CLOSE
-    END
-END
-
-IDR_MENU_QUICK MENU 
-BEGIN
-    POPUP "menu"
-    BEGIN
-        POPUP "red"
-        BEGIN
-            MENUITEM SEPARATOR
-        END
-        POPUP "green"
-        BEGIN
-            MENUITEM SEPARATOR
-        END
-        POPUP "blue"
-        BEGIN
-            MENUITEM SEPARATOR
-        END
     END
 END
 
