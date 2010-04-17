@@ -31,7 +31,6 @@ public:
     int  m_hotKeyDownCode;
     int  m_hotKeyLeftCode;
     int  m_hotKeyRightCode;
-    int  m_hotKeyMenuCode;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
@@ -55,5 +54,4 @@ public:
     CHotKeyCtrl m_hotKeyDown;
     CHotKeyCtrl m_hotKeyLeft;
     CHotKeyCtrl m_hotKeyRight;
-    CHotKeyCtrl m_hotKeyMenu;
 };

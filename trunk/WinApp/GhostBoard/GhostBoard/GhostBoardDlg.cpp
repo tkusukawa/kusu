@@ -53,7 +53,6 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_hotKeyDown = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_DOWN; // 履歴後
     m_hotKeyLeft = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_LEFT;   // テンプレート逆
     m_hotKeyRight= ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_RIGHT;  // テンプレート順
-    m_hotKeyMenu = (HOTKEYF_CONTROL << 8) + 'M'; // クイックメニュー
 }
 
 void CGhostBoardDlg::DoDataExchange(CDataExchange* pDX)
@@ -138,9 +137,9 @@ BOOL CGhostBoardDlg::OnInitDialog()
     SetTimer(0, WATCH_INTERVAL, NULL);
 
     //---- デフォルトの画面位置を設定
-    m_windowPos.rcNormalPosition.left = 80;
-    m_windowPos.rcNormalPosition.right = m_windowPos.rcNormalPosition.right + 600;
+    m_windowPos.rcNormalPosition.right = GetSystemMetrics(SM_CXSCREEN);
     m_windowPos.rcNormalPosition.bottom = GetSystemMetrics(SM_CYSCREEN);
+    m_windowPos.rcNormalPosition.left = m_windowPos.rcNormalPosition.right - 400;
     m_windowPos.rcNormalPosition.top = m_windowPos.rcNormalPosition.bottom - 80;
     SetWindowPlacement(&m_windowPos);
     m_chkScrTimer = CHK_SCR_INTERVAL;
@@ -789,8 +788,8 @@ bool CGhostBoardDlg::Save()
         m_alphaDefault, m_alphaMouse, m_alphaActive);
     fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n",
         m_confCtrl, m_confShift, m_confAlt, m_confWin);
-    fprintf(fp, "hotKey:%X, %X, %X, %X, %X\n",
-        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu);
+    fprintf(fp, "hotKey:%X, %X, %X, %X\n",
+        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
 
     for(int j=1; j<TEMPLATE_NUM; j++) {
         for(int i=0; i<HISTORY_NUM; i++) {
@@ -835,8 +834,8 @@ bool CGhostBoardDlg::Load()
         &m_alphaDefault, &m_alphaMouse, &m_alphaActive); 
     fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n",
         &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
-    fscanf_s(fp, "hotKey:%X, %X, %X, %X, %X\n",
-        &m_hotKeyUp, &m_hotKeyDown, &m_hotKeyLeft, &m_hotKeyRight, &m_hotKeyMenu);
+    fscanf_s(fp, "hotKey:%X, %X, %X, %X\n",
+        &m_hotKeyUp, &m_hotKeyDown, &m_hotKeyLeft, &m_hotKeyRight);
 
     do{
         unsigned int tmp, idx;
@@ -893,47 +892,7 @@ void CGhostBoardDlg::PopUpMenu(const POINT &pnt)
     UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
     for(int grp = 0; grp < 3; grp++) {
         addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
-        for(int i = 0; i < HISTORY_NUM; i++) {
-                CString str;
-                str.Format(_T("%02d: "), i);
-                str += m_textArray[grp+1][i].Left(32);
-                str.Replace(_T("\n"),_T("|"));
-                str.Replace(_T("\r"),_T(""));
-                str.Replace(_T("\t"),_T("    "));
-                addPos->AppendMenuW(MF_STRING, ids[grp]+i, str);
-        }
-    }
-
-    menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pnt.x, pnt.y, this);
-}
-
-void CGhostBoardDlg::PopUpMenuQuick(const POINT &pnt)
-{
-    //int count;
-
-    CMenu menu, *addPos;
-    menu.LoadMenu(IDR_MENU_QUICK); // IDR_MENU_QUICKはResourceViewで追加したメニュー
-
-    //count = 2;
-    addPos = menu.GetSubMenu(0);
-    int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
-    for(int i = startCount; i <= m_historyCount; i++) {
-        int pos = i % HISTORY_NUM;
-        CString str;
-        str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
-        str += m_textArray[0][pos].Left(32);
-        str.Replace(_T("\n"),_T("|"));
-        str.Replace(_T("\r"),_T(""));
-        str.Replace(_T("\t"),_T("    "));
-        //addPos->InsertMenu(count++, MF_STRING | MF_BYPOSITION, ID_SEL_HISTORY+pos, str);
-        addPos->AppendMenuW(MF_STRING, ID_SEL_HISTORY+pos, str);
-    }
-
-    UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
-    for(int grp = 0; grp < 3; grp++) {
-        //addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
-        addPos = menu.GetSubMenu(0)->GetSubMenu(grp);
-        for(int i = HISTORY_NUM - 1; i >=0; i--) {
+        for(int i = HISTORY_NUM-1; i >= 0; i--) {
                 CString str;
                 str.Format(_T("%02d: "), i);
                 str += m_textArray[grp+1][i].Left(32);
@@ -970,9 +929,8 @@ void CGhostBoardDlg::OnMenuSettings()
     dlg.m_hotKeyDownCode  = m_hotKeyDown;
     dlg.m_hotKeyLeftCode  = m_hotKeyLeft;
     dlg.m_hotKeyRightCode = m_hotKeyRight;
-    dlg.m_hotKeyMenuCode  = m_hotKeyMenu;
-    TRACE("HotKey before: %x %x %x %x %x\n",
-        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu);
+    TRACE("HotKey before: %x %x %x %x\n",
+        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
 
     INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
@@ -994,9 +952,8 @@ void CGhostBoardDlg::OnMenuSettings()
         m_hotKeyDown  = dlg.m_hotKeyDownCode;
         m_hotKeyLeft  = dlg.m_hotKeyLeftCode;
         m_hotKeyRight = dlg.m_hotKeyRightCode;
-        m_hotKeyMenu  = dlg.m_hotKeyMenuCode;
-        TRACE("HotKey after: %x %x %x %x %x\n",
-            m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu);
+        TRACE("HotKey after: %x %x %x %x\n",
+            m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
  
         Save();
 	}
@@ -1088,17 +1045,6 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         else if(wParam == m_hotKeyRight) {
             TemplateForward();
         }
-        else if(wParam == m_hotKeyMenu) {
-            CPoint p = GetCaretPos();
-
-            //m_edit.SetFocus();
-            SetForegroundWindow();
-
-            POINT pnt;
-            pnt.y = m_windowPos.rcNormalPosition.top;
-            pnt.x = m_windowPos.rcNormalPosition.left;
-            PopUpMenuQuick(pnt);
-        }
 		return 1;
     
     case WM_TRYCLK: //タスクトレイ
@@ -1152,10 +1098,17 @@ void CGhostBoardDlg::HistoryBackward()
     }
     else {
         rememberTemplate();
-        // 履歴参照位置を更新
-        m_lookupPos[m_template] --;
-        if(m_lookupPos[m_template] < 0)
-            m_lookupPos[m_template]+=m_template?HISTORY_NUM:m_historyNum;
+        if(m_template) {
+            m_lookupPos[m_template] ++;
+            if(m_lookupPos[m_template] >= HISTORY_NUM)
+                m_lookupPos[m_template] -= HISTORY_NUM;
+        }
+        else {
+            // 履歴参照位置を更新
+            m_lookupPos[m_template] --;
+            if(m_lookupPos[m_template] < 0)
+                m_lookupPos[m_template]+=m_historyNum;
+        }
     }
     // 履歴の内容を編集テキストに表示
     m_edit.SetWindowText(m_textArray[m_template][m_lookupPos[m_template]]);
@@ -1178,12 +1131,14 @@ void CGhostBoardDlg::HistoryForward()
     else {
         rememberTemplate();
         // 履歴参照位置を更新
-        m_lookupPos[m_template] ++;
         if(m_template) {
-            if(m_lookupPos[m_template] >= HISTORY_NUM)
-                m_lookupPos[m_template] -= HISTORY_NUM;
+            // 履歴参照位置を更新
+            m_lookupPos[m_template] --;
+            if(m_lookupPos[m_template] < 0)
+                m_lookupPos[m_template]+=m_template?HISTORY_NUM:m_historyNum;
         }
         else {
+            m_lookupPos[m_template] ++;
             if(m_lookupPos[m_template] >= m_historyNum)
                 m_lookupPos[m_template] -= m_historyNum;
         }
@@ -1270,50 +1225,78 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
     if(msg) {
         wsprintf(m_icon.szInfo, msg);
     }
-    else if(m_template == 0 && timeout_ms == 0) {
-        CString bStr;
-        int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
-        for(int i = startCount; i <= m_historyCount; i++) {
-            int pos = i % HISTORY_NUM;
-            CString str;
-            wchar_t *mrk = (pos == m_lookupPos[0]) ? _T("*") : _T("  ");
-            str.Format(_T("%s%02d"), mrk, i);
-            str += m_textArray[0][pos].Left(15);
-            str.Replace(_T("\n"),_T("|"));
-            str.Replace(_T("\r"),_T(""));
-            str.Replace(_T("\t"),_T("    "));
-            bStr += str.Left(15);
-            bStr += "\n";
-        }
-        wcscpy_s(m_icon.szInfo, 256, bStr.Left(255));
-    }
-    else if(m_template > 0 && timeout_ms == 0) {
-        CString bStr;
-        for(int i = 0; i < HISTORY_NUM; i++) {
-            CString str;
-            wchar_t mrkc[] = _T("*");
-            mrkc[0] = " RGB"[m_template];
-            wchar_t *mrk = (i == m_lookupPos[m_template]) ? mrkc : _T("  ");
-            str.Format(_T("%s %02d: "), mrk, i);
-            str += m_textArray[m_template][i].Left(15);
-            str.Replace(_T("\n"),_T("|"));
-            str.Replace(_T("\r"),_T(""));
-            str.Replace(_T("\t"),_T("    "));
-            bStr += str.Left(15);
-            bStr += "\n";
-        }
-        wcscpy_s(m_icon.szInfo, 256, bStr.Left(255));
-    }
     else if(m_template == 0) {
         // クリップボード履歴
         int hisNum = m_lookupPos[0] - m_historyPos;
         if(hisNum>0) hisNum -= m_historyNum;
         hisNum += m_historyCount;
-        wsprintf(m_icon.szInfo, _T("%02d [%s]"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
+        if(timeout_ms != 0) {
+            wsprintf(m_icon.szInfo, _T("%02d [%s]"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
+        }
+        else { // timeout_ms == 0: ホットキーによる履歴探索
+            CString bStr;
+            int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
+            int dispStart = hisNum - LOOKUP_NUM/2;
+            int dispEnd   = dispStart + LOOKUP_NUM - 1;
+            if(dispEnd > m_historyCount) {
+                dispStart -= dispEnd-m_historyCount;
+                dispEnd = m_historyCount;
+            }
+            if(dispStart < startCount) {
+                dispEnd += startCount - dispStart;
+                dispStart = startCount;
+            }
+            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
+            for(int i = dispStart; (i <= m_historyCount) && (i <= dispEnd); i++) {
+                int pos = i % HISTORY_NUM;
+                CString str;
+                wchar_t *mrk = (pos == m_lookupPos[0]) ? _T("*") : _T(" ");
+                str.Format(_T("%s%02d:"), mrk, i);
+                str += m_textArray[0][pos];
+                str.Replace(_T("\n"),_T("|"));
+                str.Replace(_T("\r"),_T(""));
+                str.Replace(_T("\t"),_T(" "));
+                while(str.Replace(_T("  "), _T(" ")));
+                bStr += str.Left(balloonMax/LOOKUP_NUM);
+                bStr += "\n";
+            }
+            wcscpy_s(m_icon.szInfo, balloonMax, bStr.Left(balloonMax-1));
+        }
     }
     else if(m_template > 0) {
         // テンプレート表示
-        wsprintf(m_icon.szInfo, _T("%c%02d"), " RGB"[m_template], m_lookupPos[m_template]);
+        if(timeout_ms != 0) {
+            wsprintf(m_icon.szInfo, _T("%c%02d"), " RGB"[m_template], m_lookupPos[m_template]);
+        }
+        else { // timeout_ms == 0: ホットキーによる定型文探索
+            CString bStr;
+            int dispEnd   = m_lookupPos[m_template] + LOOKUP_NUM/2;
+            int dispStart = dispEnd - (LOOKUP_NUM - 1);
+            if(dispStart < 0) {
+                dispEnd -= dispStart;
+                dispStart = 0;
+            }
+            if(dispEnd > HISTORY_NUM-1) {
+                dispStart -= dispEnd-(HISTORY_NUM-1);
+                dispEnd = HISTORY_NUM-1;
+            }
+            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
+            for(int i = dispEnd; (i>=dispStart) && (i>=0); i--) {
+                CString str;
+                wchar_t mrkc[] = _T("*");
+                mrkc[0] = " RGB"[m_template];
+                wchar_t *mrk = (i == m_lookupPos[m_template]) ? mrkc : _T(" ");
+                str.Format(_T("%s%02d:"), mrk, i);
+                str += m_textArray[m_template][i];
+                str.Replace(_T("\n"),_T("|"));
+                str.Replace(_T("\r"),_T(""));
+                str.Replace(_T("\t"),_T(" "));
+                while(str.Replace(_T("  "), _T(" ")));
+                bStr += str.Left(balloonMax/LOOKUP_NUM);
+                bStr += "\n";
+            }
+            wcscpy_s(m_icon.szInfo, balloonMax, bStr.Left(balloonMax-1));
+        }
     }
     else {
         // テンプレート表示
@@ -1353,9 +1336,6 @@ void CGhostBoardDlg::StartHotKey()
 
     if(!::RegisterHotKey(m_hWnd, m_hotKeyRight, hotKeyF2mod(m_hotKeyRight>>8), m_hotKeyRight&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template next"));
-
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyMenu,  hotKeyF2mod(m_hotKeyMenu>>8), m_hotKeyMenu&0xFF ))
-        MessageBox(_T("FAIL: RegisterHotKey(): menu"));
 }
 
 void CGhostBoardDlg::StopHotKey()
@@ -1371,9 +1351,6 @@ void CGhostBoardDlg::StopHotKey()
 
     if(!::UnregisterHotKey(m_hWnd, m_hotKeyRight))
         MessageBox(_T("FAIL: UnregisterHotKey(): template next"));
-
-    if(!::UnregisterHotKey(m_hWnd, m_hotKeyMenu))
-        MessageBox(_T("FAIL: UnregisterHotKey(): menu"));
 }
 /*
 // 他のアプリケーションへの文字列挿入
