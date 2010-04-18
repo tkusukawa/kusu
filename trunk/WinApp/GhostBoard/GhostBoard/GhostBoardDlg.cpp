@@ -1120,7 +1120,7 @@ void CGhostBoardDlg::HistoryBackward()
     
     TRACE("HistoryBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
 
-    DispInfo(0); // バルーン表示
+    DispInfo(BALLOON_LOOKUP); // バルーン表示
 }
 
 void CGhostBoardDlg::HistoryForward()
@@ -1153,7 +1153,7 @@ void CGhostBoardDlg::HistoryForward()
     
 	TRACE("HistoryForward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
-    DispInfo(0); // バルーン表示
+    DispInfo(BALLOON_LOOKUP); // バルーン表示
 }
 
 void CGhostBoardDlg::TemplateBackward()
@@ -1179,7 +1179,7 @@ void CGhostBoardDlg::TemplateBackward()
 
 	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
-    DispInfo(0); // バルーン表示
+    DispInfo(BALLOON_LOOKUP); // バルーン表示
     SetViewState();
 }
 
@@ -1199,7 +1199,7 @@ void CGhostBoardDlg::TemplateForward()
 
 	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
-    DispInfo(0); // バルーン表示
+    DispInfo(BALLOON_LOOKUP); // バルーン表示
     SetViewState();
 }
 
@@ -1230,14 +1230,14 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
         int hisNum = m_lookupPos[0] - m_historyPos;
         if(hisNum>0) hisNum -= m_historyNum;
         hisNum += m_historyCount;
-        if(timeout_ms != 0) {
+        if(timeout_ms != BALLOON_LOOKUP) {
             wsprintf(m_icon.szInfo, _T("%02d [%s]"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
         }
-        else { // timeout_ms == 0: ホットキーによる履歴探索
+        else { // timeout_ms == BALLOON_LOOKUP: ホットキーによる履歴探索
             CString bStr;
             int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
-            int dispStart = hisNum - LOOKUP_NUM/2;
-            int dispEnd   = dispStart + LOOKUP_NUM - 1;
+            int dispStart = hisNum - LOOKUP_DISP_NUM/2;
+            int dispEnd   = dispStart + LOOKUP_DISP_NUM - 1;
             if(dispEnd > m_historyCount) {
                 dispStart -= dispEnd-m_historyCount;
                 dispEnd = m_historyCount;
@@ -1246,32 +1246,33 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
                 dispEnd += startCount - dispStart;
                 dispStart = startCount;
             }
-            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
             for(int i = dispStart; (i <= m_historyCount) && (i <= dispEnd); i++) {
                 int pos = i % HISTORY_NUM;
                 CString str;
-                wchar_t *mrk = (pos == m_lookupPos[0]) ? _T("*") : _T(" ");
-                str.Format(_T("%s%02d:"), mrk, i);
-                str += m_textArray[0][pos];
+                wchar_t *mrk = (pos == m_lookupPos[0]) ? _T("*") : _T("  ");
+                str.Format(_T("%s%02d[%s]:"), mrk, i, m_historyTime[pos].Format("%H:%M"));
+                bStr += str;
+                str = m_textArray[0][pos];
                 str.Replace(_T("\n"),_T("|"));
                 str.Replace(_T("\r"),_T(""));
                 str.Replace(_T("\t"),_T(" "));
                 while(str.Replace(_T("  "), _T(" ")));
-                bStr += str.Left(balloonMax/LOOKUP_NUM);
+                bStr += str.Left(LOOKUP_DISP_LEN);
                 bStr += "\n";
             }
+            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
             wcscpy_s(m_icon.szInfo, balloonMax, bStr.Left(balloonMax-1));
         }
     }
     else if(m_template > 0) {
         // テンプレート表示
-        if(timeout_ms != 0) {
+        if(timeout_ms != BALLOON_LOOKUP) {
             wsprintf(m_icon.szInfo, _T("%c%02d"), " RGB"[m_template], m_lookupPos[m_template]);
         }
-        else { // timeout_ms == 0: ホットキーによる定型文探索
+        else { // timeout_ms == BALLOON_LOOKUP: ホットキーによる定型文探索
             CString bStr;
-            int dispEnd   = m_lookupPos[m_template] + LOOKUP_NUM/2;
-            int dispStart = dispEnd - (LOOKUP_NUM - 1);
+            int dispEnd   = m_lookupPos[m_template] + LOOKUP_DISP_NUM/2;
+            int dispStart = dispEnd - (LOOKUP_DISP_NUM - 1);
             if(dispStart < 0) {
                 dispEnd -= dispStart;
                 dispStart = 0;
@@ -1280,21 +1281,22 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
                 dispStart -= dispEnd-(HISTORY_NUM-1);
                 dispEnd = HISTORY_NUM-1;
             }
-            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
             for(int i = dispEnd; (i>=dispStart) && (i>=0); i--) {
                 CString str;
                 wchar_t mrkc[] = _T("*");
                 mrkc[0] = " RGB"[m_template];
-                wchar_t *mrk = (i == m_lookupPos[m_template]) ? mrkc : _T(" ");
+                wchar_t *mrk = (i == m_lookupPos[m_template]) ? mrkc : _T("  ");
                 str.Format(_T("%s%02d:"), mrk, i);
-                str += m_textArray[m_template][i];
+                bStr += str;
+                str = m_textArray[m_template][i];
                 str.Replace(_T("\n"),_T("|"));
                 str.Replace(_T("\r"),_T(""));
                 str.Replace(_T("\t"),_T(" "));
                 while(str.Replace(_T("  "), _T(" ")));
-                bStr += str.Left(balloonMax/LOOKUP_NUM);
+                bStr += str.Left(LOOKUP_DISP_LEN);
                 bStr += "\n";
             }
+            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
             wcscpy_s(m_icon.szInfo, balloonMax, bStr.Left(balloonMax-1));
         }
     }
@@ -1302,6 +1304,7 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
         // テンプレート表示
         wsprintf(m_icon.szInfo, _T("not TEXT"));
     }
+    ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
     ::Shell_NotifyIcon( NIM_MODIFY, &m_icon );
     m_balloonTime = timeout_ms;
 }
