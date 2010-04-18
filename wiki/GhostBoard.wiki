@@ -131,7 +131,7 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.14.zip GhostBoard-1.1.14 EXEファイル]
     2010/04/18 r150<br>
     履歴探索時のバルーン表示の文字数等を調整<br>
-    ReadMeブラッシュアップ<br>
+    !ReadMeブラッシュアップ<br>
     2010/04/18 r149<br>
     定型文のIndex参照方向を反転<br>
     2010/04/12 r148<br>
@@ -142,7 +142,7 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
     2010/04/11 r145<br>
     ホットキー設定機能を追加<br>
     2010/04/10 r144<br>
-    GhostBoardウィンドウでの最後の操作がコピーであれば、表示内容ではなくコピー内容をクリップボードに残すように修正<br>
+    !GhostBoardウィンドウでの最後の操作がコピーであれば、表示内容ではなくコピー内容をクリップボードに残すように修正<br>
 
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.12.zip GhostBoard-1.1.12 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.12.zip GhostBoard-1.1.12 EXEファイル]
