@@ -3,19 +3,22 @@
 
 #pragma once
 #include "myedit.h"
+#include "afxwin.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.13b") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.14") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
 #define     CB_RETRY        3
 #define     TEMPLATE_NUM    4
-#define     HISTORY_NUM     16
-#define     LOOKUP_NUM      8
+#define     HISTORY_NUM     32
+#define     LOOKUP_DISP_NUM 8
+#define     LOOKUP_DISP_LEN 19
 
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
 #define     BALLOON_COPY    1500
+#define     BALLOON_LOOKUP  10000
 #define     CHK_SCR_INTERVAL 10000 // 10秒毎に画面サイズを確認する
 #define     GET_FOCUS_WAIT  100
 
