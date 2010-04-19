@@ -1328,31 +1328,31 @@ void CGhostBoardDlg::DispAlert(LPCWSTR msg)
 
 void CGhostBoardDlg::StartHotKey()
 {
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyUp,   hotKeyF2mod(m_hotKeyUp>>8), m_hotKeyUp  &0xFF ))
+    if(m_hotKeyUp!=0 && !::RegisterHotKey(m_hWnd, m_hotKeyUp,   hotKeyF2mod(m_hotKeyUp>>8), m_hotKeyUp  &0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): history prior"));
 
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyDown, hotKeyF2mod(m_hotKeyDown>>8), m_hotKeyDown&0xFF ))
+    if(m_hotKeyDown!=0 && !::RegisterHotKey(m_hWnd, m_hotKeyDown, hotKeyF2mod(m_hotKeyDown>>8), m_hotKeyDown&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): history next"));
 
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyLeft, hotKeyF2mod(m_hotKeyLeft>>8), m_hotKeyLeft&0xFF ))
+    if(m_hotKeyLeft!=0 && !::RegisterHotKey(m_hWnd, m_hotKeyLeft, hotKeyF2mod(m_hotKeyLeft>>8), m_hotKeyLeft&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template prior"));
 
-    if(!::RegisterHotKey(m_hWnd, m_hotKeyRight, hotKeyF2mod(m_hotKeyRight>>8), m_hotKeyRight&0xFF ))
+    if(m_hotKeyRight!=0 && !::RegisterHotKey(m_hWnd, m_hotKeyRight, hotKeyF2mod(m_hotKeyRight>>8), m_hotKeyRight&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template next"));
 }
 
 void CGhostBoardDlg::StopHotKey()
 {
-    if(!::UnregisterHotKey(m_hWnd, m_hotKeyUp))
+    if(m_hotKeyUp!=0 && !::UnregisterHotKey(m_hWnd, m_hotKeyUp))
         MessageBox(_T("FAIL: UnregisterHotKey(): history prior"));
 
-    if(!::UnregisterHotKey(m_hWnd, m_hotKeyDown))
+    if(m_hotKeyDown!=0 && !::UnregisterHotKey(m_hWnd, m_hotKeyDown))
         MessageBox(_T("FAIL: UnregisterHotKey(): history next"));
 
-    if(!::UnregisterHotKey(m_hWnd, m_hotKeyLeft))
+    if(m_hotKeyLeft!=0 && !::UnregisterHotKey(m_hWnd, m_hotKeyLeft))
         MessageBox(_T("FAIL: UnregisterHotKey(): template prior"));
 
-    if(!::UnregisterHotKey(m_hWnd, m_hotKeyRight))
+    if(m_hotKeyRight!=0 && !::UnregisterHotKey(m_hWnd, m_hotKeyRight))
         MessageBox(_T("FAIL: UnregisterHotKey(): template next"));
 }
 /*
