@@ -21,13 +21,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_D1B3D0C32772496B856F193AE9E4576D"
+        "MsmKey" = "8:_9C258912941848A0AB050C4152E161FE"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_D3B821AD15DE4F69ABFE410B297F280E"
+        "MsmKey" = "8:_D1B3D0C32772496B856F193AE9E4576D"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -133,19 +133,19 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D1B3D0C32772496B856F193AE9E4576D"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9C258912941848A0AB050C4152E161FE"
             {
-            "SourcePath" = "8:..\\GhostBoard\\ReadMe.txt"
-            "TargetName" = "8:ReadMe.txt"
+            "SourcePath" = "8:GhostBoard.dat"
+            "TargetName" = "8:GhostBoard.dat"
             "Tag" = "8:"
-            "Folder" = "8:_48606576171A40E7AE9B08D10292D589"
+            "Folder" = "8:_80BA56A00DCA4ADB8B9C2B1D566ACDAF"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
             "ReadOnly" = "11:FALSE"
             "Hidden" = "11:FALSE"
             "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
+            "Permanent" = "11:TRUE"
             "SharedLegacy" = "11:FALSE"
             "PackageAs" = "3:1"
             "Register" = "3:1"
@@ -153,12 +153,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D3B821AD15DE4F69ABFE410B297F280E"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D1B3D0C32772496B856F193AE9E4576D"
             {
-            "SourcePath" = "8:GhostBoard.dat"
-            "TargetName" = "8:GhostBoard.dat"
+            "SourcePath" = "8:..\\GhostBoard\\ReadMe.txt"
+            "TargetName" = "8:ReadMe.txt"
             "Tag" = "8:"
-            "Folder" = "8:_80BA56A00DCA4ADB8B9C2B1D566ACDAF"
+            "Folder" = "8:_48606576171A40E7AE9B08D10292D589"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -238,7 +238,7 @@
             "{1525181F-901A-416C-8A58-119130FE478E}:_E262E95400664E2AA9CA7C7C62859BDD"
             {
             "Name" = "8:#1915"
-            "AlwaysCreate" = "11:TRUE"
+            "AlwaysCreate" = "11:FALSE"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Property" = "8:AppDataFolder"
@@ -247,7 +247,7 @@
                     "{9EF0B969-E518-4E46-987F-47570745A589}:_80BA56A00DCA4ADB8B9C2B1D566ACDAF"
                     {
                     "Name" = "8:GhostBoard"
-                    "AlwaysCreate" = "11:TRUE"
+                    "AlwaysCreate" = "11:FALSE"
                     "Condition" = "8:"
                     "Transitive" = "11:FALSE"
                     "Property" = "8:_DBDC6A1B8BC84B21BC84C9BBC9992618"
@@ -272,14 +272,14 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:GhostBoard"
-        "ProductCode" = "8:{1307C979-E2DF-446A-B810-136B2AE72C24}"
-        "PackageCode" = "8:{68507753-BF2C-416F-90FF-4CC6F624C700}"
+        "ProductCode" = "8:{B71AC424-E463-44B3-8F6E-E93B790BC1FA}"
+        "PackageCode" = "8:{303E588D-BF0C-407B-B926-76D702A7C1DE}"
         "UpgradeCode" = "8:{4060D869-95C1-42FB-BCFE-D4FD33B4C380}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
-        "ProductVersion" = "8:1.1.15"
+        "ProductVersion" = "8:1.1.16"
         "Manufacturer" = "8:Tomohisa Kusukawa"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"

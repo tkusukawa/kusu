@@ -35,7 +35,7 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_mouseDistanceFar = 100;
     // デフォルトの透明度、マウス接近時の透明度を設定。
     m_alphaActive = 200;
-    m_alphaDefault = 150;
+    m_alphaDefault = 100;
     m_alphaMouse = 30;
     // デフォルトのアクティブキーはCtrl
     m_confCtrl = true;
@@ -473,11 +473,14 @@ void CGhostBoardDlg::SetViewState()
                 s_alpha = 0;
                 // 非アクティブになった時
                 ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
+	            SetLayeredWindowAttributes(0, s_alpha, LWA_ALPHA);
                 break;
             case DS_activeKey:
                 TRACE("SetViewState():active\n");
                 // アクティブになった時
-                ModifyStyleEx(WS_EX_TRANSPARENT, 0); // 透過解除
+				if(m_alphaActive>1) {
+					ModifyStyleEx(WS_EX_TRANSPARENT, 0); // 透過解除
+				}
                 SetLayeredWindowAttributes(0, m_alphaActive, LWA_ALPHA);
                 SetWindowPos(&wndTopMost, 0,0,0,0,
                     SWP_NOSIZE|SWP_NOMOVE|SWP_NOACTIVATE);
@@ -1234,7 +1237,6 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
             wsprintf(m_icon.szInfo, _T("%02d [%s]"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
         }
         else { // timeout_ms == BALLOON_LOOKUP: ホットキーによる履歴探索
-            CString bStr;
             int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
             int dispStart = hisNum - LOOKUP_DISP_NUM/2;
             int dispEnd   = dispStart + LOOKUP_DISP_NUM - 1;
@@ -1246,6 +1248,8 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
                 dispEnd += startCount - dispStart;
                 dispStart = startCount;
             }
+
+			CString bStr = _T("\t\t\t\n");
             for(int i = dispStart; (i <= m_historyCount) && (i <= dispEnd); i++) {
                 int pos = i % HISTORY_NUM;
                 CString str;
@@ -1270,7 +1274,6 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
             wsprintf(m_icon.szInfo, _T("%c%02d"), " RGB"[m_template], m_lookupPos[m_template]);
         }
         else { // timeout_ms == BALLOON_LOOKUP: ホットキーによる定型文探索
-            CString bStr;
             int dispEnd   = m_lookupPos[m_template] + LOOKUP_DISP_NUM/2;
             int dispStart = dispEnd - (LOOKUP_DISP_NUM - 1);
             if(dispStart < 0) {
@@ -1281,6 +1284,7 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
                 dispStart -= dispEnd-(HISTORY_NUM-1);
                 dispEnd = HISTORY_NUM-1;
             }
+			CString bStr = _T("\t\t\t\n");
             for(int i = dispEnd; (i>=dispStart) && (i>=0); i--) {
                 CString str;
                 wchar_t mrkc[] = _T("*");
