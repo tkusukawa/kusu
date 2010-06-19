@@ -5,7 +5,7 @@
 #include "myedit.h"
 #include "afxwin.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.15") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.16") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
@@ -13,7 +13,7 @@
 #define     TEMPLATE_NUM    4
 #define     HISTORY_NUM     32
 #define     LOOKUP_DISP_NUM 8
-#define     LOOKUP_DISP_LEN 19
+#define     LOOKUP_DISP_LEN 18
 
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
