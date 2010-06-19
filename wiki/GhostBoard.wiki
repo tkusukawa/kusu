@@ -21,10 +21,12 @@ http://kusu.googlecode.com/files/ghostboardcap.jpg
 Windows XP,Vista, Windows7で使えています。
 
 ==インストール／アンインストール==
-インストーラではプログラムメニューとスタートアップにショートカットを作成し、
-ユーザのアプリケーションデータフォルダに!GhostBoardフォルダを作成します。
+インストーラはプログラムメニューとスタートアップにショートカットを作成し、
+ユーザのアプリケーションデータフォルダに作業フォルダ:!GhostBoardを作成します。
 コントロールパネルの「プログラム～」でアンインストールすることで、
-作成したショートカットと!GhostBoardフォルダは削除されます。
+配置したEXEとショートカットが削除されます。
+プログラムによって作業フォルダに作成された設定ファイルは
+削除されませんので不要な場合は手動で削除してください。
 
 レジストリは使用していません。EXEファイルを実行すると、
 作業フォルダに設定情報のファイルが作られます。
@@ -127,12 +129,21 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == バイナリダウンロード ==
 
+  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.16.zip GhostBoard-1.1.16 インストーラ]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.16.zip GhostBoard-1.1.16 EXEファイル]
+    2010/06/19 r156<br>
+    表示濃度を最低に設定した際にウィンドウがアクティブにならないように修正<br>
+    バルーンの履歴表示の横幅を予め確保するために先頭行にタブを表示<br>
+    デフォルトの表示濃度を150から100に変更<br>
+    !VerUp時に設定ファイルを消さずに引き継ぐように修正<br>
+    バージョン番号を1.1.16に更新<br>
+
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.15.zip GhostBoard-1.1.15 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.15.zip GhostBoard-1.1.15 EXEファイル]
     2010/06/12 r154<br>
-    バージョン番号を1.1.15に更新
+    バージョン番号を1.1.15に更新<br>
     2010/04/24 r153<br>
-    ホットキーの設定を無しにした時の不具合を修正
+    ホットキーの設定を無しにした時の不具合を修正<br>
 
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.14.zip GhostBoard-1.1.14 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.14.zip GhostBoard-1.1.14 EXEファイル]
