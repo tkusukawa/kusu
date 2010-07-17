@@ -4,16 +4,15 @@
 #pragma once
 #include "myedit.h"
 #include "afxwin.h"
+#include "GhostBoardList.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.16") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.17") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
 #define     CB_RETRY        3
 #define     TEMPLATE_NUM    4
 #define     HISTORY_NUM     32
-#define     LOOKUP_DISP_NUM 8
-#define     LOOKUP_DISP_LEN 18
 
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
@@ -171,6 +170,13 @@ public:
 
     // アラート表示
     void DispAlert(LPCWSTR msg);
+
+	// Listダイアログ表示
+	int m_listHeight;
+    int m_alphaList;
+	CGhostBoardList *m_listDlg;
+	void ShowList();
+	void HideList();
 
     // 他のアプリケーションへの文字列挿入
     CWnd* m_lastWindow;

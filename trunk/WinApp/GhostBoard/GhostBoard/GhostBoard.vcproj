@@ -200,6 +200,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GhostBoardList.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GhostBoardSettings.cpp"
 				>
 			</File>
@@ -239,6 +243,10 @@
 			</File>
 			<File
 				RelativePath=".\GhostBoardDlg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GhostBoardList.h"
 				>
 			</File>
 			<File

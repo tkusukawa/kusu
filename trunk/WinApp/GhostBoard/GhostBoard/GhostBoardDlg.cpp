@@ -5,6 +5,7 @@
 #include "GhostBoard.h"
 #include "GhostBoardDlg.h"
 #include "GHostBoardSettings.h"
+#include "GhostBoardList.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -37,6 +38,7 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_alphaActive = 200;
     m_alphaDefault = 100;
     m_alphaMouse = 30;
+    m_alphaList = 200;
     // デフォルトのアクティブキーはCtrl
     m_confCtrl = true;
     m_confShift = false;
@@ -53,6 +55,9 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_hotKeyDown = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_DOWN; // 履歴後
     m_hotKeyLeft = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_LEFT;   // テンプレート逆
     m_hotKeyRight= ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_RIGHT;  // テンプレート順
+
+	// ホットキー操作時のリスト表示 高さ
+	m_listHeight = 100;
 }
 
 void CGhostBoardDlg::DoDataExchange(CDataExchange* pDX)
@@ -153,6 +158,10 @@ BOOL CGhostBoardDlg::OnInitDialog()
     m_textArray[0][0] = APP_NAME;
     m_edit.SetWindowText(APP_NAME);
     m_lastOp = LO_edit;
+
+	//---- リストダイアログ
+	m_listDlg = new CGhostBoardList;
+	m_listDlg->Create(IDD_GHOSTBOARD_LIST, this);
 
 	return ret;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -395,6 +404,7 @@ void CGhostBoardDlg::OnTimer(UINT_PTR nIDEvent)
         if(m_actKeyStatus != false) {
             m_actKeyStatus = false;
             EraseInfo();
+			HideList();
         }
     }
 
@@ -793,6 +803,7 @@ bool CGhostBoardDlg::Save()
         m_confCtrl, m_confShift, m_confAlt, m_confWin);
     fprintf(fp, "hotKey:%X, %X, %X, %X\n",
         m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
+    fprintf(fp, "List:%d, %d\n", m_alphaList, m_listHeight);
 
     for(int j=1; j<TEMPLATE_NUM; j++) {
         for(int i=0; i<HISTORY_NUM; i++) {
@@ -839,6 +850,7 @@ bool CGhostBoardDlg::Load()
         &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
     fscanf_s(fp, "hotKey:%X, %X, %X, %X\n",
         &m_hotKeyUp, &m_hotKeyDown, &m_hotKeyLeft, &m_hotKeyRight);
+    fscanf_s(fp, "List:%d, %d\n", &m_alphaList, &m_listHeight);
 
     do{
         unsigned int tmp, idx;
@@ -925,6 +937,8 @@ void CGhostBoardDlg::OnMenuSettings()
     dlg.m_alt = m_confAlt;
     dlg.m_win = m_confWin;
     dlg.m_iconNotifP = &m_iconNotif;
+	dlg.m_alphaList = m_alphaList;
+	dlg.m_listHeight = m_listHeight;
 
     // ホットキーストップ
     StopHotKey();
@@ -957,7 +971,11 @@ void CGhostBoardDlg::OnMenuSettings()
         m_hotKeyRight = dlg.m_hotKeyRightCode;
         TRACE("HotKey after: %x %x %x %x\n",
             m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
- 
+
+		// リスト設定
+		m_alphaList = dlg.m_alphaList;
+		m_listHeight = dlg.m_listHeight;
+
         Save();
 	}
 	else if (nResponse == IDCANCEL)
@@ -1124,6 +1142,7 @@ void CGhostBoardDlg::HistoryBackward()
     TRACE("HistoryBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
 
     DispInfo(BALLOON_LOOKUP); // バルーン表示
+	ShowList();
 }
 
 void CGhostBoardDlg::HistoryForward()
@@ -1157,6 +1176,7 @@ void CGhostBoardDlg::HistoryForward()
 	TRACE("HistoryForward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_LOOKUP); // バルーン表示
+	ShowList();
 }
 
 void CGhostBoardDlg::TemplateBackward()
@@ -1183,6 +1203,7 @@ void CGhostBoardDlg::TemplateBackward()
 	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_LOOKUP); // バルーン表示
+	ShowList();
     SetViewState();
 }
 
@@ -1203,6 +1224,7 @@ void CGhostBoardDlg::TemplateForward()
 	TRACE("TemplateBackward():%d,%d\n", m_template, m_lookupPos[m_template]);
     
     DispInfo(BALLOON_LOOKUP); // バルーン表示
+	ShowList();
     SetViewState();
 }
 
@@ -1233,76 +1255,11 @@ void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
         int hisNum = m_lookupPos[0] - m_historyPos;
         if(hisNum>0) hisNum -= m_historyNum;
         hisNum += m_historyCount;
-        if(timeout_ms != BALLOON_LOOKUP) {
-            wsprintf(m_icon.szInfo, _T("%02d [%s]"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
-        }
-        else { // timeout_ms == BALLOON_LOOKUP: ホットキーによる履歴探索
-            int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
-            int dispStart = hisNum - LOOKUP_DISP_NUM/2;
-            int dispEnd   = dispStart + LOOKUP_DISP_NUM - 1;
-            if(dispEnd > m_historyCount) {
-                dispStart -= dispEnd-m_historyCount;
-                dispEnd = m_historyCount;
-            }
-            if(dispStart < startCount) {
-                dispEnd += startCount - dispStart;
-                dispStart = startCount;
-            }
-
-			CString bStr = _T("\t\t\t\n");
-            for(int i = dispStart; (i <= m_historyCount) && (i <= dispEnd); i++) {
-                int pos = i % HISTORY_NUM;
-                CString str;
-                wchar_t *mrk = (pos == m_lookupPos[0]) ? _T("*") : _T("  ");
-                str.Format(_T("%s%02d[%s]:"), mrk, i, m_historyTime[pos].Format("%H:%M"));
-                bStr += str;
-                str = m_textArray[0][pos];
-                str.Replace(_T("\n"),_T("|"));
-                str.Replace(_T("\r"),_T(""));
-                str.Replace(_T("\t"),_T(" "));
-                while(str.Replace(_T("  "), _T(" ")));
-                bStr += str.Left(LOOKUP_DISP_LEN);
-                bStr += "\n";
-            }
-            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
-            wcscpy_s(m_icon.szInfo, balloonMax, bStr.Left(balloonMax-1));
-        }
+        wsprintf(m_icon.szInfo, _T("%02d [%s]"), hisNum, m_historyTime[m_lookupPos[0]].Format("%H:%M"));
     }
     else if(m_template > 0) {
         // テンプレート表示
-        if(timeout_ms != BALLOON_LOOKUP) {
-            wsprintf(m_icon.szInfo, _T("%c%02d"), " RGB"[m_template], m_lookupPos[m_template]);
-        }
-        else { // timeout_ms == BALLOON_LOOKUP: ホットキーによる定型文探索
-            int dispEnd   = m_lookupPos[m_template] + LOOKUP_DISP_NUM/2;
-            int dispStart = dispEnd - (LOOKUP_DISP_NUM - 1);
-            if(dispStart < 0) {
-                dispEnd -= dispStart;
-                dispStart = 0;
-            }
-            if(dispEnd > HISTORY_NUM-1) {
-                dispStart -= dispEnd-(HISTORY_NUM-1);
-                dispEnd = HISTORY_NUM-1;
-            }
-			CString bStr = _T("\t\t\t\n");
-            for(int i = dispEnd; (i>=dispStart) && (i>=0); i--) {
-                CString str;
-                wchar_t mrkc[] = _T("*");
-                mrkc[0] = " RGB"[m_template];
-                wchar_t *mrk = (i == m_lookupPos[m_template]) ? mrkc : _T("  ");
-                str.Format(_T("%s%02d:"), mrk, i);
-                bStr += str;
-                str = m_textArray[m_template][i];
-                str.Replace(_T("\n"),_T("|"));
-                str.Replace(_T("\r"),_T(""));
-                str.Replace(_T("\t"),_T(" "));
-                while(str.Replace(_T("  "), _T(" ")));
-                bStr += str.Left(LOOKUP_DISP_LEN);
-                bStr += "\n";
-            }
-            int balloonMax = sizeof(m_icon.szInfo)/sizeof(*(m_icon.szInfo));
-            wcscpy_s(m_icon.szInfo, balloonMax, bStr.Left(balloonMax-1));
-        }
+        wsprintf(m_icon.szInfo, _T("%c%02d"), " RGB"[m_template], m_lookupPos[m_template]);
     }
     else {
         // テンプレート表示
@@ -1401,4 +1358,83 @@ int CGhostBoardDlg::hotKeyF2mod(int hotKeyF)
     if(hotKeyF & HOTKEYF_ALT)
         res |= MOD_ALT;
     return res;
+}
+
+void CGhostBoardDlg::ShowList()
+{
+	// ダイアログの位置を取得
+	WINDOWPLACEMENT pos;
+    GetWindowPlacement(&pos);
+
+	// スクリーンの上限/下限を取得
+	int y_min = GetSystemMetrics(SM_YVIRTUALSCREEN);
+    int y_max = y_min + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+	// ダイアログの上下どちらのスペースが広いかを判定
+	if(pos.rcNormalPosition.top - y_min > y_max - pos.rcNormalPosition.bottom) {
+		// 上が広い場合
+		pos.rcNormalPosition.bottom = pos.rcNormalPosition.top;
+		pos.rcNormalPosition.top -= m_listHeight;
+	}
+	else {
+		// 下が広い場合
+		pos.rcNormalPosition.top = pos.rcNormalPosition.bottom;
+		pos.rcNormalPosition.bottom += m_listHeight;
+	}
+
+	m_listDlg->ShowWindow(SW_SHOWNOACTIVATE);
+	m_listDlg->ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
+	m_listDlg->SetLayeredWindowAttributes(0, m_alphaList, LWA_ALPHA);
+    m_listDlg->SetWindowPos(&wndTopMost,
+		            pos.rcNormalPosition.left, pos.rcNormalPosition.top,
+			        pos.rcNormalPosition.right-pos.rcNormalPosition.left, m_listHeight,
+                    SWP_NOACTIVATE);
+	m_listDlg->m_listBox.MoveWindow(4, 3,
+					pos.rcNormalPosition.right-pos.rcNormalPosition.left-7,
+					m_listHeight-6);
+
+	m_listDlg->m_listBox.ResetContent();
+	int sel;
+	if(m_template == 0) {
+        // クリップボード履歴
+	    int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
+		for(int i = startCount; i <= m_historyCount; i++) {
+			int pos = i % HISTORY_NUM;
+			CString str;
+			str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
+			str += m_textArray[0][pos].Left(256);
+			str.Replace(_T("\n"),_T("|"));
+			str.Replace(_T("\r"),_T(""));
+			str.Replace(_T("\t"),_T(" "));
+            while(str.Replace(_T("  "), _T(" ")));
+			int idx = m_listDlg->m_listBox.AddString(str);
+			if(pos == m_lookupPos[0]) sel = idx;
+		}
+    }
+    else if(m_template > 0) {
+        // テンプレート表示
+        for(int i = HISTORY_NUM-1; i >= 0; i--) {
+            CString str;
+            str.Format(_T("%02d: "), i);
+            str += m_textArray[m_template][i].Left(256);
+            str.Replace(_T("\n"),_T("|"));
+            str.Replace(_T("\r"),_T(""));
+            str.Replace(_T("\t"),_T(" "));
+	        while(str.Replace(_T("  "), _T(" ")));
+			int idx = m_listDlg->m_listBox.AddString(str);
+			if(i == m_lookupPos[m_template]) sel = idx;
+		}
+    }
+	// 現在のクリップボード内容を選択表示
+	m_listDlg->m_listBox.SetCurSel(sel);
+	// 選択表示が中央になるように表示調整
+	int h = m_listDlg->m_listBox.GetItemHeight(sel);
+	if(sel > m_listHeight/h/2) {
+		m_listDlg->m_listBox.SetTopIndex(sel - m_listHeight/h/2);
+	}
+}
+
+void CGhostBoardDlg::HideList()
+{
+	m_listDlg->ShowWindow(SW_HIDE);
 }
