@@ -32,6 +32,9 @@ public:
     int  m_hotKeyLeftCode;
     int  m_hotKeyRightCode;
 
+    UINT m_alphaList;
+	int  m_listHeight;
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
 
@@ -54,4 +57,6 @@ public:
     CHotKeyCtrl m_hotKeyDown;
     CHotKeyCtrl m_hotKeyLeft;
     CHotKeyCtrl m_hotKeyRight;
+	CSliderCtrl m_sliderAlphaList;
+	CEdit m_editListHeight;
 };
