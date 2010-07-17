@@ -110,6 +110,7 @@ Ctrl,Shift,Alt,Winの4つのキーの中から任意の組合せを設定する�
 ２．アクティブキーの組合せ
 ３．バルーン表示する／しない
 ４. ホットキーの変更
+５．ホットキー操作時のリスト表示の高さと濃度
 
 ● 終了<br>
 メニューの「Exit」を選択することで!GhostBoardを終了することが出来ます。
@@ -128,6 +129,12 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 お気づきの点がございましたらご連絡いただけると助かります。
 
 == バイナリダウンロード ==
+
+  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.17.zip GhostBoard-1.1.17 インストーラ]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.17.zip GhostBoard-1.1.17 EXEファイル]
+    2010/07/18 r161<br>
+    ホットキー操作時のリスト表示をバルーンでなく、リストボックスコントロールで行うように変更<br>
+バージョン1.1.17に更新<br>
 
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.16.zip GhostBoard-1.1.16 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.16.zip GhostBoard-1.1.16 EXEファイル]
