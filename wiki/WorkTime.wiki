@@ -48,6 +48,12 @@ http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
 
+  * Ver0.0.61(r164) [http://kusu.googlecode.com/files/redmine_work_time-0.0.61.tar.gz redmine_work_time-0.0.61.tar.gz] Date: 15:59:33, 2010年7月19日
+  Issue 21: 一度登録した時間登録を消すI/Fがほしい への対応<br>
+
+  * (r163) Date: 13:51:22, 2010年7月19日
+  Issue 14: 書庫に保存したプロジェクトがチケット選択画面の選択肢に出てくる の修正<br>
+
   * Ver0.0.60(r159) [http://kusu.googlecode.com/files/redmine_work_time-0.0.60.tar.gz redmine_work_time-0.0.60.tar.gz] Date: 21:13:09, 2010年7月10日
   Issue 20: mschibata様から連絡いただいた「日毎工数の活動セレクトに同じ項目が複数表示される場合がある」問題の修正
 
