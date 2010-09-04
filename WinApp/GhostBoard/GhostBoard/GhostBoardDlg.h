@@ -6,7 +6,7 @@
 #include "afxwin.h"
 #include "GhostBoardList.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.17") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.18") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
@@ -175,6 +175,7 @@ public:
 	int m_listHeight;
     int m_alphaList;
 	CGhostBoardList *m_listDlg;
+    bool m_listDlgNeedRedraw;
 	void ShowList();
 	void HideList();
 

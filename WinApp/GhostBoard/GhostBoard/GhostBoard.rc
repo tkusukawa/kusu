@@ -107,7 +107,7 @@ BEGIN
 END
 
 IDD_GHOSTBOARD_LIST DIALOGEX 0, 0, 323, 206
-STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE
+STYLE DS_SETFONT | WS_POPUP
 EXSTYLE WS_EX_TOPMOST
 FONT 9, "MS UI Gothic", 0, 0, 0x1
 BEGIN
@@ -121,8 +121,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,17,1
- PRODUCTVERSION 1,1,17,1
+ FILEVERSION 1,1,18,1
+ PRODUCTVERSION 1,1,18,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -139,12 +139,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Tomohisa Kusukawa"
             VALUE "FileDescription", "クリップボード履歴参照ユーティリティ"
-            VALUE "FileVersion", "1.1.17"
+            VALUE "FileVersion", "1.1.18"
             VALUE "InternalName", "GhostBoard.exe"
             VALUE "LegalCopyright", "(C) 2007-2010 Tomohisa Kusukawa.  All rights reserved."
             VALUE "OriginalFilename", "GhostBoard.exe"
             VALUE "ProductName", "GhostBoard"
-            VALUE "ProductVersion", "1.1.17"
+            VALUE "ProductVersion", "1.1.18"
         END
     END
     BLOCK "VarFileInfo"
