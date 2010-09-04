@@ -528,6 +528,7 @@ void CGhostBoardDlg::SetViewState()
         // テンプレートグループが変わったときは再描画
         s_template = m_template;
         InvalidateRect(NULL,TRUE);
+		m_listDlg->InvalidateRect(NULL, TRUE);
     }
 }
 
@@ -1098,13 +1099,9 @@ HBRUSH CGhostBoardDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
     if(nCtlColor == CTLCOLOR_DLG) { // ダイアログ枠の色
         TRACE("OnCtlColor() t=%d\n", m_template);
-        pDC->SetBkMode(OPAQUE); 
-        pDC->SetBkColor(sm_color[idx]);
         return m_brush[idx];
     }
     if(idx == TEMPLATE_NUM && nCtlColor == CTLCOLOR_EDIT) { // エディット表示の色
-        pDC->SetBkMode(OPAQUE); 
-        pDC->SetBkColor(sm_color[idx]);
         return m_brush[idx];
     }
 
@@ -1181,6 +1178,7 @@ void CGhostBoardDlg::HistoryForward()
 
 void CGhostBoardDlg::TemplateBackward()
 {
+    m_listDlgNeedRedraw = true;
     rememberTemplate();
     // 参照テンプレートを更新
     if(m_template < 0) {
@@ -1209,6 +1207,7 @@ void CGhostBoardDlg::TemplateBackward()
 
 void CGhostBoardDlg::TemplateForward()
 {
+    m_listDlgNeedRedraw = true;
     rememberTemplate();
     // 参照テンプレートを更新
     m_template ++;
@@ -1238,7 +1237,10 @@ void CGhostBoardDlg::rememberTemplate()
     // 現在の編集テキストを履歴orテンプレートに格納
     CString str;
     m_edit.GetWindowText(str);
-    m_textArray[m_template][m_lookupPos[m_template]] = str;
+    if(m_textArray[m_template][m_lookupPos[m_template]] != str) {
+        m_textArray[m_template][m_lookupPos[m_template]] = str;
+        m_listDlgNeedRedraw = true;
+    }
 }
 
 void CGhostBoardDlg::DispInfo(UINT timeout_ms, LPCWSTR msg)
@@ -1362,79 +1364,97 @@ int CGhostBoardDlg::hotKeyF2mod(int hotKeyF)
 
 void CGhostBoardDlg::ShowList()
 {
-	// ダイアログの位置を取得
-	WINDOWPLACEMENT pos;
-    GetWindowPlacement(&pos);
-
-	// スクリーンの上限/下限を取得
-	int y_min = GetSystemMetrics(SM_YVIRTUALSCREEN);
-    int y_max = y_min + GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
-	// ダイアログの上下どちらのスペースが広いかを判定
-	if(pos.rcNormalPosition.top - y_min > y_max - pos.rcNormalPosition.bottom) {
-		// 上が広い場合
-		pos.rcNormalPosition.bottom = pos.rcNormalPosition.top;
-		pos.rcNormalPosition.top -= m_listHeight;
-	}
-	else {
-		// 下が広い場合
-		pos.rcNormalPosition.top = pos.rcNormalPosition.bottom;
-		pos.rcNormalPosition.bottom += m_listHeight;
-	}
-
-	m_listDlg->ShowWindow(SW_SHOWNOACTIVATE);
-	m_listDlg->ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
-	m_listDlg->SetLayeredWindowAttributes(0, m_alphaList, LWA_ALPHA);
-    m_listDlg->SetWindowPos(&wndTopMost,
-		            pos.rcNormalPosition.left, pos.rcNormalPosition.top,
-			        pos.rcNormalPosition.right-pos.rcNormalPosition.left, m_listHeight,
-                    SWP_NOACTIVATE);
-	m_listDlg->m_listBox.MoveWindow(4, 3,
-					pos.rcNormalPosition.right-pos.rcNormalPosition.left-7,
-					m_listHeight-6);
-
-	m_listDlg->m_listBox.ResetContent();
 	int sel;
 	if(m_template == 0) {
         // クリップボード履歴
 	    int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
-		for(int i = startCount; i <= m_historyCount; i++) {
-			int pos = i % HISTORY_NUM;
-			CString str;
-			str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
-			str += m_textArray[0][pos].Left(256);
-			str.Replace(_T("\n"),_T("|"));
-			str.Replace(_T("\r"),_T(""));
-			str.Replace(_T("\t"),_T(" "));
-            while(str.Replace(_T("  "), _T(" ")));
-			int idx = m_listDlg->m_listBox.AddString(str);
-			if(pos == m_lookupPos[0]) sel = idx;
-		}
+        if(m_listDlgNeedRedraw) {
+    	    m_listDlg->m_listBox.ResetContent();
+		    for(int i = startCount; i <= m_historyCount; i++) {
+			    int pos = i % HISTORY_NUM;
+			    CString str;
+			    str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
+			    str += m_textArray[0][pos].Left(256);
+			    str.Replace(_T("\n"),_T("|"));
+			    str.Replace(_T("\r"),_T(""));
+			    str.Replace(_T("\t"),_T(" "));
+                while(str.Replace(_T("  "), _T(" ")));
+			    m_listDlg->m_listBox.AddString(str);
+		    }
+        }
+        sel = m_lookupPos[0]-startCount;
+        while(sel < 0) sel+=HISTORY_NUM;
     }
     else if(m_template > 0) {
         // テンプレート表示
-        for(int i = HISTORY_NUM-1; i >= 0; i--) {
-            CString str;
-            str.Format(_T("%02d: "), i);
-            str += m_textArray[m_template][i].Left(256);
-            str.Replace(_T("\n"),_T("|"));
-            str.Replace(_T("\r"),_T(""));
-            str.Replace(_T("\t"),_T(" "));
-	        while(str.Replace(_T("  "), _T(" ")));
-			int idx = m_listDlg->m_listBox.AddString(str);
-			if(i == m_lookupPos[m_template]) sel = idx;
-		}
+        if(m_listDlgNeedRedraw) {
+    	    m_listDlg->m_listBox.ResetContent();
+            for(int i = HISTORY_NUM-1; i >= 0; i--) {
+                CString str;
+                str.Format(_T("%02d: "), i);
+                str += m_textArray[m_template][i].Left(256);
+                str.Replace(_T("\n"),_T("|"));
+                str.Replace(_T("\r"),_T(""));
+                str.Replace(_T("\t"),_T(" "));
+	            while(str.Replace(_T("  "), _T(" ")));
+			    int idx = m_listDlg->m_listBox.AddString(str);
+			    if(i == m_lookupPos[m_template]) sel = idx;
+		    }
+        }
+        sel = HISTORY_NUM-1-m_lookupPos[m_template];
     }
+	else { // 履歴かテンプレートでなければリストは表示しない
+		return;
+	}
+
+    if(m_listDlgNeedRedraw) {
+	    // ダイアログの色を指定
+	    m_listDlg->m_brush = &(m_brush[m_template]);
+
+	    // ダイアログの位置を取得
+	    WINDOWPLACEMENT pos;
+        GetWindowPlacement(&pos);
+
+	    // スクリーンの上限/下限を取得
+	    int y_min = GetSystemMetrics(SM_YVIRTUALSCREEN);
+        int y_max = y_min + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+
+	    // ダイアログの上下どちらのスペースが広いかを判定
+	    if(pos.rcNormalPosition.top - y_min > y_max - pos.rcNormalPosition.bottom) {
+		    // 上が広い場合
+		    pos.rcNormalPosition.bottom = pos.rcNormalPosition.top;
+		    pos.rcNormalPosition.top -= m_listHeight;
+	    }
+	    else {
+		    // 下が広い場合
+		    pos.rcNormalPosition.top = pos.rcNormalPosition.bottom;
+		    pos.rcNormalPosition.bottom += m_listHeight;
+	    }
+
+        m_listDlg->SetWindowPos(&wndTopMost,
+		                pos.rcNormalPosition.left, pos.rcNormalPosition.top,
+			            pos.rcNormalPosition.right-pos.rcNormalPosition.left, m_listHeight,
+                        SWP_NOACTIVATE);
+	    m_listDlg->m_listBox.MoveWindow(4, 3,
+					    pos.rcNormalPosition.right-pos.rcNormalPosition.left-7,
+					    m_listHeight-6);
+	    m_listDlg->ModifyStyleEx(0, WS_EX_LAYERED | WS_EX_TRANSPARENT); // 透過設定
+	    m_listDlg->SetLayeredWindowAttributes(0, m_alphaList, LWA_ALPHA);
+	    m_listDlg->ShowWindow(SW_SHOWNOACTIVATE);
+        m_listDlgNeedRedraw = false;
+    }
+
 	// 現在のクリップボード内容を選択表示
 	m_listDlg->m_listBox.SetCurSel(sel);
-	// 選択表示が中央になるように表示調整
+    // 選択表示が中央になるように表示調整
 	int h = m_listDlg->m_listBox.GetItemHeight(sel);
-	if(sel > m_listHeight/h/2) {
-		m_listDlg->m_listBox.SetTopIndex(sel - m_listHeight/h/2);
-	}
+    int top = sel - m_listHeight/h/2;
+	if(top < 0) top = 0;
+    m_listDlg->m_listBox.SetTopIndex(top);
 }
 
 void CGhostBoardDlg::HideList()
 {
 	m_listDlg->ShowWindow(SW_HIDE);
+    m_listDlgNeedRedraw = true;
 }

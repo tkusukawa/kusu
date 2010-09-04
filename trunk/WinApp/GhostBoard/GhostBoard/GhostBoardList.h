@@ -23,4 +23,6 @@ protected:
 public:
 	CListBox m_listBox;
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	CBrush *m_brush;
 };
