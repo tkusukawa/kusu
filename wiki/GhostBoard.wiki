@@ -17,6 +17,16 @@
 
 http://kusu.googlecode.com/files/ghostboardcap.jpg
 
+== 機能 ==
+表示：クリップボードのテキスト内容を監視して、半透明のウィンドウにリアルタイム表示します。
+透明度は好みの濃さに設定できるので邪魔になる場合は薄くしておくことができます。
+
+履歴：過去のクリップボードテキストを記憶し、簡単な操作で再度クリップボードに戻すことができます。
+
+定型文：設定しておいた定型テキストを、簡単な操作でクリップボードにセットできます。
+
+操作：マウスによるメニュー選択の他に、ホットキーによって直感的な選択操作を行うことができます。
+
 == 動作環境 ==
 Windows XP,Vista, Windows7で使えています。
 
@@ -129,6 +139,11 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 お気づきの点がございましたらご連絡いただけると助かります。
 
 == バイナリダウンロード ==
+
+  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.18.zip GhostBoard-1.1.18 インストーラ]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.18.zip GhostBoard-1.1.18 EXEファイル]
+    2010/09/04 r166 Ver1.1.18<br>
+    ホットキーによる履歴選択操作時に履歴リストがちらつかないように修正
 
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.17.zip GhostBoard-1.1.17 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.17.zip GhostBoard-1.1.17 EXEファイル]
