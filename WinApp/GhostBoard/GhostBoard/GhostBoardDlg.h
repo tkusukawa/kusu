@@ -6,7 +6,7 @@
 #include "afxwin.h"
 #include "GhostBoardList.h"
 
-#define     APP_NAME        _T("GhostBoard-1.1.18") // リソースからのバージョン取得方法がわかりません
+#define     APP_NAME        _T("GhostBoard-1.1.19") // リソースからのバージョン取得方法がわかりません
 
 #define	    WM_TRYCLK		WM_APP + 3	//タスクトレイ化
 
