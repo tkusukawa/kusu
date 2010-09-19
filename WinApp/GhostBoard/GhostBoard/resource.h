@@ -17,7 +17,6 @@
 #define IDC_SLIDER_APLHA_ACTIVE         1007
 #define IDC_CHECK1                      1008
 #define IDC_CHECK_ICON_NOTIF            1008
-#define IDC_SLIDER_ALPHA_MOUSE2         1009
 #define IDC_SLIDER_ALPHA_LIST           1009
 #define IDC_HOTKEY_UP                   1010
 #define IDC_HOTKEY_DOWN                 1011
@@ -25,6 +24,8 @@
 #define IDC_HOTKEY_RIGHT                1013
 #define IDC_HOTKEY_MENU                 1014
 #define IDC_LIST                        1015
+#define IDC_HOTKEY_RIGHT3               1015
+#define IDC_HOTKEY_FOCUS                1015
 #define IDC_EDIT_LIST_HEIGHT            1016
 #define ID_MENU_CLOSE                   32771
 #define ID_MENU_SETTINGS                32775

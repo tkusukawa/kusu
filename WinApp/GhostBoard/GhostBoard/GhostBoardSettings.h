@@ -31,6 +31,8 @@ public:
     int  m_hotKeyDownCode;
     int  m_hotKeyLeftCode;
     int  m_hotKeyRightCode;
+    int  m_hotKeyMenuCode;
+    int  m_hotKeyFocusCode;
 
     UINT m_alphaList;
 	int  m_listHeight;
@@ -57,6 +59,8 @@ public:
     CHotKeyCtrl m_hotKeyDown;
     CHotKeyCtrl m_hotKeyLeft;
     CHotKeyCtrl m_hotKeyRight;
+    CHotKeyCtrl m_hotKeyMenu;
+    CHotKeyCtrl m_hotKeyFocus;
 	CSliderCtrl m_sliderAlphaList;
 	CEdit m_editListHeight;
 };

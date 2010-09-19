@@ -164,6 +164,8 @@ public:
     int m_hotKeyDown; // 履歴後
     int m_hotKeyLeft;   // テンプレート前
     int m_hotKeyRight;  // テンプレート後
+    int m_hotKeyMenu;   // メニュー表示
+    int m_hotKeyFocus;  // フォーカス取得
     void StartHotKey();
     void StopHotKey();
     int hotKeyF2mod(int hotKeyF);
