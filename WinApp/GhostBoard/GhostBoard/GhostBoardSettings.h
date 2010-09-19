@@ -25,7 +25,7 @@ public:
     int  m_shift;
     int  m_alt;
     int  m_win;
-    bool *m_iconNotifP;
+    int *m_iconNotifP;
 
     int  m_hotKeyUpCode;
     int  m_hotKeyDownCode;
@@ -36,6 +36,8 @@ public:
 
     UINT m_alphaList;
 	int  m_listHeight;
+
+    int  m_textNum[4];
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート
@@ -63,4 +65,8 @@ public:
     CHotKeyCtrl m_hotKeyFocus;
 	CSliderCtrl m_sliderAlphaList;
 	CEdit m_editListHeight;
+    CEdit m_editWhite;
+    CEdit m_editRed;
+    CEdit m_editGreen;
+    CEdit m_editBlue;
 };

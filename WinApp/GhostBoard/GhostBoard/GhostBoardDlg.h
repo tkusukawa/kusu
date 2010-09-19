@@ -12,7 +12,6 @@
 
 #define     CB_RETRY        3
 #define     TEMPLATE_NUM    4
-#define     HISTORY_NUM     32
 
 #define     WATCH_INTERVAL  100
 #define     BALLOON_ACTIVE  5000
@@ -23,11 +22,11 @@
 
 #define     SAVE_TEXT_SIZE  8192
 
-#define     ID_SEL_HISTORY  0xD000
-#define     ID_SEL_RED      0xD100
-#define     ID_SEL_GREEN    0xD200
-#define     ID_SEL_BLUE     0xD300
-#define     ID_SEL_MAX      0xD400
+#define     ID_SEL_HISTORY  0xD000U
+#define     ID_SEL_RED      0xD100U
+#define     ID_SEL_GREEN    0xD200U
+#define     ID_SEL_BLUE     0xD300U
+#define     ID_SEL_MAX      0xD400U
 
 enum BootStatus {
     BS_none,
@@ -136,7 +135,7 @@ public:
     bool Load();
 
     // ポップアップメニュー
-    bool m_iconNotif; // バルーン表示イネーブル
+    int  m_iconNotif; // バルーン表示イネーブル
     void PopUpMenu(const POINT &pnt);
 
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
@@ -147,17 +146,19 @@ public:
     bool m_dropFocus;
 
     // 履歴・テンプレート
+    int m_textNum[TEMPLATE_NUM];
     static COLORREF sm_color[TEMPLATE_NUM+1];
     CBrush m_brush[TEMPLATE_NUM+1];
     int     m_template, m_historyPos, m_historyNum, m_historyCount;
     int     m_lookupPos[TEMPLATE_NUM];
-    CString m_textArray[TEMPLATE_NUM][HISTORY_NUM];
-    CTime m_historyTime[HISTORY_NUM];
+    CString* m_textArray[TEMPLATE_NUM];
+    CTime* m_historyTime;
     void HistoryBackward();
     void HistoryForward();
     void TemplateBackward();
     void TemplateForward();
     void rememberTemplate();
+    void replaceTextNum(int*);
 
     // ホットキー
     int m_hotKeyUp;   // 履歴前

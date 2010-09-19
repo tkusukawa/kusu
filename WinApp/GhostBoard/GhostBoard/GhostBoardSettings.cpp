@@ -39,6 +39,10 @@ void CGhostBoardSettings::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_EDIT_LIST_HEIGHT, m_editListHeight);
     DDX_Control(pDX, IDC_HOTKEY_MENU, m_hotKeyMenu);
     DDX_Control(pDX, IDC_HOTKEY_FOCUS, m_hotKeyFocus);
+    DDX_Control(pDX, IDC_EDIT_WHITE, m_editWhite);
+    DDX_Control(pDX, IDC_EDIT_RED, m_editRed);
+    DDX_Control(pDX, IDC_EDIT_GREEN, m_editGreen);
+    DDX_Control(pDX, IDC_EDIT_BLUE, m_editBlue);
 }
 
 
@@ -85,8 +89,21 @@ BOOL CGhostBoardSettings::OnInitDialog()
 
 	// エディットボックスの初期状態を設定
 	CString str;
-	str.Format(_T("%d"), m_listHeight);
+
+    str.Format(_T("%d"), m_listHeight);
 	m_editListHeight.SetWindowText(str);
+
+    str.Format(_T("%d"), m_textNum[0]);
+	m_editWhite.SetWindowText(str);
+
+    str.Format(_T("%d"), m_textNum[1]);
+	m_editRed.SetWindowText(str);
+
+    str.Format(_T("%d"), m_textNum[2]);
+	m_editGreen.SetWindowText(str);
+
+    str.Format(_T("%d"), m_textNum[3]);
+	m_editBlue.SetWindowText(str);
 
 	return TRUE;  // フォーカスをコントロールに設定した場合を除き、TRUE を返します。
 }
@@ -160,8 +177,21 @@ void CGhostBoardSettings::OnBnClickedOk()
 
 	// エディットボックスの内容を変数に反映
 	CString str;
-	m_editListHeight.GetWindowText(str);
+
+    m_editListHeight.GetWindowText(str);
 	m_listHeight = _ttoi(str);
+
+    m_editWhite.GetWindowText(str);
+	m_textNum[0] = _ttoi(str);
+
+    m_editRed.GetWindowText(str);
+	m_textNum[1] = _ttoi(str);
+
+    m_editGreen.GetWindowText(str);
+	m_textNum[2] = _ttoi(str);
+
+    m_editBlue.GetWindowText(str);
+	m_textNum[3] = _ttoi(str);
 
     OnOK();
 }

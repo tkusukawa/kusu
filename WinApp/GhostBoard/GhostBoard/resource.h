@@ -24,9 +24,13 @@
 #define IDC_HOTKEY_RIGHT                1013
 #define IDC_HOTKEY_MENU                 1014
 #define IDC_LIST                        1015
-#define IDC_HOTKEY_RIGHT3               1015
 #define IDC_HOTKEY_FOCUS                1015
 #define IDC_EDIT_LIST_HEIGHT            1016
+#define IDC_EDIT_WHITE                  1017
+#define IDC_EDIT_RED                    1018
+#define IDC_EDIT_GREEN                  1019
+#define IDC_EDIT4                       1020
+#define IDC_EDIT_BLUE                   1020
 #define ID_MENU_CLOSE                   32771
 #define ID_MENU_SETTINGS                32775
 #define ID_MENU_ICON_NOTIF              32776
@@ -50,7 +54,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32793
-#define _APS_NEXT_CONTROL_VALUE         1017
+#define _APS_NEXT_CONTROL_VALUE         1018
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
