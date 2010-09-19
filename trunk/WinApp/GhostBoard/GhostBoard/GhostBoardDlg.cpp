@@ -55,6 +55,8 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_hotKeyDown = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_DOWN; // 履歴後
     m_hotKeyLeft = ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_LEFT;   // テンプレート逆
     m_hotKeyRight= ((HOTKEYF_CONTROL | HOTKEYF_EXT) << 8) + VK_RIGHT;  // テンプレート順
+    m_hotKeyMenu = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT | HOTKEYF_EXT) << 8) + 'M'; // メニュー表示
+    m_hotKeyFocus= ((HOTKEYF_CONTROL | HOTKEYF_SHIFT | HOTKEYF_EXT) << 8) + 'F'; // フォーカス取得
 
 	// ホットキー操作時のリスト表示 高さ
 	m_listHeight = 100;
@@ -802,8 +804,8 @@ bool CGhostBoardDlg::Save()
         m_alphaDefault, m_alphaMouse, m_alphaActive);
     fprintf(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n",
         m_confCtrl, m_confShift, m_confAlt, m_confWin);
-    fprintf(fp, "hotKey:%X, %X, %X, %X\n",
-        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
+    fprintf(fp, "hotKey:%X, %X, %X, %X, %X, %X\n",
+        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu, m_hotKeyFocus);
     fprintf(fp, "List:%d, %d\n", m_alphaList, m_listHeight);
 
     for(int j=1; j<TEMPLATE_NUM; j++) {
@@ -849,8 +851,8 @@ bool CGhostBoardDlg::Load()
         &m_alphaDefault, &m_alphaMouse, &m_alphaActive); 
     fscanf_s(fp, "ctrl:%d, shift:%d, alt:%d, win:%d\n",
         &m_confCtrl, &m_confShift, &m_confAlt, &m_confWin);
-    fscanf_s(fp, "hotKey:%X, %X, %X, %X\n",
-        &m_hotKeyUp, &m_hotKeyDown, &m_hotKeyLeft, &m_hotKeyRight);
+    fscanf_s(fp, "hotKey:%X, %X, %X, %X, %X, %X\n",
+        &m_hotKeyUp, &m_hotKeyDown, &m_hotKeyLeft, &m_hotKeyRight, &m_hotKeyMenu, &m_hotKeyFocus);
     fscanf_s(fp, "List:%d, %d\n", &m_alphaList, &m_listHeight);
 
     do{
@@ -947,8 +949,10 @@ void CGhostBoardDlg::OnMenuSettings()
     dlg.m_hotKeyDownCode  = m_hotKeyDown;
     dlg.m_hotKeyLeftCode  = m_hotKeyLeft;
     dlg.m_hotKeyRightCode = m_hotKeyRight;
-    TRACE("HotKey before: %x %x %x %x\n",
-        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
+    dlg.m_hotKeyMenuCode  = m_hotKeyMenu;
+    dlg.m_hotKeyFocusCode = m_hotKeyFocus;
+    TRACE("HotKey before: %x %x %x %x %x %x\n",
+        m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu, m_hotKeyFocus);
 
     INT_PTR nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
@@ -970,8 +974,10 @@ void CGhostBoardDlg::OnMenuSettings()
         m_hotKeyDown  = dlg.m_hotKeyDownCode;
         m_hotKeyLeft  = dlg.m_hotKeyLeftCode;
         m_hotKeyRight = dlg.m_hotKeyRightCode;
-        TRACE("HotKey after: %x %x %x %x\n",
-            m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight);
+        m_hotKeyMenu  = dlg.m_hotKeyMenuCode;
+        m_hotKeyFocus = dlg.m_hotKeyFocusCode;
+        TRACE("HotKey after: %x %x %x %x %x %x\n",
+            m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu, m_hotKeyFocus);
 
 		// リスト設定
 		m_alphaList = dlg.m_alphaList;
@@ -1066,6 +1072,22 @@ LRESULT CGhostBoardDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         }
         else if(wParam == m_hotKeyRight) {
             TemplateForward();
+        }
+        else if(wParam == m_hotKeyMenu) {
+            POINT pnt;
+            pnt.x = m_windowPos.rcNormalPosition.left;
+            pnt.y = m_windowPos.rcNormalPosition.top;
+            SetForegroundWindow();
+            PopUpMenu(pnt);
+        }
+        else if(wParam == m_hotKeyFocus) { // フォーカス トグル動作
+            if(m_dispStatus != DS_focus) {
+                SetForegroundWindow();
+            }
+            else if(m_lastWindow) { // 元ウィンドウが取得できてれば
+                // 前のウィンドウにフォーカスを戻す
+                ::SetForegroundWindow(m_lastWindow->m_hWnd);
+            }
         }
 		return 1;
     
@@ -1302,6 +1324,12 @@ void CGhostBoardDlg::StartHotKey()
 
     if(m_hotKeyRight!=0 && !::RegisterHotKey(m_hWnd, m_hotKeyRight, hotKeyF2mod(m_hotKeyRight>>8), m_hotKeyRight&0xFF ))
         MessageBox(_T("FAIL: RegisterHotKey(): template next"));
+
+    if(m_hotKeyMenu!=0 && !::RegisterHotKey(m_hWnd, m_hotKeyMenu, hotKeyF2mod(m_hotKeyMenu>>8), m_hotKeyMenu&0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): menu"));
+
+    if(m_hotKeyFocus!=0 && !::RegisterHotKey(m_hWnd, m_hotKeyFocus, hotKeyF2mod(m_hotKeyFocus>>8), m_hotKeyFocus&0xFF ))
+        MessageBox(_T("FAIL: RegisterHotKey(): get focus"));
 }
 
 void CGhostBoardDlg::StopHotKey()
@@ -1317,6 +1345,12 @@ void CGhostBoardDlg::StopHotKey()
 
     if(m_hotKeyRight!=0 && !::UnregisterHotKey(m_hWnd, m_hotKeyRight))
         MessageBox(_T("FAIL: UnregisterHotKey(): template next"));
+
+    if(m_hotKeyMenu!=0 && !::UnregisterHotKey(m_hWnd, m_hotKeyMenu))
+        MessageBox(_T("FAIL: UnregisterHotKey(): menu"));
+
+    if(m_hotKeyFocus!=0 && !::UnregisterHotKey(m_hWnd, m_hotKeyFocus))
+        MessageBox(_T("FAIL: UnregisterHotKey(): get focus"));
 }
 /*
 // 他のアプリケーションへの文字列挿入
