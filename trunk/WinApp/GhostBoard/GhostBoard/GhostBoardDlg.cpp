@@ -34,6 +34,11 @@ CGhostBoardDlg::CGhostBoardDlg(CWnd* pParent /*=NULL*/)
     m_leftDown = false;
     m_mouseDistance = 0;
     m_mouseDistanceFar = 100;
+    for(int i=0; i<TEMPLATE_NUM; i++) {
+        m_textNum[i] = 32;
+        m_textArray[i] = new CString[32];
+    }
+    m_historyTime = new CTime[32];
     // デフォルトの透明度、マウス接近時の透明度を設定。
     m_alphaActive = 200;
     m_alphaDefault = 100;
@@ -694,7 +699,7 @@ bool CGhostBoardDlg::GetTextFromClilpboard()
         // 表示内容とも最新の履歴とも異なる文字列の場合のみ履歴に追加する
         m_historyCount ++;
         m_historyPos ++;
-        if(m_historyPos>=m_historyNum && m_historyNum < HISTORY_NUM)
+        if(m_historyPos>=m_historyNum && m_historyNum < m_textNum[0])
             m_historyNum ++;
         if(m_historyPos >= m_historyNum) m_historyPos -= m_historyNum;
 
@@ -807,9 +812,11 @@ bool CGhostBoardDlg::Save()
     fprintf(fp, "hotKey:%X, %X, %X, %X, %X, %X\n",
         m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu, m_hotKeyFocus);
     fprintf(fp, "List:%d, %d\n", m_alphaList, m_listHeight);
+    fprintf(fp, "textNum:%d, %d, %d, %d\n",
+        m_textNum[0], m_textNum[1], m_textNum[2], m_textNum[3]);
 
     for(int j=1; j<TEMPLATE_NUM; j++) {
-        for(int i=0; i<HISTORY_NUM; i++) {
+        for(int i=0; i<m_textNum[j]; i++) {
             CString str = m_textArray[j][i];
             if(str != "") {
                 str.Replace(_T("\\"), _T("\\\\"));
@@ -854,12 +861,18 @@ bool CGhostBoardDlg::Load()
     fscanf_s(fp, "hotKey:%X, %X, %X, %X, %X, %X\n",
         &m_hotKeyUp, &m_hotKeyDown, &m_hotKeyLeft, &m_hotKeyRight, &m_hotKeyMenu, &m_hotKeyFocus);
     fscanf_s(fp, "List:%d, %d\n", &m_alphaList, &m_listHeight);
+    int newNum[TEMPLATE_NUM];
+    ret = fscanf_s(fp, "textNum:%d, %d, %d, %d\n",
+        &(newNum[0]), &(newNum[1]), &(newNum[2]), &(newNum[3]));
+    if(ret == 4) {
+        replaceTextNum(newNum);
+    }
 
     do{
-        unsigned int tmp, idx;
+        int tmp, idx;
         char buf[SAVE_TEXT_SIZE];
         ret = fscanf_s(fp, "%d:%d:", &tmp, &idx);
-        if(ret > 0 && tmp < TEMPLATE_NUM && idx < HISTORY_NUM) {
+        if(ret > 0 && tmp < TEMPLATE_NUM && idx < m_textNum[tmp]) {
             fgets(buf, SAVE_TEXT_SIZE, fp);
             m_textArray[tmp][idx] = buf;
             m_textArray[tmp][idx].Replace(_T("\r"), _T("")); // 改行文字を削除
@@ -895,9 +908,9 @@ void CGhostBoardDlg::PopUpMenu(const POINT &pnt)
 
     count = 0;
     addPos = menu.GetSubMenu(0);
-    int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
+    int startCount = m_historyCount>=m_textNum[0]?m_historyCount-m_textNum[0]+1:0;
     for(int i = startCount; i <= m_historyCount; i++) {
-        int pos = i % HISTORY_NUM;
+        int pos = i % m_textNum[0];
         CString str;
         str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
         str += m_textArray[0][pos].Left(32);
@@ -910,7 +923,7 @@ void CGhostBoardDlg::PopUpMenu(const POINT &pnt)
     UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
     for(int grp = 0; grp < 3; grp++) {
         addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
-        for(int i = HISTORY_NUM-1; i >= 0; i--) {
+        for(int i = m_textNum[grp]-1; i >= 0; i--) {
                 CString str;
                 str.Format(_T("%02d: "), i);
                 str += m_textArray[grp+1][i].Left(32);
@@ -942,6 +955,9 @@ void CGhostBoardDlg::OnMenuSettings()
     dlg.m_iconNotifP = &m_iconNotif;
 	dlg.m_alphaList = m_alphaList;
 	dlg.m_listHeight = m_listHeight;
+    for(int i=0; i<TEMPLATE_NUM; i++) {
+        dlg.m_textNum[i] = m_textNum[i];
+    }
 
     // ホットキーストップ
     StopHotKey();
@@ -979,6 +995,9 @@ void CGhostBoardDlg::OnMenuSettings()
         TRACE("HotKey after: %x %x %x %x %x %x\n",
             m_hotKeyUp, m_hotKeyDown, m_hotKeyLeft, m_hotKeyRight, m_hotKeyMenu, m_hotKeyFocus);
 
+        // テキスト数設定
+        replaceTextNum(dlg.m_textNum);
+
 		// リスト設定
 		m_alphaList = dlg.m_alphaList;
 		m_listHeight = dlg.m_listHeight;
@@ -998,22 +1017,22 @@ void CGhostBoardDlg::OnExecMenu(UINT uID)
 {
     TRACE("OnExecMenu(%d)\n", uID - ID_SEL_HISTORY);
 
-    if(uID >= ID_SEL_HISTORY && uID < ID_SEL_HISTORY+HISTORY_NUM) {
+    if(uID >= ID_SEL_HISTORY && uID < ID_SEL_HISTORY+m_textNum[0]) {
         m_template = 0;
         m_lookupPos[m_template] = uID - ID_SEL_HISTORY;
     }
     
-    if(uID >= ID_SEL_RED && uID < ID_SEL_RED+HISTORY_NUM) {
+    if(uID >= ID_SEL_RED && uID < ID_SEL_RED+m_textNum[1]) {
         m_template = 1;
         m_lookupPos[m_template] = uID - ID_SEL_RED;
     }
 
-    if(uID >= ID_SEL_GREEN && uID < ID_SEL_GREEN+HISTORY_NUM) {
+    if(uID >= ID_SEL_GREEN && uID < ID_SEL_GREEN+m_textNum[2]) {
         m_template = 2;
         m_lookupPos[m_template] = uID - ID_SEL_GREEN;
     }
 
-    if(uID >= ID_SEL_BLUE && uID < ID_SEL_BLUE+HISTORY_NUM) {
+    if(uID >= ID_SEL_BLUE && uID < ID_SEL_BLUE+m_textNum[3]) {
         m_template = 3;
         m_lookupPos[m_template] = uID - ID_SEL_BLUE;
     }
@@ -1140,8 +1159,8 @@ void CGhostBoardDlg::HistoryBackward()
         rememberTemplate();
         if(m_template) {
             m_lookupPos[m_template] ++;
-            if(m_lookupPos[m_template] >= HISTORY_NUM)
-                m_lookupPos[m_template] -= HISTORY_NUM;
+            if(m_lookupPos[m_template] >= m_textNum[m_template])
+                m_lookupPos[m_template] -= m_textNum[m_template];
         }
         else {
             // 履歴参照位置を更新
@@ -1176,7 +1195,7 @@ void CGhostBoardDlg::HistoryForward()
             // 履歴参照位置を更新
             m_lookupPos[m_template] --;
             if(m_lookupPos[m_template] < 0)
-                m_lookupPos[m_template]+=m_template?HISTORY_NUM:m_historyNum;
+                m_lookupPos[m_template]+=m_template?m_textNum[m_template]:m_historyNum;
         }
         else {
             m_lookupPos[m_template] ++;
@@ -1401,11 +1420,11 @@ void CGhostBoardDlg::ShowList()
 	int sel;
 	if(m_template == 0) {
         // クリップボード履歴
-	    int startCount = m_historyCount>=HISTORY_NUM?m_historyCount-HISTORY_NUM+1:0;
+	    int startCount = m_historyCount>=m_textNum[m_template]?m_historyCount-m_textNum[m_template]+1:0;
         if(m_listDlgNeedRedraw) {
     	    m_listDlg->m_listBox.ResetContent();
 		    for(int i = startCount; i <= m_historyCount; i++) {
-			    int pos = i % HISTORY_NUM;
+			    int pos = i % m_textNum[m_template];
 			    CString str;
 			    str.Format(_T("%02d [%s] "), i, m_historyTime[pos].Format("%H:%M"));
 			    str += m_textArray[0][pos].Left(256);
@@ -1417,13 +1436,13 @@ void CGhostBoardDlg::ShowList()
 		    }
         }
         sel = m_lookupPos[0]-startCount;
-        while(sel < 0) sel+=HISTORY_NUM;
+        while(sel < 0) sel+=m_textNum[m_template];
     }
-    else if(m_template > 0) {
+    else if(m_template > 0 && m_template < TEMPLATE_NUM) {
         // テンプレート表示
         if(m_listDlgNeedRedraw) {
     	    m_listDlg->m_listBox.ResetContent();
-            for(int i = HISTORY_NUM-1; i >= 0; i--) {
+            for(int i = m_textNum[m_template]-1; i >= 0; i--) {
                 CString str;
                 str.Format(_T("%02d: "), i);
                 str += m_textArray[m_template][i].Left(256);
@@ -1435,7 +1454,7 @@ void CGhostBoardDlg::ShowList()
 			    if(i == m_lookupPos[m_template]) sel = idx;
 		    }
         }
-        sel = HISTORY_NUM-1-m_lookupPos[m_template];
+        sel = m_textNum[m_template]-1-m_lookupPos[m_template];
     }
 	else { // 履歴かテンプレートでなければリストは表示しない
 		return;
@@ -1491,4 +1510,38 @@ void CGhostBoardDlg::HideList()
 {
 	m_listDlg->ShowWindow(SW_HIDE);
     m_listDlgNeedRedraw = true;
+}
+
+void CGhostBoardDlg::replaceTextNum(int *newNum)
+{
+    if(newNum[0] != m_textNum[0]) {
+        if(newNum[0] < 1) newNum[0] = 1;
+        if(newNum[0] > 256) newNum[0] = 256;
+        CString *newText = new CString[newNum[0]];
+        CTime   *newTime = new CTime[newNum[0]];
+        for(int i=0;i<newNum[0] && i<m_textNum[0]; i++) {
+            newText[i] = m_textArray[0][i];
+            newTime[i] = m_historyTime[i];
+        }
+        CString *freeText = m_textArray[0];
+        CTime   *freeTime = m_historyTime;
+        m_textArray[0] = newText;
+        m_historyTime = newTime;
+        m_textNum[0]=newNum[0];
+        delete [] freeText;
+        delete [] freeTime;
+    }
+    for(int j=1; j<TEMPLATE_NUM; j++) {
+        if(newNum[j] == m_textNum[j]) continue;
+        if(newNum[j] < 1) newNum[j] = 1;
+        if(newNum[j] > 256) newNum[j] = 256;
+        CString *newText = new CString[newNum[j]];
+        for(int i=0;i<newNum[j] && i<m_textNum[j]; i++) {
+            newText[i] = m_textArray[j][i];
+        }
+        CString *freeText = m_textArray[j];
+        m_textArray[j] = newText;
+        m_textNum[j]=newNum[j];
+        delete [] freeText;
+    }
 }
