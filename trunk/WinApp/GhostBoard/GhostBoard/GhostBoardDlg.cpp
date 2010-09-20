@@ -920,20 +920,19 @@ void CGhostBoardDlg::PopUpMenu(const POINT &pnt)
         addPos->InsertMenu(count++, MF_STRING | MF_BYPOSITION, ID_SEL_HISTORY+pos, str);
     }
 
-    UINT ids[] = {ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
-    for(int grp = 0; grp < 3; grp++) {
-        addPos = menu.GetSubMenu(0)->GetSubMenu(count+1+grp);
+    UINT ids[] = {ID_SEL_HISTORY, ID_SEL_RED, ID_SEL_GREEN, ID_SEL_BLUE};
+    for(int grp = 1; grp < TEMPLATE_NUM; grp++) {
+        addPos = menu.GetSubMenu(0)->GetSubMenu(count+grp);
         for(int i = m_textNum[grp]-1; i >= 0; i--) {
                 CString str;
                 str.Format(_T("%02d: "), i);
-                str += m_textArray[grp+1][i].Left(32);
+                str += m_textArray[grp][i].Left(32);
                 str.Replace(_T("\n"),_T("|"));
                 str.Replace(_T("\r"),_T(""));
                 str.Replace(_T("\t"),_T("    "));
                 addPos->AppendMenuW(MF_STRING, ids[grp]+i, str);
         }
     }
-
     menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pnt.x, pnt.y, this);
 }
 
