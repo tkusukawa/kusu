@@ -147,6 +147,11 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == バイナリダウンロード ==
 
+  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.20.zip GhostBoard-1.1.20 インストーラ]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.20.zip GhostBoard-1.1.20 EXEファイル]
+    2010/09/20 r173 Ver1.1.20<br>
+    テキスト数を任意数にした際のメニュー表示の不具合を修正<br>
+
   * !GhostBoard-1.1.19 インストーラ
   * !GhostBoard-1.1.19 EXEファイル
     2010/09/20 r170 Ver1.1.19 ※任意数のメニュー表示処理に不具合が見つかりました<br>
