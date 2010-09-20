@@ -147,9 +147,9 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 
 == バイナリダウンロード ==
 
-  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.19.zip GhostBoard-1.1.19 インストーラ]
-  * [http://kusu.googlecode.com/files/GhostBoard-1.1.19.zip GhostBoard-1.1.19 EXEファイル]
-    2010/09/20 r170 Ver1.1.19<br>
+  * !GhostBoard-1.1.19 インストーラ
+  * !GhostBoard-1.1.19 EXEファイル
+    2010/09/20 r170 Ver1.1.19 ※任意数のメニュー表示処理に不具合が見つかりました<br>
     Issue 23: フォーカスインとメニュー表示のホットキーが欲しい の対応 r168<br>
     Issue 24: 白赤緑青の各グループの記録数を任意に設定できるようにして欲しい の対応 r169<br>
 
