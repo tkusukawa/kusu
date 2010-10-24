@@ -129,6 +129,11 @@ Ctrl,Shift,Alt,Winの4つのキーの中から任意の組合せを設定する�
 ５．ホットキー操作時のリスト表示の高さと濃度
 ６．記録できるテキストの数(1～256)
 
+● わかりにくい仕様
+設定ダイアログでホットキーの設定に修飾キー(CtrlやShift等)無しで設定すると、
+アクティブキーの組み合わせが修飾キーとして使われます。
+→ ホットキーにWinキーが使えます。
+
 ● 終了<br>
 メニューの「Exit」を選択することで!GhostBoardを終了することが出来ます。
 
@@ -146,6 +151,11 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 お気づきの点がございましたらご連絡いただけると助かります。
 
 == バイナリダウンロード ==
+
+  * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.21.zip GhostBoard-1.1.21 インストーラ]
+  * [http://kusu.googlecode.com/files/GhostBoard-1.1.21.zip GhostBoard-1.1.21 EXEファイル]
+    2010/10/24 r175 Ver1.1.21<br>
+    Issue 26: 修飾キーなしの設定だったらActiveキーを修飾キーに使う の対応<br>
 
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.20.zip GhostBoard-1.1.20 インストーラ]
   * [http://kusu.googlecode.com/files/GhostBoard-1.1.20.zip GhostBoard-1.1.20 EXEファイル]
