@@ -1411,6 +1411,15 @@ int CGhostBoardDlg::hotKeyF2mod(int hotKeyF)
         res |= MOD_CONTROL;
     if(hotKeyF & HOTKEYF_ALT)
         res |= MOD_ALT;
+
+    // ホットキーの設定に修飾キーが含まれていなかったら、
+    // Activeキーの組み合わせを修飾キーとして使う。
+    if(res == 0) {
+        res = (m_confCtrl  ? MOD_CONTROL : 0)
+            | (m_confShift ? MOD_SHIFT   : 0)
+            | (m_confAlt   ? MOD_ALT     : 0)
+            | (m_confWin   ? MOD_WIN     : 0);
+    }
     return res;
 }
 
