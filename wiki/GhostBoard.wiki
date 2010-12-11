@@ -150,6 +150,16 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 間違いなどがあるかもしれませんが、何かの参考になれば幸いです。
 お気づきの点がございましたらご連絡いただけると助かります。
 
+== 掲載記事 ==
+・iP!（アイピー）2010年2月号<br>
+・Windows100% 2010年02月号<br>
+・[http://www.vector.co.jp/magazine/softnews/100316/n1003162.html ベクターレビュー] 2010年3月16日<br>
+・iP!（アイピー）2010年4月号<br>
+・週刊アスキー2010年4月26日発売「煌７道場」<br>
+・週刊アスキー2010年9月13日発売 「800号記念 フリーソフト800本掲載大特集」<br>
+・Windows100% 2010年10月号<br>
+・[http://www.gigafree.net/utility/clip/ghostboard.html ｋ本的に無料ソフト・フリーソフト] 2010年12月8日(?) ←使い方の説明がとてもわかりやすいです<br>
+
 == バイナリダウンロード ==
 
   * [http://kusu.googlecode.com/files/GhostBoardInstaller-1.1.21.zip GhostBoard-1.1.21 インストーラ]
