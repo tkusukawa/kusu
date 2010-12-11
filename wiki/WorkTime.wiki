@@ -39,6 +39,7 @@ Redmineのルートに戻ってDBの初期化を行います。
 
  redmine-0.8.＊<br>
  redmine-0.9.＊<br>
+ redmine-1.0.＊<br>
 で、大丈夫ではないかと。
 不具合があったらご連絡いただけると助かります。
 
@@ -47,6 +48,10 @@ Redmineのルートに戻ってDBの初期化を行います。
 http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
 == Download ==
+
+  * Ver0.0.62(r181) [http://kusu.googlecode.com/files/redmine_work_time-0.0.62.tar.gz redmine_work_time-0.0.62.tar.gz] Date: 2010-12-12
+  Issue 25: prj.activitiesがないときにエラー への対応<br>
+  Issue 30: luisete.serrano の多言語対応を取り込み<br>
 
   * Ver0.0.61(r164) [http://kusu.googlecode.com/files/redmine_work_time-0.0.61.tar.gz redmine_work_time-0.0.61.tar.gz] Date: 15:59:33, 2010年7月19日
   Issue 21: 一度登録した時間登録を消すI/Fがほしい への対応<br>
