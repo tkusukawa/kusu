@@ -1,5 +1,5 @@
 // TCP port redirector
-// (C) Tomohisa Kusukawa 2009
+// (C) Tomohisa Kusukawa 2009-2011
 
 #include <sys/errno.h>
 #include <sys/socket.h>
@@ -40,8 +40,12 @@ main(int argc, char **argv)
         exit(0);
     }
 
-    int listenSocket = makeListenSocket(atoi(argv[L_PORT_ARG]));
-
+    int port = atoi(argv[L_PORT_ARG]);
+    int listenSocket = makeListenSocket(port);
+    printf("\nListen Port %d -> %s (%s)\n",
+           port, argv[D_HOST_ARG], argv[D_PORT_ARG]);
+    fflush(stdout);
+    
     fd_set rfds;
     FD_ZERO(&rfds);
     FD_SET(listenSocket, &rfds);
@@ -63,12 +67,12 @@ main(int argc, char **argv)
                 if(FD_ISSET((*pp)->clientSocket, &rflg)) {
                     relayRes = relaySocket((*pp)->clientSocket, (*pp)->serverSocket,
                                            relayBuf, sizeof(relayBuf));
-                    printf("%s->:%d[byte]\n", (*pp)->clientHost, relayRes);
+                    //printf("%s->:%d[byte]\n", (*pp)->clientHost, relayRes);
                 }
                 else if(FD_ISSET((*pp)->serverSocket, &rflg)) {
                     relayRes = relaySocket((*pp)->serverSocket, (*pp)->clientSocket,
                                            relayBuf, sizeof(relayBuf));
-                    printf("%s<-:%d[byte]\n", (*pp)->clientHost, relayRes);
+                    //printf("%s<-:%d[byte]\n", (*pp)->clientHost, relayRes);
                 }
                 if(relayRes < 0) {
                     deleteRelayNode(pp, &rfds);
@@ -196,12 +200,34 @@ void addRelayNode(RelayList **listPP, fd_set *fds, int cSocket, int sSocket)
 
     FD_SET(node->clientSocket, fds);
     FD_SET(node->serverSocket, fds);
-    printf("connect:%s\n", node->clientHost);
+
+    time_t t;
+    struct tm *ltm;
+    char tms[128];
+    time(&t);
+    ltm = localtime(&t);
+        
+    printf("[%02d/%02d %02d:%02d:%02d] %s Connect\n",
+           ltm->tm_mon+1, ltm->tm_mday,
+           ltm->tm_hour, ltm->tm_min, ltm->tm_sec,
+           node->clientHost);
+    fflush(stdout);
 }
 
 void deleteRelayNode(RelayList **listPP, fd_set *fds)
 {
-    printf("disconnect:%s\n", (*listPP)->clientHost);
+    time_t t;
+    struct tm *ltm;
+    char tms[128];
+    time(&t);
+    ltm = localtime(&t);
+
+    printf("[%02d/%02d %02d:%02d:%02d] %s Disconnect \n",
+           ltm->tm_mon+1, ltm->tm_mday,
+           ltm->tm_hour, ltm->tm_min, ltm->tm_sec,
+           (*listPP)->clientHost);
+    fflush(stdout);
+
     FD_CLR((*listPP)->serverSocket, fds);
     FD_CLR((*listPP)->clientSocket, fds);
     close((*listPP)->clientSocket);
