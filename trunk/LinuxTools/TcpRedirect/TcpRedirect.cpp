@@ -85,7 +85,9 @@ main(int argc, char **argv)
                 int clientSocket = acceptSocket(listenSocket);
                 if(clientSocket>=0) {
                     int serverSocket = makeServerConnection(argv[D_HOST_ARG], atoi(argv[D_PORT_ARG]));
-                    addRelayNode(&relayList, &rfds, clientSocket, serverSocket);
+                    if(serverSocket >= 0) {
+                        addRelayNode(&relayList, &rfds, clientSocket, serverSocket);
+                    }
                 }
             }
         }
@@ -132,7 +134,8 @@ int acceptSocket(int listenSocket)
     int newSocket = accept(listenSocket, (sockaddr *)&accept_addr, &accept_len);
     if(newSocket < 0) {
         perror("acceptSocket:accept");
-        exit(1);
+        //exit(1);
+        return -1;
     }
     return newSocket;
 }
@@ -143,7 +146,8 @@ int makeServerConnection(char *host, unsigned short port)
     hp=gethostbyname(host);
     if(hp == NULL) {
         perror("makeClientSocket:gethostbyname");
-        exit(1);
+        //exit(1);
+        return -1;
     }
 
     sockaddr_in addr;
@@ -154,12 +158,15 @@ int makeServerConnection(char *host, unsigned short port)
     int s = socket(PF_INET, SOCK_STREAM, 0);
     if(s < 0) {
         perror("makeClientSocket:socket");
-        exit(1);
+        //exit(1);
+        return -1;
     }
 
     if(connect(s, (sockaddr*)&addr, sizeof(addr)) < 0) {
         perror("fail:makeClientSocket:connect");
-        exit(1);
+        //exit(1);
+        close(s);
+        return -1;
     }
 
     return s;
@@ -186,12 +193,18 @@ void addRelayNode(RelayList **listPP, fd_set *fds, int cSocket, int sSocket)
     socklen_t len = sizeof(addr);
     if(getpeername(cSocket, (sockaddr *)&addr, &len) < 0) {
         perror("addRelayNode:getpeername");
-        exit(1);
+        //exit(1);
+        close(cSocket);
+        close(sSocket);
+        return;
     }
     RelayList *node = new RelayList;
     if(inet_ntop(AF_INET, &(addr.sin_addr), node->clientHost, HOST_NAME_MAX_LEN) == NULL) {
         perror("addRelayNode:inet_ntop");
-        exit(1);
+        //exit(1);
+        close(cSocket);
+        close(sSocket);
+        return;
     }
     node->clientSocket = cSocket;
     node->serverSocket = sSocket;
