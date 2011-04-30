@@ -16,7 +16,7 @@ Redmine Plug-in、Ruby on Railsの習作です。
 いろいろ変なことをやらかしていると思います。
 気づいた点やアドバイスなどご連絡いただけると幸いです。
 
-== 使い方 ==
+== 導入方法 ==
 
 Redmineをインストールして下さい。（参考： http://redmine.jp/tech_note/install/ ）
 
@@ -47,6 +47,10 @@ Redmineのルートに戻ってDBの初期化を行います。
 == SVN Repository ==
 
 http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
+
+== Mercurial Repository ==
+
+https://bitbucket.org/kusu/redmine_work_time
 
 == Download ==
 
