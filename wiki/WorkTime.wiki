@@ -54,7 +54,7 @@ https://bitbucket.org/kusu/redmine_work_time
 
 == Download ==
 
-  * Ver0.0.63(r191) [http://kusu.googlecode.com/files/redmine_work_time-0.0.63.tar.gz redmine_work_time-0.0.63.tar.gz] Date: 2011-02-27
+  * Ver0.0.63(r191) [http://kusu.googlecode.com/files/redmine_work_time-0.0.63+.tar.gz redmine_work_time-0.0.63+.tar.gz] Date: 2011-02-27
   Issue 28: 進捗率の入力をWorkTimeからできないか<br>
   Issue 32: German translations<br>
   NetBeansの警告箇所を修正<br>
