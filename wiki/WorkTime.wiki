@@ -48,7 +48,7 @@ Redmineのルートに戻ってDBの初期化を行います。
 
 http://kusu.googlecode.com/svn/trunk/RedminePlugin/redmine_work_time/
 
-== Mercurial Repository ==
+== Mercurial Repository (development) ==
 
 https://bitbucket.org/kusu/redmine_work_time
 
