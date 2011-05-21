@@ -1,0 +1,71 @@
+#!/bin/bash
+
+################################################# 変数定義
+repo='https://192.168.1.61/svn/configs/redmine-trunk'
+svn='/usr/bin/svn'
+tmp='/tmp/regdirsvn'
+wd=`pwd`      # ワークディレクトリのフルパス
+twd=${wd##*/} # ワークディレクトリ名の最後の名前
+rwd=$repo$wd  # SVNへのURL
+
+############################################ SVNフォルダ作成
+declare -a addFolder
+search=$rwd
+
+# SVNに存在しているフォルダを探索
+while ! $svn ls $search >/dev/null; do
+  echo search= $search
+  addFolder=($search "${addFolder[@]}")
+  search=${search%/*}
+done
+
+basePath=$tmp'/'${search##*/}
+echo basePath: $basePath
+
+if [ ! -e $tmp ]; then
+  mkdir $tmp # 作業フォルダがなければ作る
+fi
+
+if [ -e $basePath ]; then
+  echo ERROR: work folder already exist: $basePath
+  exit
+fi
+
+echo
+echo '>' mkdir $basePath
+mkdir $basePath
+
+echo
+echo '>' $svn checkout -N $search $basePath
+$svn checkout -N $search $basePath
+
+newPath=$basePath
+# 不足していたフォルダを順に作成
+for newURL in "${addFolder[@]}"; do
+  newPath=$basePath${newURL#$search}
+  echo
+  echo '>' $svn mkdir $newPath
+  $svn mkdir $newPath
+done
+
+# 作成したフォルダをコミット
+echo
+echo '>' $svn commit -m 'regdirsvn' $basePath
+$svn commit -m 'regdirsvn' $basePath # コミット
+
+# 古い.svnがあれば削除
+if [ -e $wd'/.svn' ]; then
+  echo
+  echo '>' rm -rf $wd'/.svn'
+  rm -rf $wd'/.svn'
+fi
+
+# .svnゲット
+echo
+echo '>' mv $newPath'/.svn' $wd'/.svn'
+mv $newPath'/.svn' $wd'/.svn'
+
+# 掃除して終了
+echo
+echo '>' rm -rf $basePath
+rm -rf $basePath
