@@ -58,22 +58,22 @@ https://bitbucket.org/kusu/redmine_work_time
   <font color="#ff0000">
     本バージョンにてDB設計が変更されていますので、バージョンアップ前のDBバックアップを強く推奨いたします。今回、チケット順位の月次保持を廃止しており、この処理変更に伴って過去のチケットが大量に表示される場合があります。その際は「終了チケット削除」のリンクを設けましたので、この機能にてご対応頂けると幸いです。
   </font>
-  [r212] Version 0.1.0<br>
-  [r211] fixed Issue 39: Error 500 with Redmine R5723.<br>
-  [r209] 重複削除と順序の正規化の処理が不完全だったので修正<br>
-  [r208]<br>
+  (r212) Version 0.1.0<br>
+  (r211) fixed Issue 39: Error 500 with Redmine R5723.<br>
+  (r209) 重複削除と順序の正規化の処理が不完全だったので修正<br>
+  (r208)<br>
   月間集計においてもプロジェクト順序とチケット順序の重複削除と正規化を行うように修正<br>
   行末の不要なセミコロンを削除<br>
   日毎工数のデータ作成をリファクタリング（クエリ回数削減）<br>
   工数が残っていてもチケット順序を削除できるように修正<br>
   チケット追加ロジックをビューではなくちゃんとコントローラで処理するようにした<br>
-  [r206] 終了チケットを削除する機能を追加<br>
-  [r204]<br>
+  (r206) 終了チケットを削除する機能を追加<br>
+  (r204)<br>
   表示チケットの削除リンク[x]を月間工数表から日毎工数に移動<br>
   月間工数表の表示内容をコントローラ内で計算するように修正<br>
   月間工数表には工数が入力されたチケットしか表示しないように修正<br>
-  [r201] 工数入力権限が無い場合でも工数入力できていた問題の修正<br>
-  [r199]<br>
+  (r201) 工数入力権限が無い場合でも工数入力できていた問題の修正<br>
+  (r199)<br>
   bug fix Issue 35: Worktime-Link in Top-Page-Menubar<br>
   ログインしていなかったら一旦ログイン画面に遷移するように修正<br>
   チケット抽出時に表示権限があることを確認するように修正<br>
@@ -81,10 +81,10 @@ https://bitbucket.org/kusu/redmine_work_time
   チケット順位を月毎にしないで全月共通とした<br>
   日毎工数からチケット順位を変更できるようにした<br>
   プロジェクト順位とチケット順位の重複削除と順序の正規化を行うようにした<br>
-  [r198] adapt Issue 35: Worktime-Link in Top-Page-Menubar<br>
-  [r197] accept xyz3710's translation file(ko.yml)<br>
-  [r196] accept maikovisky's translation.<br>
-  [r195] accept Marc's translation.<br>
+  (r198) adapt Issue 35: Worktime-Link in Top-Page-Menubar<br>
+  (r197) accept xyz3710's translation file(ko.yml)<br>
+  (r196) accept maikovisky's translation.<br>
+  (r195) accept Marc's translation.<br>
 
   * Ver0.0.63(r191) [http://kusu.googlecode.com/files/redmine_work_time-0.0.63+.tar.gz redmine_work_time-0.0.63+.tar.gz] Date: 2011-02-27
   Issue 28: 進捗率の入力をWorkTimeからできないか<br>
