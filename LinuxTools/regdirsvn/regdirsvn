@@ -1,16 +1,22 @@
 #!/bin/bash
 
 ################################################# 変数定義
-repo='https://192.168.1.61/svn/configs/redmine-trunk'
+repo='http://192.168.1.61/svn/configs/'
+hostname='redmine-trunk2'
 svn='/usr/bin/svn'
 tmp='/tmp/regdirsvn'
 wd=`pwd`      # ワークディレクトリのフルパス
 twd=${wd##*/} # ワークディレクトリ名の最後の名前
-rwd=$repo$wd  # SVNへのURL
+rwd=$repo$hostname$wd  # SVNへのURL
 
 ############################################ SVNフォルダ作成
 declare -a addFolder
 search=$rwd
+
+if ! $svn ls $repo > /dev/null; then
+  echo 'ERROR: Can not connect SVN server.'
+  exit
+fi
 
 # SVNに存在しているフォルダを探索
 while ! $svn ls $search >/dev/null; do
