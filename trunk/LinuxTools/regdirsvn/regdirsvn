@@ -9,17 +9,19 @@ wd=`pwd`      # ワークディレクトリのフルパス
 twd=${wd##*/} # ワークディレクトリ名の最後の名前
 rwd=$repo$hostname$wd  # SVNへのURL
 
+echo -n 'SVN user: '
+read user
 ############################################ SVNフォルダ作成
 declare -a addFolder
 search=$rwd
 
-if ! $svn ls $repo > /dev/null; then
+if ! $svn ls --username $user $repo > /dev/null; then
   echo 'ERROR: Can not connect SVN server.'
   exit
 fi
 
 # SVNに存在しているフォルダを探索
-while ! $svn ls $search >/dev/null; do
+while ! $svn --username $user ls $search >/dev/null; do
   echo search= $search
   addFolder=($search "${addFolder[@]}")
   search=${search%/*}
@@ -42,22 +44,22 @@ echo '>' mkdir $basePath
 mkdir $basePath
 
 echo
-echo '>' $svn checkout -N $search $basePath
-$svn checkout -N $search $basePath
+echo '>' $svn checkout --username $user -N $search $basePath
+$svn checkout --username $user -N $search $basePath || exit
 
 newPath=$basePath
 # 不足していたフォルダを順に作成
 for newURL in "${addFolder[@]}"; do
   newPath=$basePath${newURL#$search}
   echo
-  echo '>' $svn mkdir $newPath
-  $svn mkdir $newPath
+  echo '>' $svn mkdir --username $user $newPath
+  $svn mkdir --username $user $newPath || exit
 done
 
 # 作成したフォルダをコミット
 echo
-echo '>' $svn commit -m 'regdirsvn' $basePath
-$svn commit -m 'regdirsvn' $basePath # コミット
+echo '>' $svn commit --username $user -m 'regdirsvn' $basePath
+$svn commit --username $user -m 'regdirsvn' $basePath || exit # コミット
 
 # 古い.svnがあれば削除
 if [ -e $wd'/.svn' ]; then
