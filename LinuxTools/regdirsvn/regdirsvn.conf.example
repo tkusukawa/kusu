@@ -1,0 +1,21 @@
+##################### regdirsvn 設定ファイル ############################
+
+# リポジトリ
+repo='http://192.168.1.61/svn/configs/'
+
+# メールの送信先
+alertMail='t.kusukawa@gmail.com'
+
+# ホスト名
+hostname='redmine-trunk2'
+
+# ファイルパス
+regFile='/usr/local/etc/regdirsvn/REGISTRY' # 登録ディレクトリリスト
+recDir='/usr/local/etc/regdirsvn/rec'       # チェック結果記録ツリー
+tmp='/tmp/regdirsvn'                        # 一時ファイル
+
+# コマンドのパス
+svn='/usr/bin/svn'
+find='/usr/bin/find'
+chkDirSub='/usr/local/etc/regdirsvn/chkDirSub'
+
