@@ -1,0 +1,42 @@
+#!/bin/bash
+
+config='/usr/local/etc/regdirsvn/regdirsvn.conf'
+
+if ! source $config; then
+  echo "Can not open config file: $config"
+  exit
+fi
+
+cd $1
+echo -n > $1'/checkDir' # 一旦ファイルをクリア
+
+typeset -i OLDEST='300000000000'
+if [ -e $1'/check' ]; then
+  # タイムスタンプが古くないかチェック
+  OLDEST=`date -r $1'/check' '+%Y%m%d%k%M'`
+  oneDayAgo=`date -d '1 day ago' '+%Y%m%d%k%M'`
+  if [ $OLDEST -lt $oneDayAgo ]; then
+    timeStamp=`date -r $1'/check' '+%Y-%m-%d %k:%M'`
+    echo $1': Check result is too old ('$timeStamp')' >> $1'/checkDir'
+  fi
+  if [ -s $1'/check' ]; then
+    echo $1 >> $1'/checkDir'
+    cat $1'/check' >> $1'/checkDir'
+  fi
+fi 
+
+while read subdir; do
+  bash $chkDirSub $subdir
+  cat $subdir'/checkDir' >> $1'/checkDir'
+  timeStamp=`date -r $subdir'/checkDir' '+%Y%m%d%k%M'`
+  if [ $timeStamp -lt $OLDEST ]; then
+    OLDEST=$timeStamp
+  fi
+done < <($find $1 -mindepth 1 -maxdepth 1 -type d -print)
+
+if [ $OLDEST -eq '300000000000' ]; then
+  echo $1': Check result is not exist' >> $1'/checkDir'
+else
+  touch -t $OLDEST $1'/checkDir'
+fi
+
