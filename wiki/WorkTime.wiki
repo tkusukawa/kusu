@@ -41,6 +41,7 @@ Redmineのルートに戻ってDBの初期化を行います。
  redmine-0.9.＊<br>
  redmine-1.0.＊<br>
  redmine-1.1.＊<br>
+ redmine-1.2.＊<br>
 で、大丈夫ではないかと。
 不具合があったらご連絡いただけると助かります。
 
