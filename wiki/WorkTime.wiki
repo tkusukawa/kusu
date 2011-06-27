@@ -55,6 +55,20 @@ https://bitbucket.org/kusu/redmine_work_time
 
 == Download ==
 
+  * Ver0.1.1(r223) [http://kusu.googlecode.com/files/redmine_work_time-0.1.1.tar.gz redmine_work_time-0.1.1.tar.gz] Date: 2011-06-27
+  (r223) Version 0.1.1<br>
+  (r222)<br>
+  Redmine-1.2でチケット追加を行えていなかった不具合の修正<br>
+  他の人の工数を確認した際に、自分に権限の無いプロジェクトが表示できていなかった問題の修正<br>
+  プロジェクト限定が機能していなかった問題の修正<br>
+  (r221) フォーム更新時にもパラメータをURLに引き継ぐように修正<br>
+  (r219)<br>
+  パラメータが無かった場合にパラメータ付きURLにリダイレクトするように修正<br>
+  メモのタイトルをパラメータ付きリンクに変更<br>
+  (r218)<br>
+  Issue 42: 他人の工数参照にて変更系のリンクは不要 への対応<br>
+  チケットへのリンクをポップアップ属性に変更<br>
+
   * Ver0.1.0(r212) [http://kusu.googlecode.com/files/redmine_work_time-0.1.0.tar.gz redmine_work_time-0.1.0.tar.gz] Date: 2011-05-22
   <font color="#ff0000">
     本バージョンにてDB設計が変更されていますので、バージョンアップ前のDBバックアップを強く推奨いたします。今回、チケット順位の月次保持を廃止しており、この処理変更に伴って過去のチケットが大量に表示される場合があります。その際は「終了チケット削除」のリンクを設けましたので、この機能にてご対応頂けると幸いです。
