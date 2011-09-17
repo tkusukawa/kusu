@@ -54,6 +54,15 @@ https://bitbucket.org/kusu/redmine_work_time
 
 == Download ==
 
+  * Ver0.1.3(r229) [http://kusu.googlecode.com/files/redmine_work_time-0.1.3.tar.gz redmine_work_time-0.1.3.tar.gz] Date: 2011-09-17
+  Version 0.1.3<br>
+  fixes #824 ユーザ切り替え時にユーザ名が見えるように変更<br>
+  fixes #826 新規エントリの活動をデフォルト値が選択された状態で表示されるように修正<br>
+  fixed Issue 52: RuntimeError in Work timeController#index if there is a time entry without ticket id<br>
+  Issue 48: French translation<br>
+  エラー表示の不具合を修正<br>
+  fixed Issue 45: 時間トラッキングがイネーブルでないPJのチケットが「日毎工数」に表示される<br>
+
   * Ver0.1.2(r225) [http://kusu.googlecode.com/files/redmine_work_time-0.1.2.tar.gz redmine_work_time-0.1.2.tar.gz] Date: 2011-07-03
   Version 0.1.2<br>
   fixed Issue 44: http 500 error loading work_time in Redmine 1.2.0 stable<br>
