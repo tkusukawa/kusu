@@ -8,7 +8,7 @@
 http://kusu.googlecode.com/files/sudokucap.jpg
 
 == 使い方 ==
-できたEXEを実行してください。
+下記のZIPファイルを解凍してできたEXEを実行してください。
 マスに数値を入れていくと、必然的に値が確定するマスに自動的に数値が表示されます。
 
 == 動作環境 ==
@@ -22,4 +22,3 @@ http://kusu.googlecode.com/svn/trunk/WinApp/Sudoku/
 == Download ==
 
   * [http://kusu.googlecode.com/files/sudoku-1.0.0.1.zip sudoku-1.0.0.1.zip]
-
