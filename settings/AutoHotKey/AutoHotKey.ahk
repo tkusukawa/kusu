@@ -47,8 +47,7 @@ $^o::
   send ^o
 return
 
-#IfWinActive ahk_class WindowsForms10.Window.8.app.0.329445b
-
+#IfWinActive ahk_class WindowsForms10.Window.8.app.0.a0f91b
 $^p::
   send ^p
 return
