@@ -1,9 +1,0 @@
-SCC = This is a Source Code Control file
-
-[CommRelay.dsp]
-SCC_Aux_Path = "\\Gaia\systech2\VisualStudio.NetDB\1stTest"
-SCC_Project_Name = "$/CommRelay", LDAAAAAA
-
-[CommRelay.dsw]
-SCC_Aux_Path = "\\Gaia\systech2\VisualStudio.NetDB\1stTest"
-SCC_Project_Name = "$/CommRelay", LDAAAAAA
