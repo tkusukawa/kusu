@@ -8,7 +8,7 @@ en:
   wt_each_member_report: "Member Report"
   wt_raw_total: "Monthly Report(not relayed)"
   wt_edit_relay: "Ticket Relay Editor"
-  wt_relay_total: "Tikect Relayed Monthly Report"
+  wt_relay_total: "Ticket Relayed Monthly Report"
   wt_ticket: "Ticket"
   wt_add_ticket: "Add ticket"
   wt_no_permission: "No permission"
@@ -24,3 +24,4 @@ en:
   wt_data_list: "Data list"
   wt_input_ticket_numbers: "or input ticket numbers"
   wt_delete_closed_tickets: "delete closed tickets"
+  wt_data_download: "data download"

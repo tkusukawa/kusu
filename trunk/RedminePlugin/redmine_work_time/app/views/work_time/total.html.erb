@@ -9,6 +9,9 @@
 </div>
 
 <h2><%=l(:wt_raw_total)%></h2>
+<div style="text-align:right;">
+[<%= link_to(l(:wt_data_download), @link_params.merge(:action=>"total_data")) %>]
+</div>
 
 <%
 if !User.current.allowed_to?(:view_work_time_other_member, @project) then
@@ -20,9 +23,9 @@ end
 <tr valign="top">
 <td>
 <div style="text-align:center;position:relative;top:1px;left:1px;font-size:2.0em;">
-<%=link_to("<<", @link_params.merge(:month=>@last_month.month, :year=>@last_month.year))%>
+<%=link_to("<<", @link_params.merge(:day=>@last_month.day, :month=>@last_month.month, :year=>@last_month.year))%>
 <%=@this_year %>-<%= @month_names[@this_month-1] %>
-<%=link_to(">>", @link_params.merge(:month=>@next_month.month, :year=>@next_month.year))%>
+<%=link_to(">>", @link_params.merge(:day=>@next_month.day, :month=>@next_month.month, :year=>@next_month.year))%>
 </div>
 </td>
 <td style="background:#ddd;"></td>
@@ -146,9 +149,24 @@ end
 
 </tr>
 <%
- end
+  end
 end
+if @prj_cost.has_key?(-1) then
 %>
+<tr style="background:#000;color:#fff;">
+ <td>private</td>
+ <td> <%=(@prj_cost[-1])[-1]%> </td>
+<%
+@members.each do |mem_info|
+  user=mem_info[1]
+  uid=user.id
+%>
+  <td>
+    <%= @prj_cost[-1].key?(uid) ? (@prj_cost[-1])[uid] : "&nbsp;"%>
+  </td>
+<%end%>
+</tr>
+<%end%>
 </table>
 
 <div align="right">
