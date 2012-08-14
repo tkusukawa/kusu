@@ -8,6 +8,7 @@ class WorkTimeController < ApplicationController
   NO_ORDER = -1
 
   def index
+    @message = ""
     require_login || return
     @project = nil
     prepare_values
@@ -28,6 +29,7 @@ class WorkTimeController < ApplicationController
   end
 
   def show
+    @message = ""
     find_project
     authorize
     prepare_values
@@ -47,6 +49,7 @@ class WorkTimeController < ApplicationController
   end
 
   def total
+    @message = ""
     find_project
     authorize
     prepare_values
@@ -70,7 +73,7 @@ class WorkTimeController < ApplicationController
     member_add_del_check
     calc_total
     
-    tsv_data = "user\trelayed project\trelayed ticket\tproject\tticket\tspend time\n"
+    csv_data = "\"user\",\"relayed project\",\"relayed ticket\",\"project\",\"ticket\",\"spend time\"\n"
     #-------------------------------------- メンバーのループ
     @members.each do |mem_info|
       user = mem_info[1]
@@ -102,17 +105,18 @@ class WorkTimeController < ApplicationController
           parent_issue = Issue.find_by_id(@issue_parent[issue_id])
           next if parent_issue.nil? # チケットが削除されていたらパス
 
-          tsv_data << "#{user}\t#{parent_issue.project}\t#{parent_issue.subject}\t#{prj}\t#{issue.to_s}\t#{@issue_cost[issue_id][user.id]}\n"
+          csv_data << "\"#{user}\",\"#{parent_issue.project}\",\"#{parent_issue.subject}\",\"#{prj}\",\"#{issue.to_s}\",#{@issue_cost[issue_id][user.id]}\n"
         end
       end
       if @issue_cost.has_key?(-1) && @issue_cost[-1].has_key?(user.id) then
-        tsv_data << "#{user}\tprivate\tprivate\tprivate\tprivate\t#{@issue_cost[-1][user.id]}\n"
+        csv_data << "\"#{user}\",\"private\",\"private\",\"private\",\"private\",#{@issue_cost[-1][user.id]}\n"
       end
     end
-    send_data tsv_data, :type=>"text/tsv", :filename=>"monthly_report.tsv"
+    send_data Redmine::CodesetUtil.from_utf8(csv_data, l(:general_csv_encoding)), :type=>"text/csv", :filename=>"monthly_report_raw.csv"
   end
 
   def edit_relay
+    @message = ""
     find_project
     authorize
     prepare_values
@@ -126,6 +130,7 @@ class WorkTimeController < ApplicationController
   end
 
   def relay_total
+    @message = ""
     find_project
     authorize
     prepare_values
@@ -149,7 +154,7 @@ class WorkTimeController < ApplicationController
     member_add_del_check
     calc_total
     
-    tsv_data = "user\tproject\tticket\tspend time\n"
+    csv_data = "\"user\",\"project\",\"ticket\",\"spend time\"\n"
     #-------------------------------------- メンバーのループ
     @members.each do |mem_info|
       user = mem_info[1]
@@ -178,14 +183,14 @@ class WorkTimeController < ApplicationController
           next if issue.nil? # チケットが削除されていたらパス
           next if issue.project_id != dsp_prj # このプロジェクトに表示するチケットでない場合はパス
           
-          tsv_data << "#{user}\t#{prj}\t#{issue.subject}\t#{@r_issue_cost[issue_id][user.id]}\n"
+          csv_data << "\"#{user}\",\"#{prj}\",\"#{issue.subject}\",#{@r_issue_cost[issue_id][user.id]}\n"
         end
       end
       if @r_issue_cost.has_key?(-1) && @r_issue_cost[-1].has_key?(user.id) then
-        tsv_data << "#{user}\tprivate\tprivate\t#{@r_issue_cost[-1][user.id]}\n"
+        csv_data << "\"#{user}\",\"private\",\"private\",#{@r_issue_cost[-1][user.id]}\n"
       end
     end
-    send_data tsv_data, :type=>"text/tsv", :filename=>"monthly_report.tsv"
+    send_data Redmine::CodesetUtil.from_utf8(csv_data, l(:general_csv_encoding)), :type=>"text/csv", :filename=>"monthly_report.csv"
   end
 
   def popup_select_ticket # チケット選択ウィンドウの内容を返すアクション
@@ -333,7 +338,7 @@ private
 
     # 重複削除と順序の正規化
     if order_normalization(UserIssueMonth, :issue, :order=>"odr", :conditions=>["uid=:u",{:u=>@this_uid}]) then
-      @message = '<div style="background:#faa;">Warning: normalize UserIssueMonth</div>'
+      @message += '<div style="background:#faa;">Warning: normalize UserIssueMonth</div>'
       return
     end
 
@@ -378,7 +383,7 @@ private
 
     # 重複削除と順序の正規化
     if order_normalization(WtProjectOrders, :dsp_prj, :order=>"dsp_pos", :conditions=>["uid=:u",{:u=>@this_uid}]) then
-      @message = '<div style="background:#faa;">Warning: normalize WtProjectOrders</div>'
+      @message += '<div style="background:#faa;">Warning: normalize WtProjectOrders</div>'
       return
     end
 
@@ -452,7 +457,6 @@ private
   def hour_update # *********************************** 工数更新要求の処理
     return if @this_uid != @crnt_uid
 
-    @message ||= ""
     # 新規工数の登録
     if params["new_time_entry"] then
       params["new_time_entry"].each do |issue_id, valss|
@@ -635,11 +639,11 @@ private
             relay.save
           end
         else
-          @message = '<div style="background:#faa;">'+l(:wt_loop_relay)+'</div>'
+          @message += '<div style="background:#faa;">'+l(:wt_loop_relay)+'</div>'
           return
         end
       else
-        @message = '<div style="background:#faa;">'+l(:wt_no_permission)+'</div>'
+        @message += '<div style="background:#faa;">'+l(:wt_no_permission)+'</div>'
         return
       end
       @issue_id = child_id
@@ -686,7 +690,7 @@ private
   def change_ticket_position
     # 重複削除と順序の正規化
     if order_normalization(WtTicketRelay, :issue_id, :order=>"position") then
-      @message = '<div style="background:#faa;">Warning: normalize WtTicketRelay</div>'
+      @message += '<div style="background:#faa;">Warning: normalize WtTicketRelay</div>'
       return
     end
 
@@ -715,7 +719,7 @@ private
           end
         end
       else
-        @message = '<div style="background:#faa;">'+l(:wt_no_permission)+'</div>'
+        @message += '<div style="background:#faa;">'+l(:wt_no_permission)+'</div>'
         return
       end
     end
@@ -725,7 +729,7 @@ private
   def change_project_position
     # 重複削除と順序の正規化
     if order_normalization(WtProjectOrders, :dsp_prj, :order=>"dsp_pos", :conditions=>"uid=-1") then
-      @message = '<div style="background:#faa;">Warning: normalize WtProjectOrders</div>'
+      @message += '<div style="background:#faa;">Warning: normalize WtProjectOrders</div>'
       return
     end
 
@@ -737,7 +741,7 @@ private
 
     if !User.current.allowed_to?(:edit_work_time_total, @project) then
        # 権限が無ければパス
-      @message = '<div style="background:#faa;">'+l(:wt_no_permission)+'</div>'
+      @message += '<div style="background:#faa;">'+l(:wt_no_permission)+'</div>'
       return
     end
 
