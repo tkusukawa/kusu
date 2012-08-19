@@ -6,12 +6,9 @@ function FindProxyForURL(url,host) {
 			|| shExpMatch(host, "172.28.*")
 			|| shExpMatch(host, "10.*")
 			|| shExpMatch(host, "*.intra.bitway.co.jp")
-			|| shExpMatch(host, "*.bitway.ne.jp");
+			|| shExpMatch(host, "pubridge-redmine.bitway.ne.jp");
 	}
 
-	if (shExpMatch(host, "bw-vpn.bitway.ne.jp")) {
-		return "DIRECT";
-	}
 	if (isBitway(host)) {
 		return proxy;
 	}
