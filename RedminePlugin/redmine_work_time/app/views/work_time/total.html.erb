@@ -37,7 +37,16 @@ max = @members.size
 %>
 <td align="center">
 <%if User.current.allowed_to?(:edit_work_time_total, @project) then%>
-<a href="JavaScript:member_pos('<%=url_for(@link_params)%>', <%=user.id%>,<%=pos%>,<%=max%>);"><%=pos%></a>
+<a href="#"
+  onclick="JavaScript:
+    member_pos(
+      '<%=url_for(@link_params)%>',
+      <%=user.id%>,
+      <%=pos%>,
+      <%=max%>);
+    return false;">
+  <%=pos%>
+</a>
 <%end%>
 <div style="top:2px;width:56px;font-size:10px;">
 <%= link_to(user, @link_params.merge(:action=>"show", :user=>user.id))%>
@@ -51,16 +60,16 @@ end
 <tr>
 <td style="background:#ddd;">
 </td>
-<td style="background:#ddd;">
-<%=@total_cost%>
+<td style="background:#ddd;text-align:right;">
+<%=sprintf('%1.2f', @total_cost)%>
 </td>
 <%
 #---------------------------------------各人の合計を表示
 @members.each do |mem_info|
   user=mem_info[1]
 %>
-<td style="background:#ddd;">
-<%= (@member_cost.key?(user.id) && @member_cost[user.id] !=0 ) ? @member_cost[user.id] : " "%>
+<td style="background:#ddd;text-align:right;">
+<%= (@member_cost.key?(user.id) && @member_cost[user.id] !=0 ) ? sprintf('%1.2f', @member_cost[user.id]) : " "%>
 </td>
 <%
 end
@@ -85,20 +94,27 @@ prjs.each do |po|
 <tr style="background:#000;color:#fff;">
  <td>
 <%if User.current.allowed_to?(:edit_work_time_total, @project) then%>
-    <a href="JavaScript:prj_pos('<%=url_for(@link_params)%>', <%=dsp_prj%>,<%=dsp_pos%>,<%=prjs.size%>);">
+    <a href="#"
+      onclick="JavaScript:
+        prj_pos(
+          '<%=url_for(@link_params)%>',
+          <%=dsp_prj%>,
+          <%=dsp_pos%>,
+          <%=prjs.size%>);
+        return false;">
       <%=dsp_pos%>
     </a>
 <%end%>
    <%=prj.name%>
  </td>
- <td> <%=(@prj_cost[dsp_prj])[-1]%> </td>
+ <td style="text-align:right;"> <%=sprintf('%1.2f', (@prj_cost[dsp_prj])[-1])%> </td>
 <%
 @members.each do |mem_info|
   user=mem_info[1]
   uid=user.id
 %>
-  <td>
-    <%= @prj_cost[dsp_prj].key?(uid) ? (@prj_cost[dsp_prj])[uid] : " "%>
+  <td style="text-align:right;">
+    <%= @prj_cost[dsp_prj].key?(uid) ? sprintf('%1.2f', (@prj_cost[dsp_prj])[uid]) : " "%>
   </td>
 <%
 end
@@ -120,7 +136,14 @@ tickets.each do |tic|
 <tr>
 <td>
 <%if User.current.allowed_to?(:edit_work_time_total, @project) then%>
-    <a href="JavaScript:ticket_pos('<%=url_for(@link_params)%>', <%=issue_id%>,<%=tic.position%>,<%=tic_max%>);">
+    <a href="#"
+      onclick="JavaScript:
+        ticket_pos(
+          '<%=url_for(@link_params)%>',
+          <%=issue_id%>,
+          <%=tic.position%>,
+          <%=tic_max%>);
+        return false;">
       <%=tic.position%>
     </a>
 <%end%>
@@ -128,17 +151,17 @@ tickets.each do |tic|
   <%= print_issue_cost(issue) %>
 </td>
 
-<td style="background:#ddd;">
-<%=(@issue_cost[issue_id])[-1]%>
+<td style="background:#ddd;text-align:right;">
+<%=sprintf('%1.2f', (@issue_cost[issue_id])[-1])%>
 </td>
 
 <%
 @members.each do |mem_info|
   user=mem_info[1]
 %>
-<td>
+<td style="text-align:right;">
 <% if @issue_cost.key?(issue_id) && @issue_cost[issue_id].key?(user.id) then %>
-<%= (@issue_cost[issue_id])[user.id] %>
+<%= sprintf('%1.2f', (@issue_cost[issue_id])[user.id]) %>
 <%else%>
 &nbsp;
 <%end%>
@@ -155,14 +178,14 @@ if @prj_cost.has_key?(-1) then
 %>
 <tr style="background:#000;color:#fff;">
  <td>private</td>
- <td> <%=(@prj_cost[-1])[-1]%> </td>
+ <td style="text-align:right;"> <%=sprintf('%1.2f', (@prj_cost[-1])[-1])%> </td>
 <%
 @members.each do |mem_info|
   user=mem_info[1]
   uid=user.id
 %>
-  <td>
-    <%= @prj_cost[-1].key?(uid) ? (@prj_cost[-1])[uid] : " "%>
+  <td style="text-align:right;">
+    <%= @prj_cost[-1].key?(uid) ? sprintf('%1.2f', (@prj_cost[-1])[uid]) : " "%>
   </td>
 <%end%>
 </tr>
