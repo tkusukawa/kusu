@@ -10,6 +10,10 @@ if @month_pack[:other]!=0 then
 end
 %>
 
+<h2><%=l(:wt_monthly_report)%> (<%=@this_user%>)</h2>
+<div style="text-align:right;">
+[<%= link_to(l(:wt_data_download), @link_params.merge(:action=>"member_monthly_data")) %>]
+</div>
 <table width="100%" style="border:0;border-collapse:collapse;">
 <tr>
   <!-- ************************************************ 左側を表示 -->
@@ -56,7 +60,14 @@ ofst_t = win_hs*3-5
         <div style="position:relative;top:1px;left:1px;width:<%=box_w-4%>px;height:<%=win_h-2%>px;">
           <%if !issue.nil? then%>
             <%if @this_uid==@crnt_uid then%>
-              <a href="JavaScript:ticket_pos('<%=url_for(@link_params) %>',<%=issue_id%>,<%=issue_odr%>,<%=@issue_odr_max+((issue_odr.to_i<0)?1:0)%>);">
+              <a href="#"
+                onclick="JavaScript:
+                  ticket_pos(
+                    '<%=url_for(@link_params) %>',
+                    <%=issue_id%>,
+                    <%=issue_odr%>,
+                    <%=@issue_odr_max+((issue_odr.to_i<0)?1:0)%>);
+                  return false;">
                 <%= (issue_odr.to_i<0) ? "*" : issue_odr %>
               </a>
             <%end%>
@@ -77,7 +88,14 @@ ofst_t = win_hs*3-5
     <div style="background:#000;color:#fff;font-size:1.0em;">
       <div style="position:relative;top:1px;left:1px;width:<%=box_w-4%>px;height:<%=win_hs-2%>px;">
 <%if @this_uid==@crnt_uid then%>
-        <a href="JavaScript:prj_pos('<%=url_for(@link_params) %>',<%=prj.id%>,<%=dsp_pos%>,<%=@prj_odr_max+((dsp_pos.to_i<0)?1:0)%>);">
+        <a href="#"
+          onclick="JavaScript:
+            prj_pos(
+              '<%=url_for(@link_params) %>',
+              <%=prj.id%>,
+              <%=dsp_pos%>,
+              <%=@prj_odr_max+((dsp_pos.to_i<0)?1:0)%>);
+            return false;">
           <%= (dsp_pos.to_i<0) ? "*" : dsp_pos %>
         </a>
 <%end%>
