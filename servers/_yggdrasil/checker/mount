@@ -1,0 +1,1 @@
+mount | grep -v '(.*soft.*)' | grep -v '(.*bind.*)'
