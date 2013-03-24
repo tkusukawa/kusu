@@ -8,7 +8,6 @@ cat <<EOF | while read f; do ls $f >/dev/null 2>&1 && ygg add $f ; done
 /etc/crontab
 /etc/fstab
 /etc/group
-/etc/gshadow
 /etc/hosts
 /etc/hosts.allow
 /etc/hosts.deny
@@ -21,7 +20,6 @@ cat <<EOF | while read f; do ls $f >/dev/null 2>&1 && ygg add $f ; done
 /etc/nsswitch.conf
 /etc/passwd
 /etc/resolv.conf
-/etc/shadow
 /etc/sudoers
 /etc/syslog.conf
 /etc/wgetrc
