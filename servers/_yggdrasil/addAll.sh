@@ -29,6 +29,7 @@ cat <<EOF | while read f; do ls $f >/dev/null 2>&1 && ygg add $f ; done
 /etc/rc.local
 /etc/shadow-sudoers.asc
 /etc/pam.d/*
+/etc/selinux/config
 /etc/sysconfig/i18n
 /etc/sysconfig/network
 /etc/sysconfig/static-routes
