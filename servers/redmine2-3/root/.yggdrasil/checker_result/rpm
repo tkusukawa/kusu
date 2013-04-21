@@ -235,6 +235,7 @@ seahorse-2.28.1-4.el6.x86_64
 time-1.7-37.1.el6.x86_64
 libpath_utils-0.2.1-6.el6.x86_64
 desktop-file-utils-0.15-9.el6.x86_64
+samba-3.6.9-151.el6.x86_64
 libgail-gnome-1.20.1-4.1.el6.centos.x86_64
 selinux-policy-targeted-3.7.19-126.el6.noarch
 boost-program-options-1.41.0-11.el6_1.2.x86_64
