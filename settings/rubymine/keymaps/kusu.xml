@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<keymap version="1" name="kusu" parent="Emacs">
+  <action id="$Copy">
+    <keyboard-shortcut first-keystroke="control INSERT" />
+    <keyboard-shortcut first-keystroke="alt C" />
+    <keyboard-shortcut first-keystroke="ESCAPE" second-keystroke="W" />
+    <keyboard-shortcut first-keystroke="control Q" />
+  </action>
+  <action id="$Undo">
+    <keyboard-shortcut first-keystroke="shift control MINUS" />
+    <keyboard-shortcut first-keystroke="control SLASH" />
+    <keyboard-shortcut first-keystroke="control Z" />
+  </action>
+  <action id="Editor Copy">
+    <keyboard-shortcut first-keystroke="control Q" />
+  </action>
+  <action id="Editor Undo">
+    <keyboard-shortcut first-keystroke="control Z" />
+  </action>
+  <action id="EditorPageUp">
+    <keyboard-shortcut first-keystroke="PAGE_UP" />
+    <keyboard-shortcut first-keystroke="alt V" />
+  </action>
+  <action id="Find">
+    <keyboard-shortcut first-keystroke="control alt S" />
+    <keyboard-shortcut first-keystroke="alt F3" />
+  </action>
+  <action id="QuickJavaDoc">
+    <mouse-shortcut keystroke="alt button2" />
+  </action>
+  <action id="SaveAll">
+    <keyboard-shortcut first-keystroke="control X" second-keystroke="control S" />
+    <keyboard-shortcut first-keystroke="control S" second-keystroke="control S" />
+  </action>
+</keymap>
+
