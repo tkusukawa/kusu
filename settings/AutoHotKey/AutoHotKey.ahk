@@ -329,7 +329,10 @@ If(cls="PuTTY") {
 		{
 			MouseClick, RIGHT, %x%, %y%, 1, 0
 		}
+	} else {
+		MouseClick, RIGHT, %x%, %y%, 1, 0
 	}
-} else
+} else {
 	MouseClick, RIGHT, %x%, %y%, 1, 0
+}
 return
