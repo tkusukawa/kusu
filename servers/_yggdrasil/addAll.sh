@@ -20,7 +20,6 @@ cat <<EOF | while read f; do ls $f >/dev/null 2>&1 && ygg add $f ; done
 /etc/nsswitch.conf
 /etc/passwd
 /etc/resolv.conf
-/etc/sudoers
 /etc/syslog.conf
 /etc/wgetrc
 /etc/xinetd.conf
@@ -44,7 +43,6 @@ cat <<EOF | while read f; do ls $f >/dev/null 2>&1 && ygg add $f ; done
 /etc/rc.d/rc
 /etc/rc.d/rc.local
 /etc/rc.d/rc.sysinit
-/etc/rc.d/init.d/*
 /etc/ssh/sshd_config
 /etc/vsftpd/ftpusers
 /etc/vsftpd/user_list
