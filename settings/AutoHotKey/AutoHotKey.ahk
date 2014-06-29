@@ -1,11 +1,12 @@
 ;#include disp_ime_status.ahk
 
 ~LButton::
-Send {Ctrl}
+  Sleep 5
+  Send {Ctrl}
 return
 
 ~LButton UP::
-Send {Ctrl}
+  Send {Ctrl}
 return
 
 ;-----------------------------------------------------------
@@ -32,7 +33,7 @@ If(cls="PuTTY") {
 return
 
 ~RButton UP::
-Send {Ctrl}
+  Send {Ctrl}
 return
 
 ;-----------------------------------------------------------
