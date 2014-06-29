@@ -1,5 +1,57 @@
 ;#include disp_ime_status.ahk
 
+~LButton::
+Send {Ctrl}
+return
+
+~LButton UP::
+Send {Ctrl}
+return
+
+;-----------------------------------------------------------
+; PuTTYで複数行の貼り付け前には確認する
+$RButton::
+CoordMode,Mouse,Screen
+MouseGetPos, x, y, win
+WinGetClass, cls, ahk_id %win%
+Send {Ctrl}
+If(cls="PuTTY") {
+	StringSplit, strout, clipboard, `n
+	If(strout0>1 or InStr(clipboard, "sudo")>0) {
+		MsgBox, 308, PuTTY貼り付け警告, ---------------------`n%clipboard%`n---------------------`n`nを貼り付けますか?
+		IfMsgBox, Yes
+		{
+			MouseClick, RIGHT, %x%, %y%, 1, 0
+		}
+	} else {
+		MouseClick, RIGHT, %x%, %y%, 1, 0
+	}
+} else {
+	MouseClick, RIGHT, %x%, %y%, 1, 0
+}
+return
+
+~RButton UP::
+Send {Ctrl}
+return
+
+;-----------------------------------------------------------
+; shift スクロールを横スクロールにする
+;+WheelUp::  ; Scroll left.
+;ControlGetFocus, fcontrol, A
+;Loop 1  ; <-- Increase this value to scroll faster.
+;    SendMessage, 0x114, 0, 0, %fcontrol%, A  ; 0x114 is WM_HSCROLL and the 0 after it is SB_LINELEFT.
+;return
+
+;+WheelDown::  ; Scroll right.
+;ControlGetFocus, fcontrol, A
+;Loop 1  ; <-- Increase this value to scroll faster.
+;    SendMessage, 0x114, 1, 0, %fcontrol%, A  ; 0x114 is WM_HSCROLL and the 1 after it is SB_LINERIGHT.
+;return
+
+;+WheelUp::send {WheelLeft}
+;+WheelDown::send {WheelRight}
+
 
 #IfWinActive ahk_class TSSHELLWND
 
@@ -47,7 +99,7 @@ $^o::
   send ^o
 return
 
-#IfWinActive ahk_class WindowsForms10.Window.8.app.0.a0f91b
+#IfWinActive ahk_class PuTTY
 $^p::
   send ^p
 return
@@ -315,24 +367,3 @@ $!a::
 return
 
 
-;-----------------------------------------------------------
-; PuTTYで複数行の貼り付け前には確認する
-$RButton::
-CoordMode,Mouse,Screen
-MouseGetPos, x, y, win
-WinGetClass, cls, ahk_id %win%
-If(cls="PuTTY") {
-	StringSplit, strout, clipboard, `n
-	If(strout0>1 or InStr(clipboard, "sudo")>0) {
-		MsgBox, 308, PuTTY貼り付け警告, ---------------------`n%clipboard%`n---------------------`n`nを貼り付けますか?
-		IfMsgBox, Yes
-		{
-			MouseClick, RIGHT, %x%, %y%, 1, 0
-		}
-	} else {
-		MouseClick, RIGHT, %x%, %y%, 1, 0
-	}
-} else {
-	MouseClick, RIGHT, %x%, %y%, 1, 0
-}
-return
