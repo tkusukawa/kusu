@@ -5,9 +5,9 @@
   Send {Ctrl}
 return
 
-~LButton UP::
-  Send {Ctrl}
-return
+;~LButton UP::
+;  Send {Ctrl}
+;return
 
 ;-----------------------------------------------------------
 ; PuTTYで複数行の貼り付け前には確認する
@@ -32,9 +32,9 @@ If(cls="PuTTY") {
 }
 return
 
-~RButton UP::
-  Send {Ctrl}
-return
+;~RButton UP::
+;  Send {Ctrl}
+;return
 
 ;-----------------------------------------------------------
 ; shift スクロールを横スクロールにする
