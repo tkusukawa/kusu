@@ -160,7 +160,7 @@ http://kusu.googlecode.com/svn/trunk/WinApp/GhostBoard/
 ・Windows100% 2010年10月号<br>
 ・[http://www.gigafree.net/utility/clip/ghostboard.html ｋ本的に無料ソフト・フリーソフト] 2010年12月8日(?) ←使い方の説明がとてもわかりやすいです<br>
 ・フリーソフトBest Of Best 2011 完全保存版 (超トリセツ) ISBN978-4-905144-07-6 2011/2/24<br>
-・日経PCビギナーズ2011年12月号69ページ
+・日経PCビギナーズ2011年12月号69ページ<br>
 ・日経パソコン2013年1月14日号「お答えします」
 
 == バイナリダウンロード ==
