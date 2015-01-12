@@ -1,5 +1,5 @@
 // TCP Receive
-// (C) Tomohisa Kusukawa 2009-2011
+// (C) Tomohisa Kusukawa 2009-2015
 
 #include <sys/errno.h>
 #include <sys/socket.h>
@@ -66,7 +66,16 @@ main(int argc, char **argv)
                 if(FD_ISSET((*pp)->clientSocket, &rflg)) {
                     rcvRes = rcvSocket((*pp)->clientSocket,
                                            rcvBuf, sizeof(rcvBuf));
-                    //printf("%s->:%d[byte]\n", (*pp)->clientHost, rcvRes);
+                    printf("%s->:%d[byte]\n", (*pp)->clientHost, rcvRes);
+		    printf("HEX:");
+		    for(int i=0; i < rcvRes; i++) {
+		      printf("%02X,",rcvBuf[i]);
+		    }
+		    printf("\nSTR:");
+		    for(int i=0; i < rcvRes; i++) {
+		      printf("%c",rcvBuf[i]);
+		    }
+		    printf("\n");
                 }
                 if(rcvRes < 0) {
                     deleteRcvNode(pp, &rfds);
@@ -137,15 +146,6 @@ int rcvSocket(int rcvSocket, char *buf, int bufSize)
     if(len <= 0) {
         return -1;
     }
-    for(int i=0; i<len; i++) {
-        printf("%01d:%c\n",i, buf[i]);
-    }
-/*
-    int snd = send(STDOUT_FILENO, buf, len, 0);
-    if(snd <= 0) {
-        return -1;
-    }
-*/
     return len;
 }
 
