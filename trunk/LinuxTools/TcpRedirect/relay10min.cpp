@@ -19,13 +19,13 @@
 #define LISTEN_NUM 5
 #define RELAY_BUF_SIZE 16384
 #define INTERVAL_SEC 10
-#define TIMEOUT_SEC 600 // 10min
+#define TIMEOUT_SEC 600 // 600sec == 10min
 
 struct RelayList {
   char clientHost[HOST_NAME_MAX_LEN];
   int clientSocket;
   int serverSocket;
-  int timeout_sec;
+  time_t lastTime;
   RelayList *next;
 };
 
@@ -38,6 +38,13 @@ int relaySocket(int rcvSocket, int sndSocket, char *buf, int bufSize);
 
 main(int argc, char **argv)
 {
+  time_t tm;
+  struct tm *ltm;
+  struct timeval tv; // interval (timeout of select func.)
+
+  tm = time(NULL);
+  ltm = localtime(&tm);
+
   if(argc != REQ_ARG_NUM) {
     printf("usage: %s [listen port] [destination host] [destination port]\n", argv[0]);
     exit(0);
@@ -45,14 +52,12 @@ main(int argc, char **argv)
 
   int port = atoi(argv[L_PORT_ARG]);
   int listenSocket = makeListenSocket(port);
-  printf("\nListen Port %d -> %s (%s)\n",
+  printf("\n[%02d/%02d %02d:%02d:%02d]:%d",
+	 ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec, listenSocket);
+  printf(" Listen Port %d -> %s (%s)\n",
 	 port, argv[D_HOST_ARG], argv[D_PORT_ARG]);
   fflush(stdout);
     
-  struct timeval tv;
-  tv.tv_sec = INTERVAL_SEC;
-  tv.tv_usec = 0;
-
   fd_set rfds;
   FD_ZERO(&rfds);
   FD_SET(listenSocket, &rfds);
@@ -61,63 +66,79 @@ main(int argc, char **argv)
   char relayBuf[RELAY_BUF_SIZE];
   for(;;) {
     fd_set rflg = rfds;
+    tv.tv_sec = INTERVAL_SEC; tv.tv_usec = 0;
     int ret = select(FD_SETSIZE, &rflg, NULL, NULL, &tv);
-    //printf("remain:%d.%06ds\n", tv.tv_sec, tv.tv_usec);
-    if(ret == 0 && tv.tv_sec == 0 && tv.tv_usec == 0) { // INTERVAL
-      //printf("count down.\n");
-      RelayList **pp = &relayList;
-      while(*pp != NULL) {
-	//printf("%s:remain %d\n", (*pp)->clientHost, (*pp)->timeout_sec);
-	if((*pp)->timeout_sec <= INTERVAL_SEC) {
-	  printf("CLOSE BY TIMEOUT!\n");
-	  deleteRelayNode(pp, &rfds);
-	  continue;
-	}
-	else {
-	  (*pp)->timeout_sec -= INTERVAL_SEC;
-	}
-	//printf("    %s:remain %d\n", (*pp)->clientHost, (*pp)->timeout_sec);
-	pp = &((*pp)->next);
-      }
-      tv.tv_sec = INTERVAL_SEC;
-      tv.tv_usec = 0;
-      continue;
-    }
+
+    tm = time(NULL);
+    ltm = localtime(&tm);
 
     if(ret < 0) {
       perror("main:select");
       exit(1);
     }
-    else if(ret > 0) {
-
+    else {
       RelayList **pp = &relayList;
       while(*pp != NULL) {
 	int relayRes = 0;
-	if(FD_ISSET((*pp)->clientSocket, &rflg)) {
+	if(ret > 0 && FD_ISSET((*pp)->clientSocket, &rflg)) {
 	  relayRes = relaySocket((*pp)->clientSocket, (*pp)->serverSocket,
 				 relayBuf, sizeof(relayBuf));
+	  if(relayRes < 0) {
+	    printf("[%02d/%02d %02d:%02d:%02d]:%d Disconnect %s by client\n",
+		   ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec, (*pp)->clientSocket,
+		   (*pp)->clientHost);
+	    fflush(stdout);
+	    deleteRelayNode(pp, &rfds);
+	    continue;
+	  }
 	  //printf("%s->:%d[byte]\n", (*pp)->clientHost, relayRes);
+	  (*pp)->lastTime = tm;
 	}
-	else if(FD_ISSET((*pp)->serverSocket, &rflg)) {
+	else if(ret > 0 && FD_ISSET((*pp)->serverSocket, &rflg)) {
 	  relayRes = relaySocket((*pp)->serverSocket, (*pp)->clientSocket,
 				 relayBuf, sizeof(relayBuf));
+	  if(relayRes < 0) {
+	    printf("[%02d/%02d %02d:%02d:%02d]:%d Disconnect %s by server\n",
+		   ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec, (*pp)->clientSocket,
+		   (*pp)->clientHost);
+	    fflush(stdout);
+	    deleteRelayNode(pp, &rfds);
+	    continue;
+	  }
 	  //printf("%s<-:%d[byte]\n", (*pp)->clientHost, relayRes);
+	  (*pp)->lastTime = tm;
 	}
-	if(relayRes < 0) {
+
+	double dtm = difftime(tm, (*pp)->lastTime);
+	if(dtm >= (double)TIMEOUT_SEC) {
+	  printf("[%02d/%02d %02d:%02d:%02d]:%d Disconnect %s by TIMEOUT\n",
+		 ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec, (*pp)->clientSocket,
+		 (*pp)->clientHost);
+	  fflush(stdout);
 	  deleteRelayNode(pp, &rfds);
 	  continue;
 	}
+
 	pp = &((*pp)->next);
       }
 
-      if(FD_ISSET(listenSocket, &rflg)) {
+      if(ret > 0 && FD_ISSET(listenSocket, &rflg)) {
 	int clientSocket = acceptSocket(listenSocket);
 	if(clientSocket>=0) {
+	  printf("[%02d/%02d %02d:%02d:%02d]:%d Accept!\n",
+		 ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec, clientSocket);
+	  fflush(stdout);
 	  int serverSocket = makeServerConnection(argv[D_HOST_ARG], atoi(argv[D_PORT_ARG]));
 	  if(serverSocket >= 0) {
 	    RelayList *node = addRelayNode(&relayList, &rfds, clientSocket, serverSocket);
             if(node != NULL) {
-	      node->timeout_sec = TIMEOUT_SEC;
+	      tm = time(NULL);
+	      ltm = localtime(&tm);
+	      node->lastTime = tm;
+	      printf("[%02d/%02d %02d:%02d:%02d]:%d Connect %s\n",
+		     ltm->tm_mon+1, ltm->tm_mday, ltm->tm_hour, ltm->tm_min, ltm->tm_sec, clientSocket,
+		     node->clientHost);
+	      fflush(stdout);
 	    }
 	  }
 	}
@@ -246,34 +267,11 @@ RelayList *addRelayNode(RelayList **listPP, fd_set *fds, int cSocket, int sSocke
   FD_SET(node->clientSocket, fds);
   FD_SET(node->serverSocket, fds);
 
-  time_t t;
-  struct tm *ltm;
-  char tms[128];
-  time(&t);
-  ltm = localtime(&t);
-        
-  printf("[%02d/%02d %02d:%02d:%02d] %s Connect\n",
-	 ltm->tm_mon+1, ltm->tm_mday,
-	 ltm->tm_hour, ltm->tm_min, ltm->tm_sec,
-	 node->clientHost);
-  fflush(stdout);
   return node;
 }
 
 void deleteRelayNode(RelayList **listPP, fd_set *fds)
 {
-  time_t t;
-  struct tm *ltm;
-  char tms[128];
-  time(&t);
-  ltm = localtime(&t);
-
-  printf("[%02d/%02d %02d:%02d:%02d] %s Disconnect \n",
-	 ltm->tm_mon+1, ltm->tm_mday,
-	 ltm->tm_hour, ltm->tm_min, ltm->tm_sec,
-	 (*listPP)->clientHost);
-  fflush(stdout);
-
   FD_CLR((*listPP)->serverSocket, fds);
   FD_CLR((*listPP)->clientSocket, fds);
   close((*listPP)->clientSocket);
