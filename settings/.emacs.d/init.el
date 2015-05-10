@@ -12,3 +12,4 @@
                (define-key shell-mode-map (kbd "C-p") 'comint-previous-matching-input-from-input)
                (define-key shell-mode-map (kbd "C-n") 'comint-next-matching-input-from-input)
                )))
+(setq-default tab-width 4 indent-tabs-mode nil)
